@@ -16,37 +16,47 @@ import type { StudentProfile } from '../../../types/domain'
 
 export function DashboardView() {
   const navigate = useNavigate()
-  const user = useAuthStore((s) => s.user)
   const {
     selectedModule, selectedPresentation, currentWeek,
     setModule, setPresentation, setCurrentWeek, setNumWeeks, setActiveStudent,
   } = useContextStore()
 
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === 'admin'
+  const isAdvisor = user?.role === 'academic_advisor'
+
+  // Load index of available courses
   const { data: index, isLoading: indexLoading, error: indexError } = useQuery({
     queryKey: ['oulad-index'],
     queryFn: () => container.dataService.getIndex(),
     retry: false,
   })
 
+  // Auto-select first allowed course when index loads
   useEffect(() => {
     if (index && !selectedModule && index.courses.length > 0) {
-      const first = index.courses.find((c) =>
-        (!user?.modules?.length || user.modules.includes(c.module)) &&
-        (!user?.presentations?.length || user.presentations.includes(c.presentation))
-      )
-      if (!first) return
-      setModule(first.module)
-      setPresentation(first.presentation)
-      setNumWeeks(first.num_weeks)
+      const allowedCourses = (isAdmin || isAdvisor)
+        ? index.courses
+        : index.courses.filter(
+            (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
+          )
+      const first = allowedCourses[0]
+      if (first) {
+        setModule(first.module)
+        setPresentation(first.presentation)
+        setNumWeeks(first.num_weeks)
+      }
     }
-  }, [index, selectedModule, user, setModule, setPresentation, setNumWeeks])
+  }, [index, selectedModule, user])
 
+  // Load course data when module/presentation is selected
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', selectedModule, selectedPresentation],
     queryFn: () => container.dataService.getCourse(selectedModule, selectedPresentation),
     enabled: !!selectedModule && !!selectedPresentation,
   })
 
+  // Update numWeeks when course loads
   useEffect(() => {
     if (course) setNumWeeks(course.num_weeks)
   }, [course, setNumWeeks])
@@ -54,15 +64,15 @@ export function DashboardView() {
   const numWeeks = course?.num_weeks ?? 39
   const students = course?.students ?? []
 
-  const moduleOptions = [...new Set(
-    index?.courses
-      .filter((c) => !user?.modules?.length || user.modules.includes(c.module))
-      .map((c) => c.module) ?? []
-  )]
+  // Filtered options based on role
+  const allModules = [...new Set(index?.courses.map((c) => c.module) ?? [])]
+  const moduleOptions = (isAdmin || isAdvisor)
+    ? allModules
+    : allModules.filter((m) => user?.modules?.includes(m))
 
   const presentationOptions = index?.courses
     .filter((c) => c.module === selectedModule)
-    .filter((c) => !user?.presentations?.length || user.presentations.includes(c.presentation))
+    .filter((c) => (isAdmin || isAdvisor) ? true : user?.presentations?.includes(c.presentation))
     .map((c) => c.presentation) ?? []
 
   const handleStudentSelect = (s: StudentProfile) => {
@@ -83,6 +93,7 @@ export function DashboardView() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Header toolbar */}
       <Toolbar
         sx={{
           bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', gap: 2, flexWrap: 'wrap',
@@ -100,10 +111,7 @@ export function DashboardView() {
             label="Module"
             onChange={(e) => {
               const mod = e.target.value
-              const firstPres = index?.courses
-                .filter((c) => c.module === mod)
-                .find((c) => !user?.presentations?.length || user.presentations.includes(c.presentation))
-                ?.presentation ?? ''
+              const firstPres = index?.courses.find((c) => c.module === mod)?.presentation ?? ''
               setModule(mod)
               setPresentation(firstPres)
             }}
@@ -134,9 +142,12 @@ export function DashboardView() {
             Week
           </Typography>
           <Slider
-            min={1} max={numWeeks} value={currentWeek}
+            min={1}
+            max={numWeeks}
+            value={currentWeek}
             onChange={(_, v) => setCurrentWeek(v as number)}
-            size="small" sx={{ color: '#1D9E75', flex: 1 }}
+            size="small"
+            sx={{ color: '#1D9E75', flex: 1 }}
           />
           <Typography sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', minWidth: 36 }}>
             {currentWeek}/{numWeeks}
@@ -144,6 +155,7 @@ export function DashboardView() {
         </Box>
       </Toolbar>
 
+      {/* Content */}
       <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
         {(indexLoading || courseLoading) && (
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 3 }}>
@@ -157,6 +169,7 @@ export function DashboardView() {
         {students.length > 0 && (
           <>
             <RiskTilesRow students={students} currentWeek={currentWeek} />
+
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 2, mb: 2, alignItems: 'start' }}>
               <StudentRiskTable
                 students={students}

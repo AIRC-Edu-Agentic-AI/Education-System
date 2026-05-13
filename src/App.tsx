@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
+import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '@mui/material'
+import { useAuth0 } from '@auth0/auth0-react'
 import { Shell } from './shared/components/Shell'
 import { DashboardView } from './modules/dashboard/views/DashboardView'
 import { StudentDetailView } from './modules/student/views/StudentDetailView'
 import { ChatView } from './modules/chat/views/ChatView'
 import { MasteryView } from './modules/mastery/views/MasteryView'
 import { LoginView } from './modules/auth/views/LoginView'
+import { useEffect } from 'react'
 import { useAuthStore } from './shared/stores/authStore'
 
 const queryClient = new QueryClient({
@@ -21,7 +23,9 @@ const theme = createTheme({
     secondary: { main: '#BA7517' },
     background: { default: '#F4F3F0', paper: '#ffffff' },
   },
-  typography: { fontFamily: '"IBM Plex Sans", sans-serif' },
+  typography: {
+    fontFamily: '"IBM Plex Sans", sans-serif',
+  },
   shape: { borderRadius: 8 },
   components: {
     MuiButton: {
@@ -29,14 +33,54 @@ const theme = createTheme({
         root: { textTransform: 'none', fontFamily: '"IBM Plex Sans", sans-serif', fontWeight: 500 },
       },
     },
-    MuiChip: { styleOverrides: { root: { fontFamily: '"IBM Plex Mono", monospace' } } },
-    MuiTableCell: { styleOverrides: { root: { fontFamily: '"IBM Plex Sans", sans-serif' } } },
+    MuiChip: {
+      styleOverrides: { root: { fontFamily: '"IBM Plex Mono", monospace' } },
+    },
+    MuiTableCell: {
+      styleOverrides: { root: { fontFamily: '"IBM Plex Sans", sans-serif' } },
+    },
   },
 })
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const token = useAuthStore((s) => s.token)
-  return token ? <>{children}</> : <Navigate to="/login" replace />
+function AppRoutes() {
+  const { isLoading, isAuthenticated, user, getIdTokenClaims } = useAuth0()
+  const { setUserFromAuth0, clearUser } = useAuthStore()
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      getIdTokenClaims().then((claims) => {
+        setUserFromAuth0(user, claims)
+        
+      })
+    } else {
+      clearUser()
+    }
+  }, [isAuthenticated, user])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <CircularProgress sx={{ color: '#0F6E56' }} />
+      </Box>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <LoginView />
+  }
+
+  return (
+    <Shell>
+      <Routes>
+        <Route path="/" element={<DashboardView />} />
+        <Route path="/student/:id" element={<StudentDetailView />} />
+        <Route path="/student" element={<StudentDetailView />} />
+        <Route path="/mastery" element={<MasteryView />} />
+        <Route path="/chat" element={<ChatView />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Shell>
+  )
 }
 
 export default function App() {
@@ -45,15 +89,7 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginView />} />
-            <Route path="/" element={<PrivateRoute><Shell><DashboardView /></Shell></PrivateRoute>} />
-            <Route path="/student/:id" element={<PrivateRoute><Shell><StudentDetailView /></Shell></PrivateRoute>} />
-            <Route path="/student" element={<PrivateRoute><Shell><StudentDetailView /></Shell></PrivateRoute>} />
-            <Route path="/mastery" element={<PrivateRoute><Shell><MasteryView /></Shell></PrivateRoute>} />
-            <Route path="/chat" element={<PrivateRoute><Shell><ChatView /></Shell></PrivateRoute>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
