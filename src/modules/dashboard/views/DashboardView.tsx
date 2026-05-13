@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   Box, Typography, Select, MenuItem, FormControl, InputLabel,
   Slider, CircularProgress, Alert, Toolbar,
@@ -24,6 +24,7 @@ export function DashboardView() {
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
   const isAdvisor = user?.role === 'academic_advisor'
+  const isAssistant = user?.role === 'teacher_assistant'
 
   // Load index of available courses
   const { data: index, isLoading: indexLoading, error: indexError } = useQuery({
@@ -32,22 +33,28 @@ export function DashboardView() {
     retry: false,
   })
 
+  // Compute allowed courses based on role
+  const allowedCourses = useMemo(() => {
+    if (!index) return []
+    if (isAdmin) return index.courses
+    if (isAdvisor) return index.courses.filter((c) =>
+      user?.years?.some((y) => c.presentation.startsWith(y))
+    )
+    // teacher and teacher_assistant use modules + presentations
+    return index.courses.filter(
+      (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
+    )
+  }, [index, user, isAdmin, isAdvisor])
+
   // Auto-select first allowed course when index loads
   useEffect(() => {
-    if (index && !selectedModule && index.courses.length > 0) {
-      const allowedCourses = (isAdmin || isAdvisor)
-        ? index.courses
-        : index.courses.filter(
-            (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
-          )
+    if (allowedCourses.length > 0 && !selectedModule) {
       const first = allowedCourses[0]
-      if (first) {
-        setModule(first.module)
-        setPresentation(first.presentation)
-        setNumWeeks(first.num_weeks)
-      }
+      setModule(first.module)
+      setPresentation(first.presentation)
+      setNumWeeks(first.num_weeks)
     }
-  }, [index, selectedModule, user])
+  }, [allowedCourses, selectedModule])
 
   // Load course data when module/presentation is selected
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -64,16 +71,10 @@ export function DashboardView() {
   const numWeeks = course?.num_weeks ?? 39
   const students = course?.students ?? []
 
-  // Filtered options based on role
-  const allModules = [...new Set(index?.courses.map((c) => c.module) ?? [])]
-  const moduleOptions = (isAdmin || isAdvisor)
-    ? allModules
-    : allModules.filter((m) => user?.modules?.includes(m))
-
-  const presentationOptions = index?.courses
+  const moduleOptions = [...new Set(allowedCourses.map((c) => c.module))]
+  const presentationOptions = allowedCourses
     .filter((c) => c.module === selectedModule)
-    .filter((c) => (isAdmin || isAdvisor) ? true : user?.presentations?.includes(c.presentation))
-    .map((c) => c.presentation) ?? []
+    .map((c) => c.presentation)
 
   const handleStudentSelect = (s: StudentProfile) => {
     setActiveStudent(s)
@@ -111,7 +112,7 @@ export function DashboardView() {
             label="Module"
             onChange={(e) => {
               const mod = e.target.value
-              const firstPres = index?.courses.find((c) => c.module === mod)?.presentation ?? ''
+              const firstPres = allowedCourses.find((c) => c.module === mod)?.presentation ?? ''
               setModule(mod)
               setPresentation(firstPres)
             }}
