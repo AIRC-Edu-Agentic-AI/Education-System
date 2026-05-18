@@ -1,3 +1,10 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import { theme } from './theme'
+import { Shell } from './shared/components/Shell'
+import { DashboardView } from './modules/dashboard/views/DashboardView'
+import { StudentDetailView } from './modules/student/views/StudentDetailView'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '@mui/material'
@@ -92,7 +99,13 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <AppRoutes />
+          <Shell>
+            <Routes>
+              <Route path="/" element={<DashboardView />} />
+              <Route path="/student/:id" element={<StudentDetailView />} />
+              <Route path="/student" element={<StudentDetailView />} />
+            </Routes>
+          </Shell>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

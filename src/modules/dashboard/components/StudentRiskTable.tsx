@@ -8,19 +8,15 @@ import SearchIcon from '@mui/icons-material/SearchRounded'
 import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded'
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded'
 import RemoveIcon from '@mui/icons-material/RemoveRounded'
-import type { StudentProfile, Tier } from '../../../types/domain'
+import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import { tokens } from '../../../theme'
+import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
   students: StudentProfile[]
   currentWeek: number
   onSelect: (s: StudentProfile) => void
   selectedId: number | null
-}
-
-const TIER_COLORS: Record<Tier, { bg: string; text: string; label: string }> = {
-  1: { bg: '#E1F5EE', text: '#0F6E56', label: 'Tier 1' },
-  2: { bg: '#FAEEDA', text: '#854F0B', label: 'Tier 2' },
-  3: { bg: '#FCEBEB', text: '#A32D2D', label: 'Tier 3' },
 }
 
 function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
@@ -77,15 +73,15 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
 
   const TrendIcon = ({ s }: { s: StudentProfile }) => {
     const t = riskTrend(s, currentWeek)
-    if (t === 'up') return <TrendingUpIcon sx={{ fontSize: 14, color: '#E24B4A' }} />
-    if (t === 'down') return <TrendingDownIcon sx={{ fontSize: 14, color: '#1D9E75' }} />
-    return <RemoveIcon sx={{ fontSize: 14, color: '#9CA3AF' }} />
+    if (t === 'up') return <TrendingUpIcon sx={{ fontSize: 14, color: tokens.brand.danger }} />
+    if (t === 'down') return <TrendingDownIcon sx={{ fontSize: 14, color: tokens.brand.primaryLight }} />
+    return <RemoveIcon sx={{ fontSize: 14, color: tokens.text.muted }} />
   }
 
   return (
     <Box className="dashboard-section-card" sx={{ display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>
           STUDENTS ENROLLED — WEEK {currentWeek}
         </Typography>
         <TextField
@@ -94,8 +90,8 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: '#9CA3AF' }} /></InputAdornment>,
-            sx: { fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', borderRadius: 1.5 },
+            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: 'text.muted' }} /></InputAdornment>,
+            sx: { fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 1.5 },
           }}
           sx={{ width: 240 }}
         />
@@ -116,7 +112,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
               ].map((col) => (
                 <TableCell
                   key={col.label}
-                  sx={{ bgcolor: '#F8F7F4', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', fontWeight: 600, py: 1.5 }}
+                  sx={{ bgcolor: tokens.surface.raised, fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, fontWeight: 600, py: 1.5 }}
                 >
                   {col.id ? (
                     <TableSortLabel
@@ -135,7 +131,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           <TableBody>
             {visibleStudents.map((s) => {
               const risk = s.risk_by_week[weekIdx] ?? 0
-              const tier = (s.tier_by_week[weekIdx] ?? 1) as Tier
+              const tier = (s.tier_by_week[weekIdx] ?? 1) as TierNumber
               const tc = TIER_COLORS[tier]
               const selected = s.id_student === selectedId
               const withdrawn = s.final_result === 'Withdrawn'
@@ -147,38 +143,38 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                   sx={{
                     cursor: 'pointer',
                     opacity: withdrawn ? 0.55 : 1,
-                    bgcolor: selected ? '#F0FDF8' : 'transparent',
-                    '&:hover': { bgcolor: '#F8F7F4' },
+                    bgcolor: selected ? tokens.surface.selected : 'transparent',
+                    '&:hover': { bgcolor: tokens.surface.raised },
                     borderLeft: selected ? '3px solid #1D9E75' : '3px solid transparent',
                   }}
                 >
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, color: '#0A1628' }}>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.text.primary }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                       #{s.id_student}
-                      {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: '#F3F4F6' }} />}
+                      {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: tokens.surface.neutral }} />}
                     </Box>
                   </TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.imd_band}</TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.age_band}</TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.imd_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.age_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
                   <TableCell sx={{ minWidth: 120 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LinearProgress
                         variant="determinate"
                         value={risk * 100}
                         sx={{
-                          flex: 1, height: 6, borderRadius: 3, bgcolor: '#F0EFE9',
+                          flex: 1, height: 6, borderRadius: 3, bgcolor: tokens.surface.subtle,
                           '& .MuiLinearProgress-bar': {
-                            bgcolor: risk < 0.33 ? '#1D9E75' : risk < 0.66 ? '#EF9F27' : '#E24B4A',
+                            bgcolor: risk < 0.33 ? TIER_COLORS[1].solid : risk < 0.66 ? TIER_COLORS[2].solid : TIER_COLORS[3].solid,
                             borderRadius: 3,
                           },
                         }}
                       />
-                      <Typography sx={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', minWidth: 32 }}>{(risk * 100).toFixed(0)}%</Typography>
+                      <Typography sx={{ fontSize: 11, fontFamily: tokens.font.mono, minWidth: 32 }}>{(risk * 100).toFixed(0)}%</Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Chip label={tc.label} size="small" sx={{ bgcolor: tc.bg, color: tc.text, fontSize: 10, height: 18, fontFamily: '"IBM Plex Mono", monospace' }} />
+                    <Chip label={tc.label} size="small" sx={{ bgcolor: tc.subtle, color: tc.text, fontSize: 10, height: 18 }} />
                   </TableCell>
                   <TableCell><TrendIcon s={s} /></TableCell>
                 </TableRow>

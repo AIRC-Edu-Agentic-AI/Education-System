@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import ArrowBackIcon from '@mui/icons-material/ArrowBackRounded'
 import { container } from '../../../di/container'
+import { tokens } from '../../../theme'
 import { useContextStore } from '../../../shared/stores/contextStore'
 import { StudentDemographicsCard } from '../components/StudentDemographicsCard'
 import { RiskTrajectoryChart }     from '../components/RiskTrajectoryChart'
@@ -25,8 +26,8 @@ export function StudentDetailView() {
 
   if (isLoading) return (
     <Box sx={{ display: 'flex', p: 4, gap: 1.5, alignItems: 'center' }}>
-      <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-      <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+      <CircularProgress size={18} sx={{ color: tokens.brand.primaryLight }} />
+      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
         Loading student data…
       </Typography>
     </Box>
@@ -34,7 +35,7 @@ export function StudentDetailView() {
 
   if (!student) return (
     <Box sx={{ p: 4 }}>
-      <Typography sx={{ color: '#E24B4A' }}>Student not found. Select a module/presentation first.</Typography>
+      <Typography sx={{ color: tokens.brand.danger }}>Student not found. Select a module/presentation first.</Typography>
     </Box>
   )
 
@@ -45,15 +46,15 @@ export function StudentDetailView() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <Toolbar sx={{ bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', gap: 2, minHeight: '60px !important', px: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} size="small" sx={{ color: '#6B7280', fontSize: 12 }}>
+      <Toolbar sx={{ bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', gap: 2, px: 3 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} size="small" sx={{ color: tokens.text.secondary, fontSize: 12 }}>
           Overview
         </Button>
-        <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif', flex: 1 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, color: 'text.primary', flex: 1 }}>
           Student #{student.id_student} — {selectedModule} {selectedPresentation}
         </Typography>
         <Button variant="contained" size="small" startIcon={<ChatIcon />} onClick={handleOpenChat}
-          sx={{ fontSize: 12, bgcolor: '#0F6E56', '&:hover': { bgcolor: '#085041' } }}>
+          sx={{ fontSize: 12, bgcolor: tokens.brand.primary, '&:hover': { bgcolor: tokens.brand.primaryDark } }}>
           Discuss with AI
         </Button>
       </Toolbar>

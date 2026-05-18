@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { Box, Typography, CircularProgress, Alert, Toolbar, Grid } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useContextStore } from '../../../shared/stores/contextStore'
 import { useAuthStore } from '../../../shared/stores/authStore'
@@ -86,8 +87,8 @@ export function DashboardView() {
       <Box className="dashboard-content-scroll">
         {courseLoading && (
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', p: 3 }}>
-            <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-            <Typography sx={{ fontSize: 13, color: '#6B7280' }}>Loading course data...</Typography>
+            <CircularProgress size={18} sx={{ color: tokens.brand.primaryLight }} />
+            <Typography sx={{ fontSize: 13, color: tokens.text.secondary }}>Loading course data...</Typography>
           </Box>
         )}
 

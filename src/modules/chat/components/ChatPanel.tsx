@@ -1,11 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
-import {
-  Box, Typography, TextField, IconButton, Chip,
-  CircularProgress, Alert, Paper,
-} from '@mui/material'
+import { Box, Typography, TextField, IconButton, Chip, CircularProgress, Alert, Paper } from '@mui/material'
 import SendIcon from '@mui/icons-material/SendRounded'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineRounded'
 import CloseIcon from '@mui/icons-material/CloseRounded'
+import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useContextStore } from '../../../shared/stores/contextStore'
 import { useChatStore } from '../../../shared/stores/chatStore'
@@ -60,27 +58,14 @@ export function ChatPanel() {
     setError(null)
     setInput('')
 
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: text.trim(),
-      timestamp: new Date(),
-    }
+    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text.trim(), timestamp: new Date() }
     addMessage(userMsg)
-
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-    }
-    addMessage(assistantMsg)
+    addMessage({ id: crypto.randomUUID(), role: 'assistant', content: '', timestamp: new Date() })
     setStreaming(true)
 
     try {
       const ctx = buildContext(selectedModule, selectedPresentation, currentWeek, numWeeks, activeStudent, students)
-      const history = [...messages, userMsg]
-      for await (const chunk of container.agentService.stream(history, ctx)) {
+      for await (const chunk of container.agentService.stream([...messages, userMsg], ctx)) {
         appendToLast(chunk)
       }
     } catch (e) {
@@ -91,82 +76,60 @@ export function ChatPanel() {
     }
   }
 
-  const noData = !selectedModule || !selectedPresentation
-
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#fff' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: tokens.surface.paper }}>
       {/* Header */}
       <Box sx={{
-        px: 2, py: 1.5, borderBottom: '1px solid #E5E3DC', bgcolor: '#fff',
-        display: 'flex', alignItems: 'center', gap: 1, minHeight: 60, flexShrink: 0,
+        px: 2, py: 1.5, borderBottom: `1px solid ${tokens.border.default}`,
+        display: 'flex', alignItems: 'center', gap: 1, minHeight: 52, flexShrink: 0,
       }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 500, color: tokens.text.primary }}>
             AI Advisor
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, mt: 0.25, flexWrap: 'wrap' }}>
             {selectedModule && (
-              <Chip
-                label={`${selectedModule} · Wk ${currentWeek}`}
-                size="small"
-                sx={{ bgcolor: '#E1F5EE', color: '#0F6E56', fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, height: 18 }}
-              />
+              <Chip label={`${selectedModule} · Wk ${currentWeek}`} size="small"
+                sx={{ bgcolor: tokens.brand.primarySubtle, color: tokens.brand.primary, fontSize: 10, height: 18 }} />
             )}
             {activeStudent && (
-              <Chip
-                label={`#${activeStudent.id_student}`}
-                size="small"
+              <Chip label={`#${activeStudent.id_student}`} size="small"
                 onDelete={() => useContextStore.getState().setActiveStudent(null)}
-                sx={{ bgcolor: '#FAEEDA', color: '#854F0B', fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, height: 18 }}
-              />
+                sx={{ bgcolor: tokens.brand.secondarySubtle, color: tokens.brand.secondaryText, fontSize: 10, height: 18 }} />
             )}
           </Box>
         </Box>
-        <IconButton size="small" onClick={clearMessages} title="Clear conversation" sx={{ color: '#9CA3AF' }}>
+        <IconButton size="small" onClick={clearMessages} title="Clear conversation" sx={{ color: tokens.text.muted }}>
           <DeleteOutlineIcon sx={{ fontSize: 16 }} />
         </IconButton>
-        <IconButton size="small" onClick={() => setChatPanelOpen(false)} sx={{ color: '#9CA3AF' }}>
+        <IconButton size="small" onClick={() => setChatPanelOpen(false)} sx={{ color: tokens.text.muted }}>
           <CloseIcon sx={{ fontSize: 16 }} />
         </IconButton>
       </Box>
 
       {/* Messages */}
       <Box sx={{ flex: 1, overflow: 'auto', p: 2, pb: 1 }}>
-        {noData && (
+        {!selectedModule && (
           <Alert severity="info" sx={{ borderRadius: 2, mb: 2, fontSize: 12 }}>
             Select a module in Class Overview to give the AI course context.
           </Alert>
         )}
-
         {error && (
-          <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
+          <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }} onClose={() => setError(null)}>{error}</Alert>
         )}
 
         {messages.length === 0 && (
           <Box sx={{ pt: 3 }}>
-            <Typography sx={{ fontSize: 12, color: '#9CA3AF', fontFamily: '"IBM Plex Sans", sans-serif', mb: 2, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 12, color: tokens.text.muted, mb: 2, textAlign: 'center' }}>
               Ask about risk, interventions, or engagement.
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {SUGGESTED_PROMPTS.map((p) => (
-                <Box
-                  key={p}
-                  onClick={() => sendMessage(p)}
-                  sx={{
-                    fontSize: 12,
-                    fontFamily: '"IBM Plex Sans", sans-serif',
-                    bgcolor: '#F8F7F4',
-                    border: '1px solid #E5E3DC',
-                    borderRadius: 1.5,
-                    px: 1.5,
-                    py: 1,
-                    cursor: 'pointer',
-                    color: '#374151',
-                    '&:hover': { bgcolor: '#F0EFE9' },
-                  }}
-                >
+                <Box key={p} onClick={() => sendMessage(p)} sx={{
+                  fontSize: 12, bgcolor: tokens.surface.raised, border: `1px solid ${tokens.border.default}`,
+                  borderRadius: 1.5, px: 1.5, py: 1, cursor: 'pointer', color: tokens.text.primary,
+                  '&:hover': { bgcolor: tokens.surface.subtle },
+                }}>
                   {p}
                 </Box>
               ))}
@@ -175,54 +138,31 @@ export function ChatPanel() {
         )}
 
         {messages.map((msg, i) => (
-          <MessageBubble
-            key={msg.id}
-            message={msg}
-            isStreaming={isStreaming && i === messages.length - 1 && msg.role === 'assistant'}
-          />
+          <MessageBubble key={msg.id} message={msg}
+            isStreaming={isStreaming && i === messages.length - 1 && msg.role === 'assistant'} />
         ))}
         <div ref={bottomRef} />
       </Box>
 
       {/* Input */}
-      <Paper
-        elevation={0}
-        sx={{ p: 1.5, borderTop: '1px solid #E5E3DC', bgcolor: '#fff', display: 'flex', gap: 1, alignItems: 'flex-end', flexShrink: 0 }}
-      >
+      <Paper elevation={0} sx={{ p: 1.5, borderTop: `1px solid ${tokens.border.default}`, display: 'flex', gap: 1, alignItems: 'flex-end', flexShrink: 0 }}>
         <TextField
-          multiline
-          maxRows={4}
-          fullWidth
+          multiline maxRows={4} fullWidth size="small"
           placeholder="Ask about your students…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
           disabled={isStreaming}
-          size="small"
-          sx={{
-            '& .MuiOutlinedInput-root': { borderRadius: 1.5, fontSize: 12, fontFamily: '"IBM Plex Sans", sans-serif' },
-          }}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5, fontSize: 12, fontFamily: tokens.font.sans } }}
         />
-        <IconButton
-          onClick={() => sendMessage(input)}
-          disabled={isStreaming || !input.trim()}
+        <IconButton onClick={() => sendMessage(input)} disabled={isStreaming || !input.trim()}
           sx={{
-            bgcolor: '#0F6E56',
-            color: '#fff',
-            borderRadius: 1.5,
-            width: 36,
-            height: 36,
-            flexShrink: 0,
-            '&:hover': { bgcolor: '#085041' },
-            '&.Mui-disabled': { bgcolor: '#E5E3DC', color: '#9CA3AF' },
+            bgcolor: tokens.brand.primary, color: '#fff', borderRadius: 1.5, width: 36, height: 36, flexShrink: 0,
+            '&:hover': { bgcolor: tokens.brand.primaryDark },
+            '&.Mui-disabled': { bgcolor: tokens.border.default, color: tokens.text.muted },
           }}
         >
-          {isStreaming
-            ? <CircularProgress size={14} sx={{ color: '#fff' }} />
-            : <SendIcon sx={{ fontSize: 16 }} />
-          }
+          {isStreaming ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : <SendIcon sx={{ fontSize: 16 }} />}
         </IconButton>
       </Paper>
     </Box>

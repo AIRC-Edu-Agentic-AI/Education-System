@@ -3,17 +3,13 @@ import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
-import type { StudentProfile, Tier } from '../../../types/domain'
+import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import { tokens } from '../../../theme'
+import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
   student: StudentProfile
   currentWeek: number
-}
-
-const TIER_COLORS: Record<Tier, { bg: string; text: string }> = {
-  1: { bg: '#E1F5EE', text: '#0F6E56' },
-  2: { bg: '#FAEEDA', text: '#854F0B' },
-  3: { bg: '#FCEBEB', text: '#A32D2D' },
 }
 
 // Pick the freshest LSTM horizon whose training cutoff ≤ currentWeek.
@@ -26,7 +22,7 @@ function pickHorizon(currentWeek: number): 'w05' | 'w10' | 'w15' | 'w20' | 'w25'
   return 'w05'
 }
 
-function riskToTier(risk: number): Tier {
+function riskToTier(risk: number): TierNumber {
   if (risk < 0.33) return 1
   if (risk < 0.66) return 2
   return 3
@@ -41,7 +37,7 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
   const trajectory: (number | null)[] = traj?.[horizon] ?? student.risk_by_week
 
   const risk = trajectory[weekIdx] ?? 0
-  const tier = riskToTier(risk)
+  const tier = riskToTier(risk) as TierNumber
   const tc   = TIER_COLORS[tier]
 
   // CWS(w) = Σ(score × weight, on-time by w) / Σ(weight, due by w) × 100
@@ -72,53 +68,53 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
   })
 
   return (
-    <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC' }}>
+    <Card elevation={0} sx={{ borderRadius: 2 }}>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Box>
-            <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+            <Typography sx={{ fontSize: 11, color: tokens.text.secondary, fontFamily: tokens.font.mono }}>
               Risk score — Week {currentWeek}
             </Typography>
-            <Typography sx={{ fontSize: 32, fontWeight: 600, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: 32, fontWeight: 600, fontFamily: tokens.font.mono, color: tokens.text.primary, lineHeight: 1.2 }}>
               {(risk * 100).toFixed(0)}%
             </Typography>
           </Box>
-          <Chip label={`Tier ${tier}`} sx={{ bgcolor: tc.bg, color: tc.text, fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
+          <Chip label={tc.label} sx={{ bgcolor: tc.subtle, color: tc.text, fontWeight: 500, fontSize: 13 }} />
           <Chip
             label={`LSTM ${horizon.replace('w', 'W')}`}
-            sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}
+            sx={{ bgcolor: tokens.surface.neutral, color: tokens.text.secondary, fontSize: 11 }}
           />
           {student.final_result === 'Withdrawn' && (
-            <Chip label="Withdrawn" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
+            <Chip label="Withdrawn" sx={{ bgcolor: tokens.surface.neutral, color: tokens.text.secondary, fontWeight: 500, fontSize: 13 }} />
           )}
         </Box>
 
-        <Typography sx={{ fontSize: 12, fontWeight: 500, color: '#0A1628', mb: 1 }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 500, color: tokens.text.primary, mb: 1 }}>
           Risk trajectory &amp; weighted score
         </Typography>
 
         <ResponsiveContainer width="100%" height={180}>
           <ComposedChart data={data} margin={{ top: 4, right: 36, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0EFE9" />
-            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
-            <YAxis yAxisId="left"  domain={[0, 1]}   tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
-            <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} tickFormatter={(v) => `${v}%`} />
+            <CartesianGrid strokeDasharray="3 3" stroke={tokens.surface.subtle} />
+            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
+            <YAxis yAxisId="left"  domain={[0, 1]}   tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
+            <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 10, fontFamily: tokens.font.mono }} tickFormatter={(v) => `${v}%`} />
             <Tooltip
-              contentStyle={{ fontSize: 12, fontFamily: '"IBM Plex Mono"', borderRadius: 8 }}
+              contentStyle={{ fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 8 }}
               labelFormatter={(v) => `Week ${v}`}
               formatter={(value: number, name: string) => {
                 if (name === 'riskSolid' || name === 'Risk') return [`${(value * 100).toFixed(0)}%`, 'Risk']
                 return [`${value.toFixed(1)}%`, 'Weighted score']
               }}
             />
-            <Legend iconType="plainline" wrapperStyle={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace' }}
+            <Legend iconType="plainline" wrapperStyle={{ fontSize: 11, fontFamily: tokens.font.mono }}
               formatter={(v) => v === 'Risk' ? 'Risk (LSTM)' : 'Weighted score'} />
-            <ReferenceLine yAxisId="left" y={0.33} stroke="#1D9E75" strokeDasharray="3 3" />
-            <ReferenceLine yAxisId="left" y={0.66} stroke="#EF9F27" strokeDasharray="3 3" />
-            <ReferenceLine yAxisId="left" x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} />
-            <Bar yAxisId="right" dataKey="cws" name="Weighted score" fill="#6366F1" fillOpacity={0.25} radius={[2, 2, 0, 0]} />
-            <Line yAxisId="left" type="monotone" dataKey="riskSolid"  name="riskSolid" stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} legendType="none" />
-            <Line yAxisId="left" type="monotone" dataKey="riskDotted" name="Risk"       stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} strokeDasharray="5 3" />
+            <ReferenceLine yAxisId="left" y={0.33} stroke={tokens.brand.primaryLight} strokeDasharray="3 3" />
+            <ReferenceLine yAxisId="left" y={0.66} stroke={tokens.brand.secondary} strokeDasharray="3 3" />
+            <ReferenceLine yAxisId="left" x={currentWeek} stroke={tokens.text.primary} strokeDasharray="4 3" strokeWidth={1.5} />
+            <Bar yAxisId="right" dataKey="cws" name="Weighted score" fill={tokens.chart.indigo} fillOpacity={0.25} radius={[2, 2, 0, 0]} />
+            <Line yAxisId="left" type="monotone" dataKey="riskSolid"  name="riskSolid" stroke={tokens.text.primary} strokeWidth={2} dot={false} connectNulls={false} legendType="none" />
+            <Line yAxisId="left" type="monotone" dataKey="riskDotted" name="Risk"       stroke={tokens.text.primary} strokeWidth={2} dot={false} connectNulls={false} strokeDasharray="5 3" />
           </ComposedChart>
         </ResponsiveContainer>
       </CardContent>
