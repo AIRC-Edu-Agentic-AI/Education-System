@@ -39,7 +39,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           },
         }}
       >
-        <Toolbar sx={{ px: 2, py: 1.5, minHeight: '60px !important' }}>
+        <Toolbar sx={{ px: 2, py: 1.5 }}>
           <Box>
             <Typography
               sx={{
