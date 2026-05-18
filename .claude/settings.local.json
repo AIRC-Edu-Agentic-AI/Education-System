@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Remove-Item \"c:\\\\Users\\\\quock\\\\Documents\\\\Projects\\\\teacher-dashboard\\\\src\\\\modules\\\\mastery\\\\views\\\\MasteryView.tsx\")"
+    ]
+  }
+}

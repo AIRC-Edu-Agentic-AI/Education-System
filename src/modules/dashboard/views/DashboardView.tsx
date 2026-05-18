@@ -1,8 +1,5 @@
 import { useEffect } from 'react'
-import {
-  Box, Typography, Select, MenuItem, FormControl, InputLabel,
-  Slider, CircularProgress, Alert, Toolbar,
-} from '@mui/material'
+import { Box, Typography, CircularProgress, Alert, Toolbar } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { container } from '../../../di/container'
@@ -15,48 +12,26 @@ import type { StudentProfile } from '../../../types/domain'
 
 export function DashboardView() {
   const navigate = useNavigate()
-  const {
-    selectedModule, selectedPresentation, currentWeek,
-    setModule, setPresentation, setCurrentWeek, setNumWeeks, setActiveStudent,
-  } = useContextStore()
+  const { selectedModule, selectedPresentation, currentWeek, setNumWeeks, setActiveStudent } = useContextStore()
 
-  // Load index of available courses
-  const { data: index, isLoading: indexLoading, error: indexError } = useQuery({
+  const { error: indexError } = useQuery({
     queryKey: ['oulad-index'],
     queryFn: () => container.dataService.getIndex(),
     retry: false,
   })
 
-  // Auto-select first course when index loads
-  useEffect(() => {
-    if (index && !selectedModule && index.courses.length > 0) {
-      const first = index.courses[0]
-      setModule(first.module)
-      setPresentation(first.presentation)
-      setNumWeeks(first.num_weeks)
-    }
-  }, [index, selectedModule, setModule, setPresentation, setNumWeeks])
-
-  // Load course data when module/presentation is selected
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', selectedModule, selectedPresentation],
     queryFn: () => container.dataService.getCourse(selectedModule, selectedPresentation),
     enabled: !!selectedModule && !!selectedPresentation,
   })
 
-  // Update numWeeks when course loads
   useEffect(() => {
     if (course) setNumWeeks(course.num_weeks)
   }, [course, setNumWeeks])
 
   const numWeeks = course?.num_weeks ?? 39
   const students = course?.students ?? []
-
-  // Grouped presentations by module
-  const moduleOptions = [...new Set(index?.courses.map((c) => c.module) ?? [])]
-  const presentationOptions = index?.courses
-    .filter((c) => c.module === selectedModule)
-    .map((c) => c.presentation) ?? []
 
   const handleStudentSelect = (s: StudentProfile) => {
     setActiveStudent(s)
@@ -76,71 +51,14 @@ export function DashboardView() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      {/* Header toolbar */}
-      <Toolbar
-        sx={{
-          bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', gap: 2, flexWrap: 'wrap',
-          minHeight: '60px !important', px: 3, py: 1,
-        }}
-      >
-        <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif', mr: 1 }}>
+      <Toolbar sx={{ bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', minHeight: '52px !important', px: 3 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
           Class Overview
         </Typography>
-
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ fontSize: 12 }}>Module</InputLabel>
-          <Select
-            value={selectedModule}
-            label="Module"
-            onChange={(e) => {
-              const mod = e.target.value
-              const firstPres = index?.courses.find((c) => c.module === mod)?.presentation ?? ''
-              setModule(mod)
-              setPresentation(firstPres)
-            }}
-            sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {moduleOptions.map((m) => (
-              <MenuItem key={m} value={m} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{m}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ fontSize: 12 }}>Presentation</InputLabel>
-          <Select
-            value={selectedPresentation}
-            label="Presentation"
-            onChange={(e) => setPresentation(e.target.value)}
-            sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {presentationOptions.map((p) => (
-              <MenuItem key={p} value={p} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{p}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 240 }}>
-          <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', whiteSpace: 'nowrap' }}>
-            Week
-          </Typography>
-          <Slider
-            min={1}
-            max={numWeeks}
-            value={currentWeek}
-            onChange={(_, v) => setCurrentWeek(v as number)}
-            size="small"
-            sx={{ color: '#1D9E75', flex: 1 }}
-          />
-          <Typography sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', minWidth: 36 }}>
-            {currentWeek}/{numWeeks}
-          </Typography>
-        </Box>
       </Toolbar>
 
-      {/* Content */}
       <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-        {(indexLoading || courseLoading) && (
+        {courseLoading && (
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 3 }}>
             <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
             <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>

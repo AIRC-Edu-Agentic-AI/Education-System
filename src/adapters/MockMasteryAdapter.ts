@@ -1,5 +1,5 @@
 import type { MasteryService } from '../ports/MasteryService'
-import type { ConceptGraph, ConceptNode, ConceptEdge } from '../types/domain'
+import type { AssessmentRecord, ConceptGraph, ConceptNode, ConceptEdge } from '../types/domain'
 
 // Domain templates keyed by first letter of module code
 const DOMAINS: Record<string, { name: string; nodes: Omit<ConceptNode, 'mastery' | 'confidence' | 'evidence_count'>[] ; edges: ConceptEdge[] }> = {
@@ -79,28 +79,54 @@ function domainFor(module: string): typeof DOMAINS['STEM'] {
   return DOMAINS.GENERIC
 }
 
-// Seeded pseudo-random for deterministic scores
-function seededRand(seed: number): number {
+// Small seeded noise for per-concept variation within the same group
+function seededNoise(seed: number): number {
   const x = Math.sin(seed) * 10000
-  return x - Math.floor(x)
+  return (x - Math.floor(x)) * 0.14 - 0.07
+}
+
+// Weighted average score for a subset of assessments, normalised to [0, 1]
+function weightedAvg(rows: AssessmentRecord[]): number | null {
+  const scored = rows.filter((a) => a.score !== null)
+  if (scored.length === 0) return null
+  const totalW = scored.reduce((s, a) => s + (a.weight ?? 1), 0)
+  if (totalW === 0) return null
+  return scored.reduce((s, a) => s + (a.score ?? 0) * (a.weight ?? 1), 0) / totalW / 100
 }
 
 export class MockMasteryAdapter implements MasteryService {
-  async getConceptGraph(studentId: number, module: string): Promise<ConceptGraph> {
+  async getConceptGraph(studentId: number, module: string, assessments: AssessmentRecord[] = []): Promise<ConceptGraph> {
     const domain = domainFor(module)
-    const base = seededRand(studentId) // student's overall mastery "level"
+
+    // Exclude phantom exams (weight 100, no result)
+    const real = assessments.filter((a) => !(a.weight === 100 && a.score === null))
+
+    // Per-type performance: CMA = formative, TMA = coursework, Exam = summative
+    const byType = (type: string) =>
+      real.filter((a) => a.assessment_type.toUpperCase() === type)
+
+    const cmaPerf  = weightedAvg(byType('CMA'))
+    const tmaPerf  = weightedAvg(byType('TMA'))
+    const examPerf = weightedAvg(byType('EXAM'))
+    const overall  = weightedAvg(real) ?? 0.5
+
+    // topic_group 1 (foundations) → CMA, group 2 (applied) → TMA, group 3 (advanced) → Exam
+    const groupBase = (group: number) => {
+      if (group === 1) return cmaPerf  ?? overall
+      if (group === 2) return tmaPerf  ?? overall
+      return               examPerf ?? overall
+    }
+
+    const evidence_count = real.filter((a) => a.score !== null).length
 
     const nodes: ConceptNode[] = domain.nodes.map((n, i) => {
-      // Prerequisites mastered better than dependents; add per-concept noise
-      const groupPenalty = (n.topic_group - 1) * 0.1
-      const noise = seededRand(studentId * 31 + i * 7) * 0.3 - 0.15
-      const mastery = Math.max(0.1, Math.min(0.98, base + 0.15 - groupPenalty + noise))
-      const evidence_count = Math.round(2 + seededRand(studentId + i) * 10)
+      const noise = seededNoise(studentId * 31 + i * 7)
+      const mastery = Math.max(0.05, Math.min(0.98, groupBase(n.topic_group) + noise))
       return {
         ...n,
         mastery: Math.round(mastery * 100) / 100,
-        confidence: Math.min(1, evidence_count / 12),
         evidence_count,
+        confidence: Math.min(1, evidence_count / 8),
       }
     })
 

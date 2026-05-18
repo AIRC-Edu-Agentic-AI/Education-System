@@ -1,8 +1,5 @@
 import { Card, CardContent, Typography } from '@mui/material'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine,
-} from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -11,7 +8,7 @@ interface Props {
 }
 
 export function VleActivityChart({ student, currentWeek }: Props) {
-  const data = student.weekly_clicks.map((clicks, i) => ({ week: i + 1, clicks }))
+  const data = student.weekly_clicks.map((c, i) => ({ week: i + 1, clicks: c }))
 
   return (
     <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC' }}>

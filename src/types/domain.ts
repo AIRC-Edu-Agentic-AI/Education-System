@@ -85,8 +85,15 @@ export interface StudentProfile {
   weekly_clicks: number[]
   decayed_engagement: number[]
   assessments: AssessmentRecord[]
-  risk_by_week: number[]
-  tier_by_week: Tier[]
+  risk_by_week: (number | null)[]
+  tier_by_week: (Tier | null)[]
+  lstm_trajectories: {
+    w05: (number | null)[]
+    w10: (number | null)[]
+    w15: (number | null)[]
+    w20: (number | null)[]
+    w25: (number | null)[]
+  } | null
 }
 
 export interface CourseIndex {

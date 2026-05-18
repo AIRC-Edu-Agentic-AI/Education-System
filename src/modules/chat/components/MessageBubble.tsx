@@ -1,3 +1,5 @@
+import './MessageBubble.css'
+import ReactMarkdown from 'react-markdown'
 import { Box, Typography } from '@mui/material'
 import type { ChatMessage } from '../../../types/domain'
 
@@ -58,7 +60,11 @@ export function MessageBubble({ message, isStreaming }: Props) {
             whiteSpace: 'pre-wrap',
           }}
         >
-          {message.content}
+        {isUser ? message.content : (
+                  <div className="chat-bubble ai-message">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                )}
           {isStreaming && (
             <Box
               component="span"

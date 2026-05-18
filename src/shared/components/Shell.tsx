@@ -1,24 +1,28 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Toolbar, Typography, Divider, Chip, Tooltip,
+  Toolbar, Typography, Divider, Chip, Tooltip, IconButton,
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
+import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import { moduleRegistry } from '../../modules/registry'
 import { useContextStore } from '../stores/contextStore'
+import { ChatPanel } from '../../modules/chat/components/ChatPanel'
+import { ContextBar } from './ContextBar'
 
-const DRAWER_WIDTH = 220
+const DRAWER_WIDTH   = 220
+const CHAT_WIDTH     = 360
 
 export function Shell({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { selectedModule, selectedPresentation, currentWeek, activeStudent } = useContextStore()
+  const location  = useLocation()
+  const navigate  = useNavigate()
+  const { selectedModule, selectedPresentation, currentWeek, activeStudent, chatPanelOpen, setChatPanelOpen } = useContextStore()
 
   const hasData = selectedModule && selectedPresentation
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#F4F3F0' }}>
-      {/* Sidebar */}
+      {/* Left nav */}
       <Drawer
         variant="permanent"
         sx={{
@@ -84,7 +88,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {/* Navigation */}
         <List dense sx={{ px: 1, py: 1, flexGrow: 1 }}>
           {moduleRegistry.map((mod) => {
-            const active = location.pathname.startsWith(mod.path)
+            const active = location.pathname === '/' ? mod.path === '/' : location.pathname.startsWith(mod.path) && mod.path !== '/'
             return (
               <Tooltip
                 key={mod.id}
@@ -124,6 +128,34 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </List>
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
+
+        {/* AI Advisor toggle */}
+        <Box sx={{ px: 1, py: 1 }}>
+          <ListItemButton
+            onClick={() => setChatPanelOpen(!chatPanelOpen)}
+            sx={{
+              borderRadius: 1.5,
+              bgcolor: chatPanelOpen ? '#1D9E7514' : 'transparent',
+              borderLeft: chatPanelOpen ? '2px solid #1D9E75' : '2px solid transparent',
+              '&:hover': { bgcolor: '#1E2D45' },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 32, color: chatPanelOpen ? '#5DCAA5' : '#6B7280' }}>
+              <ChatIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="AI advisor"
+              primaryTypographyProps={{
+                fontSize: 13,
+                fontFamily: '"IBM Plex Sans", sans-serif',
+                color: chatPanelOpen ? '#fff' : '#9CA3AF',
+                fontWeight: chatPanelOpen ? 500 : 400,
+              }}
+            />
+          </ListItemButton>
+        </Box>
+
+        <Divider sx={{ borderColor: '#1E2D45' }} />
         <Box sx={{ px: 2, py: 1.5 }}>
           <Typography sx={{ fontSize: 10, color: '#374151', fontFamily: '"IBM Plex Mono", monospace' }}>
             OULAD · Pilot v0.1
@@ -132,8 +164,29 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </Drawer>
 
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-        {children}
+      <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <ContextBar />
+
+        <Box sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex' }}>
+          <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {children}
+          </Box>
+
+          {/* Chat panel — always mounted so messages and scroll persist */}
+          <Box
+            sx={{
+              width: chatPanelOpen ? CHAT_WIDTH : 0,
+              flexShrink: 0,
+              overflow: 'hidden',
+              transition: 'width 0.22s ease',
+              borderLeft: chatPanelOpen ? '1px solid #E5E3DC' : 'none',
+            }}
+          >
+            <Box sx={{ width: CHAT_WIDTH, height: '100%' }}>
+              <ChatPanel />
+            </Box>
+          </Box>
+        </Box>
       </Box>
     </Box>
   )

@@ -22,9 +22,12 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-ROOT    = Path(__file__).resolve().parents[2]
-CSV_DIR = ROOT / "public" / "data" / "oulad"
-OUT_DIR = ROOT / "public" / "processed"
+ROOT     = Path(__file__).resolve().parents[2]
+CSV_DIR  = ROOT / "public" / "data" / "oulad"
+OUT_DIR  = ROOT / "public" / "processed"
+LSTM_TRAJ_CSV  = OUT_DIR / "lstm_trajectory_table.csv"
+LSTM_HORIZONS  = ["w05", "w10", "w15", "w20", "w25"]   # column suffix order
+HORIZON_CUTOFF = [5, 10, 15, 20, 25]                    # week at which each model activates
 
 DECAY_LAMBDA = 0.15
 
@@ -142,7 +145,37 @@ def process_course(bundle: dict) -> tuple[str, dict | None]:
                 sc.loc[has_ds, "aidx"].to_numpy(),
             ] = sc.loc[has_ds, "date_submitted"].to_numpy(dtype=np.float32)
 
+    # ── LSTM trajectory matrices (one per horizon) ───────────────────────────
+    # traj_mats[h] = S × T array for horizon LSTM_HORIZONS[h]
+    traj_mats: list[np.ndarray] = [np.full((S, T), np.nan, dtype=np.float32) for _ in LSTM_HORIZONS]
+
+    if bundle.get("lstm_risks"):
+        lr = pd.DataFrame(bundle["lstm_risks"])
+        lr["sidx"] = lr["id_student"].map(sid_idx)
+        lr = lr.dropna(subset=["sidx"])
+        lr["sidx"] = lr["sidx"].astype(np.int32)
+        lr = lr[(lr["week"] >= 0) & (lr["week"] < T)]
+        rows = lr["sidx"].to_numpy()
+        cols = lr["week"].to_numpy(dtype=np.int32)
+        for h, hz in enumerate(LSTM_HORIZONS):
+            col = f"risk_{hz}"
+            if col in lr.columns:
+                traj_mats[h][rows, cols] = lr[col].to_numpy(dtype=np.float32)
+
+    # lstm_mat: at each week use the freshest horizon whose cutoff <= week+1,
+    # else fall back to the earliest horizon (w05).
+    lstm_mat = np.full((S, T), np.nan, dtype=np.float32)
+    for w in range(T):
+        current_week_1 = w + 1   # 1-indexed week number
+        # pick the highest horizon whose cutoff does not exceed current week
+        h_idx = 0
+        for h, cutoff in enumerate(HORIZON_CUTOFF):
+            if current_week_1 >= cutoff:
+                h_idx = h
+        lstm_mat[:, w] = traj_mats[h_idx][:, w]
+
     # ── Vectorised risk & tier (S × T) ───────────────────────────────────────
+    # LSTM predictions take priority; heuristic fills any remaining gaps.
     risk_mat = np.full((S, T), np.nan, dtype=np.float32)
     tier_mat = np.full((S, T), np.nan, dtype=np.float32)
 
@@ -172,10 +205,13 @@ def process_course(bundle: dict) -> tuple[str, dict | None]:
             a_perf   = np.zeros(S, dtype=np.float32)
             sub_rate = np.zeros(S, dtype=np.float32)
 
-        risk_w = np.round(
-            np.clip(1.0 - (0.45 * a_perf + 0.35 * engagement + 0.20 * sub_rate), 0.0, 1.0), 4
+        heuristic_w = np.clip(
+            1.0 - (0.45 * a_perf + 0.35 * engagement + 0.20 * sub_rate), 0.0, 1.0
         )
-        tier_w = np.where(risk_w < 0.33, 1, np.where(risk_w < 0.66, 2, 3))
+
+        has_lstm = ~np.isnan(lstm_mat[:, w])
+        risk_w   = np.round(np.where(has_lstm, lstm_mat[:, w], heuristic_w), 4)
+        tier_w   = np.where(risk_w < 0.33, 1, np.where(risk_w < 0.66, 2, 3))
 
         risk_mat[active_w, w] = risk_w[active_w]
         tier_mat[active_w, w] = tier_w[active_w]
@@ -199,6 +235,9 @@ def process_course(bundle: dict) -> tuple[str, dict | None]:
                 })
 
         ud = int(unreg_day_out[i])
+        def _traj(arr: np.ndarray) -> list:
+            return [None if math.isnan(float(v)) else round(float(v), 4) for v in arr]
+
         processed_students.append({
             "id_student":           int(srow.id_student),
             "gender":               str(srow.gender),
@@ -215,8 +254,11 @@ def process_course(bundle: dict) -> tuple[str, dict | None]:
             "assessments":          student_assessments,
             "weekly_clicks":        [int(v) for v in clicks_mat[i]],
             "decayed_engagement":   [round(float(v), 4) for v in decayed_mat[i]],
-            "risk_by_week":         [None if math.isnan(float(v)) else round(float(v), 4) for v in risk_mat[i]],
+            "risk_by_week":         _traj(risk_mat[i]),
             "tier_by_week":         [None if math.isnan(float(v)) else int(v) for v in tier_mat[i]],
+            "lstm_trajectories": {
+                hz: _traj(traj_mats[h][i]) for h, hz in enumerate(LSTM_HORIZONS)
+            },
         })
 
     return key, {
@@ -244,6 +286,17 @@ if __name__ == "__main__":
     reg_df      = pd.read_csv(csv_path("studentRegistration.csv"))
     assess_df   = pd.read_csv(csv_path("assessments.csv"))
     stu_ass_df  = pd.read_csv(csv_path("studentAssessment.csv"))
+
+    # Load LSTM trajectory table
+    lstm_by_course: dict[str, list[dict]] = {}
+    traj_cols = ["id_student", "week"] + [f"risk_{hz}" for hz in LSTM_HORIZONS]
+    if LSTM_TRAJ_CSV.exists():
+        lstm_df = pd.read_csv(LSTM_TRAJ_CSV, usecols=["code_module", "code_presentation"] + traj_cols)
+        for (mod, pres), grp in lstm_df.groupby(["code_module", "code_presentation"]):
+            lstm_by_course[f"{mod}_{pres}"] = grp[traj_cols].to_dict("records")
+        print(f"  → Loaded {len(lstm_df):,} LSTM trajectory rows across {len(lstm_by_course)} courses")
+    else:
+        print(f"  ⚠️  {LSTM_TRAJ_CSV.name} not found — using heuristic risk for all courses")
 
     # VLE: single vectorised groupby (replaces chunk streaming loop)
     print("  Aggregating studentVle.csv…", flush=True)
@@ -295,6 +348,7 @@ if __name__ == "__main__":
                                stu_ass_df["id_student"].isin(sids) &
                                stu_ass_df["id_assessment"].isin(aids)
                            ][["id_student", "id_assessment", "score", "date_submitted"]].to_dict("records"),
+            "lstm_risks":  lstm_by_course.get(f"{mod}_{pres}", []),
         })
 
     # Process all courses in parallel

@@ -9,6 +9,8 @@ import { StudentDemographicsCard } from '../components/StudentDemographicsCard'
 import { RiskTrajectoryChart }     from '../components/RiskTrajectoryChart'
 import { VleActivityChart }        from '../components/VleActivityChart'
 import { AssessmentPanel }         from '../components/AssessmentPanel'
+import { StudentNotesCard }        from '../components/StudentNotesCard'
+import { MasteryGraphCard }        from '../components/MasteryGraphCard'
 
 export function StudentDetailView() {
   const { id } = useParams<{ id: string }>()
@@ -59,7 +61,14 @@ export function StudentDetailView() {
       <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
-            <StudentDemographicsCard student={student} />
+            <Grid container spacing={2} sx={{ height: '100%' }}>
+              <Grid item xs={12}>
+                <StudentDemographicsCard student={student} />
+              </Grid>
+              <Grid item xs={12}>
+                <StudentNotesCard studentId={student.id_student} />
+              </Grid>
+            </Grid>
           </Grid>
 
           <Grid item xs={12} md={8}>
@@ -72,6 +81,9 @@ export function StudentDetailView() {
               </Grid>
               <Grid item xs={12}>
                 <AssessmentPanel student={student} currentWeek={currentWeek} />
+              </Grid>
+              <Grid item xs={12}>
+                <MasteryGraphCard student={student} module={selectedModule} />
               </Grid>
             </Grid>
           </Grid>

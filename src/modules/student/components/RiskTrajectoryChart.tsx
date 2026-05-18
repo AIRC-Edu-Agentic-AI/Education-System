@@ -16,6 +16,8 @@ const TIER_COLORS: Record<Tier, { bg: string; text: string }> = {
   3: { bg: '#FCEBEB', text: '#A32D2D' },
 }
 
+// Pick the freshest LSTM horizon whose training cutoff ≤ currentWeek.
+// Horizons: w05 activates at week 5, w10 at 10, etc.
 function pickHorizon(currentWeek: number): 'w05' | 'w10' | 'w15' | 'w20' | 'w25' {
   if (currentWeek >= 25) return 'w25'
   if (currentWeek >= 20) return 'w20'
@@ -32,13 +34,17 @@ function riskToTier(risk: number): Tier {
 
 export function RiskTrajectoryChart({ student, currentWeek }: Props) {
   const weekIdx = Math.max(0, currentWeek - 1)
+
+  // Select the appropriate LSTM trajectory column
+  const traj = student.lstm_trajectories
   const horizon = pickHorizon(currentWeek)
-  const trajectory: (number | null)[] = student.lstm_trajectories?.[horizon] ?? student.risk_by_week
+  const trajectory: (number | null)[] = traj?.[horizon] ?? student.risk_by_week
 
   const risk = trajectory[weekIdx] ?? 0
   const tier = riskToTier(risk)
   const tc   = TIER_COLORS[tier]
 
+  // CWS(w) = Σ(score × weight, on-time by w) / Σ(weight, due by w) × 100
   const data = trajectory.map((r, i) => {
     const week    = i + 1
     const isPast  = week <= currentWeek
@@ -78,7 +84,10 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
             </Typography>
           </Box>
           <Chip label={`Tier ${tier}`} sx={{ bgcolor: tc.bg, color: tc.text, fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
-          <Chip label={`LSTM ${horizon.replace('w', 'W')}`} sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }} />
+          <Chip
+            label={`LSTM ${horizon.replace('w', 'W')}`}
+            sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}
+          />
           {student.final_result === 'Withdrawn' && (
             <Chip label="Withdrawn" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
           )}
@@ -107,9 +116,9 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
             <ReferenceLine yAxisId="left" y={0.33} stroke="#1D9E75" strokeDasharray="3 3" />
             <ReferenceLine yAxisId="left" y={0.66} stroke="#EF9F27" strokeDasharray="3 3" />
             <ReferenceLine yAxisId="left" x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} />
-            <Bar  yAxisId="right" dataKey="cws"        name="Weighted score" fill="#6366F1" fillOpacity={0.25} radius={[2, 2, 0, 0]} />
-            <Line yAxisId="left"  type="monotone" dataKey="riskSolid"  name="riskSolid" stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} legendType="none" />
-            <Line yAxisId="left"  type="monotone" dataKey="riskDotted" name="Risk"      stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} strokeDasharray="5 3" />
+            <Bar yAxisId="right" dataKey="cws" name="Weighted score" fill="#6366F1" fillOpacity={0.25} radius={[2, 2, 0, 0]} />
+            <Line yAxisId="left" type="monotone" dataKey="riskSolid"  name="riskSolid" stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} legendType="none" />
+            <Line yAxisId="left" type="monotone" dataKey="riskDotted" name="Risk"       stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} strokeDasharray="5 3" />
           </ComposedChart>
         </ResponsiveContainer>
       </CardContent>

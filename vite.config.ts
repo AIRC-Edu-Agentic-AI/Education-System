@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
           rewrite: (p) => p.replace(/^\/api\/claude/, ''),
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.removeHeader('origin')
+              proxyReq.removeHeader('referer')
               proxyReq.setHeader('x-api-key', env.ANTHROPIC_API_KEY || '')
               proxyReq.setHeader('anthropic-version', '2023-06-01')
               proxyReq.setHeader('content-type', 'application/json')
