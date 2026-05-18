@@ -8,9 +8,9 @@ dotenv.config()
 const app = express()
 const PORT = 8000
 
-const MONGO_URI = "mongodb://whitedevil0981907116_db_user:airc@ac-nus8ysv-shard-00-00.tsrzoux.mongodb.net:27017,ac-nus8ysv-shard-00-01.tsrzoux.mongodb.net:27017,ac-nus8ysv-shard-00-02.tsrzoux.mongodb.net:27017/?ssl=true&replicaSet=atlas-1398m4-shard-0&authSource=admin&appName=OuladCluster"
+const MONGO_URI = process.env.MONGODB_URI!
 const client = new MongoClient(MONGO_URI)
-const db = client.db("oulad_db")
+const db = client.db(process.env.MONGODB_DB ?? 'oulad_db')
 
 app.use(cors({ origin: "http://localhost:5173" }))
 app.use(express.json())

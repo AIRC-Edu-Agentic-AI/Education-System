@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "tsx server/index.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "preprocess": "python scripts/python/preprocess.py",
@@ -41,6 +42,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.1",
     "typescript": "^5.9.3",
     "vite": "^5.3.1"
   }
