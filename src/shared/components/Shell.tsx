@@ -1,22 +1,24 @@
 import React from 'react'
 import {
   Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Toolbar, Typography, Divider, Chip, Tooltip, IconButton,
+  Toolbar, Typography, Divider, Chip, Tooltip,
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import { moduleRegistry } from '../../modules/registry'
 import { useContextStore } from '../stores/contextStore'
+import { useAuth0 } from '@auth0/auth0-react'
 import { ChatPanel } from '../../modules/chat/components/ChatPanel'
 import { ContextBar } from './ContextBar'
 
-const DRAWER_WIDTH   = 220
-const CHAT_WIDTH     = 360
+const DRAWER_WIDTH = 220
+const CHAT_WIDTH = 360
 
 export function Shell({ children }: { children: React.ReactNode }) {
-  const location  = useLocation()
-  const navigate  = useNavigate()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { selectedModule, selectedPresentation, currentWeek, activeStudent, chatPanelOpen, setChatPanelOpen } = useContextStore()
+  const { user, logout } = useAuth0()
 
   const hasData = selectedModule && selectedPresentation
 
@@ -40,15 +42,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       >
         <Toolbar sx={{ px: 2, py: 1.5, minHeight: '60px !important' }}>
           <Box>
-            <Typography
-              sx={{
-                fontFamily: '"IBM Plex Mono", monospace',
-                fontSize: 13,
-                fontWeight: 500,
-                color: '#fff',
-                letterSpacing: '0.04em',
-              }}
-            >
+            <Typography sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 13, fontWeight: 500, color: '#fff', letterSpacing: '0.04em' }}>
               RTI / MTSS
             </Typography>
             <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
@@ -59,7 +53,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
 
-        {/* Context badge */}
         {hasData && (
           <Box sx={{ px: 2, py: 1.5 }}>
             <Typography sx={{ fontSize: 10, color: '#4B5563', mb: 0.5, fontFamily: '"IBM Plex Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -85,23 +78,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
 
-        {/* Navigation */}
         <List dense sx={{ px: 1, py: 1, flexGrow: 1 }}>
           {moduleRegistry.map((mod) => {
             const active = location.pathname === '/' ? mod.path === '/' : location.pathname.startsWith(mod.path) && mod.path !== '/'
             return (
-              <Tooltip
-                key={mod.id}
-                title={!hasData && mod.id !== 'dashboard' ? 'Select a module first' : ''}
-                placement="right"
-              >
+              <Tooltip key={mod.id} title={!hasData && mod.id !== 'dashboard' ? 'Select a module first' : ''} placement="right">
                 <span>
                   <ListItemButton
                     disabled={!hasData && mod.id !== 'dashboard'}
                     onClick={() => navigate(mod.path)}
                     sx={{
-                      borderRadius: 1.5,
-                      mb: 0.5,
+                      borderRadius: 1.5, mb: 0.5,
                       bgcolor: active ? '#1D9E7514' : 'transparent',
                       borderLeft: active ? '2px solid #1D9E75' : '2px solid transparent',
                       '&:hover': { bgcolor: '#1E2D45' },
@@ -113,12 +100,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     </ListItemIcon>
                     <ListItemText
                       primary={mod.label}
-                      primaryTypographyProps={{
-                        fontSize: 13,
-                        fontFamily: '"IBM Plex Sans", sans-serif',
-                        color: active ? '#fff' : '#9CA3AF',
-                        fontWeight: active ? 500 : 400,
-                      }}
+                      primaryTypographyProps={{ fontSize: 13, fontFamily: '"IBM Plex Sans", sans-serif', color: active ? '#fff' : '#9CA3AF', fontWeight: active ? 500 : 400 }}
                     />
                   </ListItemButton>
                 </span>
@@ -129,7 +111,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
 
-        {/* AI Advisor toggle */}
         <Box sx={{ px: 1, py: 1 }}>
           <ListItemButton
             onClick={() => setChatPanelOpen(!chatPanelOpen)}
@@ -145,20 +126,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </ListItemIcon>
             <ListItemText
               primary="AI advisor"
-              primaryTypographyProps={{
-                fontSize: 13,
-                fontFamily: '"IBM Plex Sans", sans-serif',
-                color: chatPanelOpen ? '#fff' : '#9CA3AF',
-                fontWeight: chatPanelOpen ? 500 : 400,
-              }}
+              primaryTypographyProps={{ fontSize: 13, fontFamily: '"IBM Plex Sans", sans-serif', color: chatPanelOpen ? '#fff' : '#9CA3AF', fontWeight: chatPanelOpen ? 500 : 400 }}
             />
           </ListItemButton>
         </Box>
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
         <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography sx={{ fontSize: 10, color: '#374151', fontFamily: '"IBM Plex Mono", monospace' }}>
-            OULAD · Pilot v0.1
+          <Typography sx={{ fontSize: 10, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', mb: 0.5 }}>
+            {user?.email}
+          </Typography>
+          <Typography
+            onClick={() => logout({ logoutParams: { returnTo: window.location.origin, federated: true } })}
+            sx={{ fontSize: 10, color: '#374151', fontFamily: '"IBM Plex Mono", monospace', cursor: 'pointer', '&:hover': { color: '#EF4444' } }}
+          >
+            OULAD · Pilot v0.1 · Logout
           </Typography>
         </Box>
       </Drawer>
@@ -166,13 +148,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <ContextBar />
-
         <Box sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
             {children}
           </Box>
-
-          {/* Chat panel — always mounted so messages and scroll persist */}
           <Box
             sx={{
               width: chatPanelOpen ? CHAT_WIDTH : 0,
