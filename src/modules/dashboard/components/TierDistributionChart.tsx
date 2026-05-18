@@ -1,5 +1,7 @@
 import { Card, CardContent, Typography } from '@mui/material'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { TIER_COLORS } from '../../../shared/constants/tiers'
+import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -34,8 +36,8 @@ export function TierDistributionChart({ students, numWeeks, currentWeek }: Props
                 <stop offset="95%" stopColor="#1D9E75" stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="t2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#EF9F27" stopOpacity={0.5} />
-                <stop offset="95%" stopColor="#EF9F27" stopOpacity={0.05} />
+                <stop offset="5%" stopColor={tokens.brand.secondary} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={tokens.brand.secondary} stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="t3" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#E24B4A" stopOpacity={0.5} />
@@ -51,7 +53,7 @@ export function TierDistributionChart({ students, numWeeks, currentWeek }: Props
             />
             <ReferenceLine x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} label={{ value: 'now', position: 'top', fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
             <Area type="monotone" dataKey="Tier 1" stackId="1" stroke="#1D9E75" fill="url(#t1)" strokeWidth={1.5} />
-            <Area type="monotone" dataKey="Tier 2" stackId="1" stroke="#EF9F27" fill="url(#t2)" strokeWidth={1.5} />
+            <Area type="monotone" dataKey="Tier 2" stackId="1" stroke={tokens.brand.secondary} fill="url(#t2)" strokeWidth={1.5} />
             <Area type="monotone" dataKey="Tier 3" stackId="1" stroke="#E24B4A" fill="url(#t3)" strokeWidth={1.5} />
           </AreaChart>
         </ResponsiveContainer>

@@ -164,7 +164,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                         sx={{
                           flex: 1, height: 6, borderRadius: 3, bgcolor: '#F0EFE9',
                           '& .MuiLinearProgress-bar': {
-                            bgcolor: risk < 0.33 ? '#1D9E75' : risk < 0.66 ? '#EF9F27' : '#E24B4A',
+                            bgcolor: risk < 0.33 ? TIER_COLORS[1].solid : risk < 0.66 ? TIER_COLORS[2].solid : TIER_COLORS[3].solid,
                             borderRadius: 3,
                           },
                         }}

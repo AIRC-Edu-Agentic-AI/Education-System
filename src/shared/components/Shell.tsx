@@ -5,6 +5,7 @@ import {
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
+import { tokens } from '../../theme'
 import { moduleRegistry } from '../../modules/registry'
 import { useContextStore } from '../stores/contextStore'
 import { ChatPanel } from '../../modules/chat/components/ChatPanel'
@@ -77,7 +78,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <Chip
                 label={`Student #${activeStudent.id_student}`}
                 size="small"
-                sx={{ mt: 0.5, bgcolor: '#BA751722', color: '#EF9F27', fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', height: 22 }}
+                sx={{ mt: 0.5, bgcolor: `${tokens.brand.secondary}22`, color: tokens.brand.secondary, fontSize: 11, height: 22 }}
               />
             )}
           </Box>

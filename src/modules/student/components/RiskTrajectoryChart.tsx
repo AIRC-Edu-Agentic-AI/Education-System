@@ -4,6 +4,7 @@ import {
   Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -109,7 +110,7 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
             <Legend iconType="plainline" wrapperStyle={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace' }}
               formatter={(v) => v === 'Risk' ? 'Risk (LSTM)' : 'Weighted score'} />
             <ReferenceLine yAxisId="left" y={0.33} stroke="#1D9E75" strokeDasharray="3 3" />
-            <ReferenceLine yAxisId="left" y={0.66} stroke="#EF9F27" strokeDasharray="3 3" />
+            <ReferenceLine yAxisId="left" y={0.66} stroke={tokens.brand.secondary} strokeDasharray="3 3" />
             <ReferenceLine yAxisId="left" x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} />
             <Bar yAxisId="right" dataKey="cws" name="Weighted score" fill="#6366F1" fillOpacity={0.25} radius={[2, 2, 0, 0]} />
             <Line yAxisId="left" type="monotone" dataKey="riskSolid"  name="riskSolid" stroke="#0A1628" strokeWidth={2} dot={false} connectNulls={false} legendType="none" />
