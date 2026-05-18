@@ -8,14 +8,21 @@ dotenv.config()
 const app = express()
 const PORT = 8000
 
-const MONGO_URI = process.env.MONGODB_URI!
+const MONGO_URI = process.env.MONGODB_URI
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
+
+if (!MONGO_URI) {
+  console.error('Missing required env var: MONGODB_URI')
+  process.exit(1)
+}
+
 const client = new MongoClient(MONGO_URI)
 const db = client.db(process.env.MONGODB_DB ?? 'oulad_db')
 
-app.use(cors({ origin: "http://localhost:5173" }))
+app.use(cors({ origin: CORS_ORIGIN }))
 app.use(express.json())
 
-app.get('/api/index', async (req, res) => {
+app.get('/api/index', async (_req, res) => {
   const courses = await db.collection("processed_courses").find({}, { projection: { students: 0 } }).toArray()
   const result = courses.map(c => ({
     module: c.module,
