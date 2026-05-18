@@ -73,9 +73,9 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
 
   const TrendIcon = ({ s }: { s: StudentProfile }) => {
     const t = riskTrend(s, currentWeek)
-    if (t === 'up') return <TrendingUpIcon sx={{ fontSize: 14, color: '#E24B4A' }} />
-    if (t === 'down') return <TrendingDownIcon sx={{ fontSize: 14, color: '#1D9E75' }} />
-    return <RemoveIcon sx={{ fontSize: 14, color: '#9CA3AF' }} />
+    if (t === 'up') return <TrendingUpIcon sx={{ fontSize: 14, color: tokens.brand.danger }} />
+    if (t === 'down') return <TrendingDownIcon sx={{ fontSize: 14, color: tokens.brand.primaryLight }} />
+    return <RemoveIcon sx={{ fontSize: 14, color: tokens.text.muted }} />
   }
 
   return (
@@ -112,7 +112,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
               ].map((col) => (
                 <TableCell
                   key={col.label}
-                  sx={{ bgcolor: '#F8F7F4', fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280', fontWeight: 600, py: 1.5 }}
+                  sx={{ bgcolor: tokens.surface.raised, fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, fontWeight: 600, py: 1.5 }}
                 >
                   {col.id ? (
                     <TableSortLabel
@@ -143,27 +143,27 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                   sx={{
                     cursor: 'pointer',
                     opacity: withdrawn ? 0.55 : 1,
-                    bgcolor: selected ? '#F0FDF8' : 'transparent',
-                    '&:hover': { bgcolor: '#F8F7F4' },
+                    bgcolor: selected ? tokens.surface.selected : 'transparent',
+                    '&:hover': { bgcolor: tokens.surface.raised },
                     borderLeft: selected ? '3px solid #1D9E75' : '3px solid transparent',
                   }}
                 >
-                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 12, color: '#0A1628' }}>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.text.primary }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                       #{s.id_student}
-                      {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: '#F3F4F6' }} />}
+                      {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: tokens.surface.neutral }} />}
                     </Box>
                   </TableCell>
-                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280' }}>{s.imd_band}</TableCell>
-                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280' }}>{s.age_band}</TableCell>
-                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280', textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.imd_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.age_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
                   <TableCell sx={{ minWidth: 120 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LinearProgress
                         variant="determinate"
                         value={risk * 100}
                         sx={{
-                          flex: 1, height: 6, borderRadius: 3, bgcolor: '#F0EFE9',
+                          flex: 1, height: 6, borderRadius: 3, bgcolor: tokens.surface.subtle,
                           '& .MuiLinearProgress-bar': {
                             bgcolor: risk < 0.33 ? TIER_COLORS[1].solid : risk < 0.66 ? TIER_COLORS[2].solid : TIER_COLORS[3].solid,
                             borderRadius: 3,

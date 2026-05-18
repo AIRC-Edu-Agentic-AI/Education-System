@@ -26,14 +26,14 @@ export function StudentDemographicsCard({ student }: Props) {
   ]
 
   return (
-    <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC', height: '100%' }}>
+    <Card elevation={0} sx={{ borderRadius: 2, height: '100%' }}>
       <CardContent>
         <Typography sx={{ fontSize: 11, color: 'text.secondary', fontFamily: tokens.font.mono, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Demographics
         </Typography>
         {rows.map(([k, v]) => (
           <Box key={k} sx={ROW_SX}>
-            <Typography sx={{ fontSize: 12, color: '#6B7280' }}>{k}</Typography>
+            <Typography sx={{ fontSize: 12, color: tokens.text.secondary }}>{k}</Typography>
             <Typography sx={{ fontSize: 12, fontWeight: 500, color: 'text.primary', fontFamily: tokens.font.mono }}>{v}</Typography>
           </Box>
         ))}

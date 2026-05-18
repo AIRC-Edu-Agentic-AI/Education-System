@@ -18,7 +18,7 @@ type D3Link = Omit<ConceptEdge, 'source' | 'target'> & d3.SimulationLinkDatum<D3
 
 function nodeColor(mastery: number) {
   if (mastery >= 0.90) return { f: '#5DCAA5', s: '#0F6E56', t: '#085041' }
-  if (mastery >= 0.75) return { f: '#E1F5EE', s: '#1D9E75', t: '#085041' }
+  if (mastery >= 0.75) return { f: '#E1F5EE', s: tokens.brand.primaryLight, t: '#085041' }
   if (mastery >= 0.60) return { f: '#FAEEDA', s: '#BA7517', t: '#633806' }
   return { f: '#FCEBEB', s: '#E24B4A', t: '#791F1F' }
 }
@@ -133,18 +133,18 @@ export function MasteryGraphCard({ student, module }: Props) {
   }, [graph])
 
   return (
-    <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC' }}>
+    <Card elevation={0} sx={{ borderRadius: 2 }}>
       <CardContent>
-        <Typography sx={{ fontSize: 12, fontWeight: 500, color: '#0A1628', mb: 1.5 }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 500, color: tokens.text.primary, mb: 1.5 }}>
           Concept mastery
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
           {[
-            { label: 'Mastered ≥90%',  bg: '#5DCAA5', color: '#085041' },
-            { label: 'Proficient ≥75%', bg: '#E1F5EE', color: '#085041' },
-            { label: 'Developing ≥60%', bg: '#FAEEDA', color: '#633806' },
-            { label: 'Needs support',   bg: '#FCEBEB', color: '#791F1F' },
+            { label: 'Mastered ≥90%',  bg: tokens.brand.primaryMuted,    color: tokens.brand.primaryDark },
+            { label: 'Proficient ≥75%', bg: tokens.brand.primarySubtle,   color: tokens.brand.primaryDark },
+            { label: 'Developing ≥60%', bg: tokens.brand.secondarySubtle, color: '#633806' },
+            { label: 'Needs support',   bg: tokens.brand.dangerSubtle,    color: '#791F1F' },
           ].map((l) => (
             <Chip key={l.label} label={l.label} size="small"
               sx={{ bgcolor: l.bg, color: l.color, fontSize: 11, height: 22 }}
@@ -154,8 +154,8 @@ export function MasteryGraphCard({ student, module }: Props) {
 
         {isLoading && (
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', py: 4, justifyContent: 'center' }}>
-            <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-            <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: tokens.font.mono }}>
+            <CircularProgress size={18} sx={{ color: tokens.brand.primaryLight }} />
+            <Typography sx={{ fontSize: 13, color: tokens.text.secondary, fontFamily: tokens.font.mono }}>
               Building concept graph…
             </Typography>
           </Box>
@@ -166,10 +166,10 @@ export function MasteryGraphCard({ student, module }: Props) {
         </div>
 
         {selectedNode && (
-          <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #F0EFE9', display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${tokens.surface.subtle}`, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#0A1628' }}>{selectedNode.label}</Typography>
+                <Typography sx={{ fontSize: 13, fontWeight: 500, color: tokens.text.primary }}>{selectedNode.label}</Typography>
                 <Chip
                   label={masteryLabel(selectedNode.mastery)}
                   size="small"
@@ -182,22 +182,22 @@ export function MasteryGraphCard({ student, module }: Props) {
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Evidence</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: '#0A1628' }}>{selectedNode.evidence_count} assessments</Typography>
+                <Typography sx={{ fontSize: 11, color: tokens.text.muted, fontFamily: tokens.font.mono, mb: 0.25 }}>Evidence</Typography>
+                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: tokens.text.primary }}>{selectedNode.evidence_count} assessments</Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Confidence</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: '#0A1628' }}>{Math.round(selectedNode.confidence * 100)}%</Typography>
+                <Typography sx={{ fontSize: 11, color: tokens.text.muted, fontFamily: tokens.font.mono, mb: 0.25 }}>Confidence</Typography>
+                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: tokens.text.primary }}>{Math.round(selectedNode.confidence * 100)}%</Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Prerequisites</Typography>
-                <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                <Typography sx={{ fontSize: 11, color: tokens.text.muted, fontFamily: tokens.font.mono, mb: 0.25 }}>Prerequisites</Typography>
+                <Typography sx={{ fontSize: 11, color: tokens.text.secondary }}>
                   {graph?.edges.filter((e) => e.target === selectedNode.id).map((e) => graph.nodes.find((n) => n.id === e.source)?.label).join(', ') || 'None'}
                 </Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Unlocks</Typography>
-                <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                <Typography sx={{ fontSize: 11, color: tokens.text.muted, fontFamily: tokens.font.mono, mb: 0.25 }}>Unlocks</Typography>
+                <Typography sx={{ fontSize: 11, color: tokens.text.secondary }}>
                   {graph?.edges.filter((e) => e.source === selectedNode.id).map((e) => graph.nodes.find((n) => n.id === e.target)?.label).join(', ') || 'None'}
                 </Typography>
               </Box>

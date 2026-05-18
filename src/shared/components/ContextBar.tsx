@@ -1,17 +1,12 @@
 import { useEffect } from 'react'
-import {
-  Box, FormControl, InputLabel, Select, MenuItem, Slider, Typography,
-} from '@mui/material'
+import { Box, FormControl, InputLabel, Select, MenuItem, Slider, Typography } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { tokens } from '../../theme'
 import { container } from '../../di/container'
 import { useContextStore } from '../stores/contextStore'
 
 export function ContextBar() {
-  const {
-    selectedModule, selectedPresentation, currentWeek,
-    setModule, setPresentation, setCurrentWeek, setNumWeeks,
-  } = useContextStore()
+  const { selectedModule, selectedPresentation, currentWeek, setModule, setPresentation, setCurrentWeek, setNumWeeks } = useContextStore()
 
   const { data: index } = useQuery({
     queryKey: ['oulad-index'],
@@ -25,7 +20,6 @@ export function ContextBar() {
     enabled: !!selectedModule && !!selectedPresentation,
   })
 
-  // Auto-select first course on first load
   useEffect(() => {
     if (index && !selectedModule && index.courses.length > 0) {
       const first = index.courses[0]
@@ -41,18 +35,14 @@ export function ContextBar() {
 
   const numWeeks = course?.num_weeks ?? 39
   const moduleOptions = [...new Set(index?.courses.map((c) => c.module) ?? [])]
-  const presentationOptions = index?.courses
-    .filter((c) => c.module === selectedModule)
-    .map((c) => c.presentation) ?? []
+  const presentationOptions = index?.courses.filter((c) => c.module === selectedModule).map((c) => c.presentation) ?? []
 
   return (
-    <Box
-      sx={{
-        display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap',
-        px: 3, py: 1, bgcolor: '#fff', borderBottom: '1px solid #E5E3DC',
-        minHeight: 52, flexShrink: 0,
-      }}
-    >
+    <Box sx={{
+      display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap',
+      px: 3, py: 1, bgcolor: tokens.surface.paper, borderBottom: `1px solid ${tokens.border.default}`,
+      minHeight: 52, flexShrink: 0,
+    }}>
       <FormControl size="small" sx={{ minWidth: 110 }}>
         <InputLabel sx={{ fontSize: 12 }}>Module</InputLabel>
         <Select
@@ -87,18 +77,16 @@ export function ContextBar() {
       </FormControl>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 220, flex: 1, maxWidth: 360 }}>
-        <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: tokens.font.mono, whiteSpace: 'nowrap' }}>
+        <Typography sx={{ fontSize: 11, color: tokens.text.secondary, fontFamily: tokens.font.mono, whiteSpace: 'nowrap' }}>
           Week
         </Typography>
         <Slider
-          min={1}
-          max={numWeeks}
-          value={currentWeek}
+          min={1} max={numWeeks} value={currentWeek}
           onChange={(_, v) => setCurrentWeek(v as number)}
           size="small"
-          sx={{ color: '#1D9E75' }}
+          sx={{ color: tokens.brand.primaryLight }}
         />
-        <Typography sx={{ fontSize: 12, fontFamily: tokens.font.mono, color: '#0A1628', minWidth: 36 }}>
+        <Typography sx={{ fontSize: 12, fontFamily: tokens.font.mono, color: tokens.text.primary, minWidth: 36 }}>
           {currentWeek}/{numWeeks}
         </Typography>
       </Box>
