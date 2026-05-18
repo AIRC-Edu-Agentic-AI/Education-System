@@ -6,8 +6,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import { tokens } from '../../theme'
-import { moduleRegistry } from '../../modules/registry'
-import { useContextStore } from '../stores/contextStore'
+import { useAuth0 } from '@auth0/auth0-react'
 import { ChatPanel } from '../../modules/chat/components/ChatPanel'
 import { ContextBar } from './ContextBar'
 

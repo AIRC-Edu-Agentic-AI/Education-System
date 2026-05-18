@@ -1,30 +1,57 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Box, Typography, CircularProgress, Alert, Toolbar, Grid } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useContextStore } from '../../../shared/stores/contextStore'
-
+import { useAuthStore } from '../../../shared/stores/authStore'
 import { RiskTilesRow } from '../components/RiskTilesRow'
 import { TierDistributionChart } from '../components/TierDistributionChart'
 import { MarkDistributionChart } from '../components/MarkDistributionChart'
 import { StudentRiskTable } from '../components/StudentRiskTable'
 import { CourseInfoSections } from '../components/CourseInfoSections'
 import { CourseSchedule } from '../components/CourseSchedule'
-
 import './DashboardView.css'
 import type { StudentProfile } from '../../../types/domain'
 
 export function DashboardView() {
   const navigate = useNavigate()
-  const { selectedModule, selectedPresentation, currentWeek, setNumWeeks, setActiveStudent } = useContextStore()
+  const {
+    selectedModule, selectedPresentation, currentWeek,
+    setModule, setPresentation, setNumWeeks, setActiveStudent,
+  } = useContextStore()
 
-  const { error: indexError } = useQuery({
+  const { user } = useAuthStore()
+  console.log('Auth user in Dashboard:', user)
+  const isAdmin = user?.role === 'admin'
+  const isAdvisor = user?.role === 'academic_advisor'
+
+  const { data: index, error: indexError } = useQuery({
     queryKey: ['oulad-index'],
     queryFn: () => container.dataService.getIndex(),
     retry: false,
   })
+
+  const allowedCourses = useMemo(() => {
+    if (!index) return []
+    if (isAdmin) return index.courses
+    if (isAdvisor) return index.courses.filter((c) =>
+      user?.years?.some((y) => c.presentation.startsWith(y))
+    )
+    return index.courses.filter(
+      (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
+    )
+  }, [index, user, isAdmin, isAdvisor])
+
+  useEffect(() => {
+    if (allowedCourses.length > 0 && !selectedModule) {
+      const first = allowedCourses[0]
+      setModule(first.module)
+      setPresentation(first.presentation)
+      setNumWeeks(first.num_weeks)
+    }
+  }, [allowedCourses, selectedModule])
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', selectedModule, selectedPresentation],
@@ -38,6 +65,11 @@ export function DashboardView() {
 
   const numWeeks = course?.num_weeks ?? 39
   const students = course?.students ?? []
+
+  const moduleOptions = [...new Set(allowedCourses.map((c) => c.module))]
+  const presentationOptions = allowedCourses
+    .filter((c) => c.module === selectedModule)
+    .map((c) => c.presentation)
 
   const handleStudentSelect = (s: StudentProfile) => {
     setActiveStudent(s)
@@ -80,7 +112,7 @@ export function DashboardView() {
             <Typography className="dashboard-management-title" sx={{ mt: 4, mb: 2 }}>
               Course Management — {selectedModule}
             </Typography>
-            
+
             <Grid container spacing={3} sx={{ pb: 4 }}>
               <Grid item xs={12} lg={7}>
                 <Box className="dashboard-section-card" sx={{ height: '100%', minHeight: 450 }}>
