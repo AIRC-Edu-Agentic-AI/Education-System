@@ -2,12 +2,11 @@
  * Dependency Injection Container
  *
  * This is the ONLY file that changes when switching between phases:
- *   Modular  → MockDataAdapter + MockAgentAdapter
- *   Pilot    → ProcessedDataAdapter + ClaudeAgentAdapter  ← current
- *   Deploy   → ApiDataAdapter + ClaudeAgentAdapter (same)
+ *   Pilot   → ProcessedDataAdapter + ClaudeAgentAdapter
+ *   Deploy  → MongoDataAdapter + ClaudeAgentAdapter  ← current
  */
 
-import { ProcessedDataAdapter } from '../adapters/ProcessedDataAdapter'
+import { MongoDataAdapter } from '../adapters/MongoDataAdapter'
 import { MockMasteryAdapter } from '../adapters/MockMasteryAdapter'
 import { ClaudeAgentAdapter } from '../adapters/ClaudeAgentAdapter'
 
@@ -20,7 +19,7 @@ export const container: {
   agentService: AgentService
   masteryService: MasteryService
 } = {
-  dataService: new ProcessedDataAdapter(),
+  dataService: new MongoDataAdapter(),
   agentService: new ClaudeAgentAdapter(),
   masteryService: new MockMasteryAdapter(),
 }
