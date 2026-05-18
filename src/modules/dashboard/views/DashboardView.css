@@ -1,0 +1,58 @@
+/* DashboardView.css */
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #F8FAFC;
+}
+
+.dashboard-header {
+  background-color: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  min-height: 56px !important;
+}
+
+.dashboard-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.dashboard-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  margin-bottom: 24px;
+  align-items: start;
+}
+
+.dashboard-section-card {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-chart-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-management-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
