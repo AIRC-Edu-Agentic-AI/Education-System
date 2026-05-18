@@ -25,7 +25,7 @@ export function VleActivityChart({ student, currentWeek }: Props) {
               contentStyle={{ fontSize: 12, fontFamily: '"IBM Plex Mono"', borderRadius: 8 }}
               labelFormatter={(v) => `Week ${v}`}
             />
-            <ReferenceLine x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" />
+            <ReferenceLine x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} />
             <Bar dataKey="clicks" fill="#5DCAA5" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

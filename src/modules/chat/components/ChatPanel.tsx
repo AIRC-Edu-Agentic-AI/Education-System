@@ -16,7 +16,7 @@ import type { AgentContext, ChatMessage, StudentProfile } from '../../../types/d
 function buildContext(
   module: string, presentation: string, currentWeek: number, numWeeks: number,
   activeStudent: StudentProfile | null,
-  students: { risk_by_week: number[]; tier_by_week: (1|2|3)[] }[]
+  students: { risk_by_week: (number | null)[]; tier_by_week: (1|2|3|null)[] }[]
 ): AgentContext {
   const weekIdx = Math.max(0, currentWeek - 1)
   const tierCounts = { tier1: 0, tier2: 0, tier3: 0 }
