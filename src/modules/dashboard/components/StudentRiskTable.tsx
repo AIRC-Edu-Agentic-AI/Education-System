@@ -8,19 +8,14 @@ import SearchIcon from '@mui/icons-material/SearchRounded'
 import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded'
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded'
 import RemoveIcon from '@mui/icons-material/RemoveRounded'
-import type { StudentProfile, Tier } from '../../../types/domain'
+import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
   students: StudentProfile[]
   currentWeek: number
   onSelect: (s: StudentProfile) => void
   selectedId: number | null
-}
-
-const TIER_COLORS: Record<Tier, { bg: string; text: string; label: string }> = {
-  1: { bg: '#E1F5EE', text: '#0F6E56', label: 'Tier 1' },
-  2: { bg: '#FAEEDA', text: '#854F0B', label: 'Tier 2' },
-  3: { bg: '#FCEBEB', text: '#A32D2D', label: 'Tier 3' },
 }
 
 function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
@@ -135,7 +130,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           <TableBody>
             {visibleStudents.map((s) => {
               const risk = s.risk_by_week[weekIdx] ?? 0
-              const tier = (s.tier_by_week[weekIdx] ?? 1) as Tier
+              const tier = (s.tier_by_week[weekIdx] ?? 1) as TierNumber
               const tc = TIER_COLORS[tier]
               const selected = s.id_student === selectedId
               const withdrawn = s.final_result === 'Withdrawn'
@@ -178,7 +173,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Chip label={tc.label} size="small" sx={{ bgcolor: tc.bg, color: tc.text, fontSize: 10, height: 18, fontFamily: '"IBM Plex Mono", monospace' }} />
+                    <Chip label={tc.label} size="small" sx={{ bgcolor: tc.subtle, color: tc.text, fontSize: 10, height: 18 }} />
                   </TableCell>
                   <TableCell><TrendIcon s={s} /></TableCell>
                 </TableRow>

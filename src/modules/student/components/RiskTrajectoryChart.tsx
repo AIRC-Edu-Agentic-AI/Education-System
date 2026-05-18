@@ -3,17 +3,12 @@ import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
-import type { StudentProfile, Tier } from '../../../types/domain'
+import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
   student: StudentProfile
   currentWeek: number
-}
-
-const TIER_COLORS: Record<Tier, { bg: string; text: string }> = {
-  1: { bg: '#E1F5EE', text: '#0F6E56' },
-  2: { bg: '#FAEEDA', text: '#854F0B' },
-  3: { bg: '#FCEBEB', text: '#A32D2D' },
 }
 
 // Pick the freshest LSTM horizon whose training cutoff ≤ currentWeek.
@@ -26,7 +21,7 @@ function pickHorizon(currentWeek: number): 'w05' | 'w10' | 'w15' | 'w20' | 'w25'
   return 'w05'
 }
 
-function riskToTier(risk: number): Tier {
+function riskToTier(risk: number): TierNumber {
   if (risk < 0.33) return 1
   if (risk < 0.66) return 2
   return 3
@@ -41,7 +36,7 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
   const trajectory: (number | null)[] = traj?.[horizon] ?? student.risk_by_week
 
   const risk = trajectory[weekIdx] ?? 0
-  const tier = riskToTier(risk)
+  const tier = riskToTier(risk) as TierNumber
   const tc   = TIER_COLORS[tier]
 
   // CWS(w) = Σ(score × weight, on-time by w) / Σ(weight, due by w) × 100
@@ -83,7 +78,7 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
               {(risk * 100).toFixed(0)}%
             </Typography>
           </Box>
-          <Chip label={`Tier ${tier}`} sx={{ bgcolor: tc.bg, color: tc.text, fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
+          <Chip label={tc.label} sx={{ bgcolor: tc.subtle, color: tc.text, fontWeight: 500, fontSize: 13 }} />
           <Chip
             label={`LSTM ${horizon.replace('w', 'W')}`}
             sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}
