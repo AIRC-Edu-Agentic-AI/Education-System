@@ -2,22 +2,27 @@ import express from 'express'
 import cors from 'cors'
 import { MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 
 dotenv.config()
 
 const app = express()
 const PORT = 8000
 
-const MONGO_URI = "mongodb://whitedevil0981907116_db_user:airc@ac-nus8ysv-shard-00-00.tsrzoux.mongodb.net:27017,ac-nus8ysv-shard-00-01.tsrzoux.mongodb.net:27017,ac-nus8ysv-shard-00-02.tsrzoux.mongodb.net:27017/?ssl=true&replicaSet=atlas-1398m4-shard-0&authSource=admin&appName=OuladCluster"
-const client = new MongoClient(MONGO_URI)
-const db = client.db("oulad_db")
+const MONGO_URI = process.env.MONGODB_URI
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
 
-app.use(cors({ origin: "http://localhost:5173" }))
+if (!MONGO_URI) {
+  console.error('Missing required env var: MONGODB_URI')
+  process.exit(1)
+}
+
+const client = new MongoClient(MONGO_URI)
+const db = client.db(process.env.MONGODB_DB ?? 'oulad_db')
+
+app.use(cors({ origin: CORS_ORIGIN }))
 app.use(express.json())
 
-app.get('/api/index', async (req, res) => {
+app.get('/api/index', async (_req, res) => {
   const courses = await db.collection("processed_courses").find({}, { projection: { students: 0 } }).toArray()
   const result = courses.map(c => ({
     module: c.module,
@@ -39,18 +44,9 @@ app.get('/api/course/:module/:presentation', async (req, res) => {
   )
   if (!course) return res.status(404).json({ error: "Course not found" })
 
-  // ✅ We exclude all heavy arrays
   const students = await db.collection("processed_students").find(
     { code_module: module, code_presentation: presentation },
-    { projection: { 
-      _id: 0,
-      weekly_clicks: 0,
-      cumulative_clicks: 0,
-      clicks_per_month: 0,
-      clicks_per_semester: 0,
-      decayed_engagement: 0,
-      assessments: 0
-    }}
+    { projection: { _id: 0 } }
   ).toArray()
 
   res.json({ ...course, students })
@@ -65,23 +61,7 @@ app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
   if (!student) return res.status(404).json({ error: "Student not found" })
   res.json(student)
 })
-app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body
 
-  const user = await db.collection("users").findOne({ email })
-  if (!user) return res.status(401).json({ error: "Invalid email or password" })
-
-  const valid = await bcrypt.compare(password, user.password)
-  if (!valid) return res.status(401).json({ error: "Invalid email or password" })
-
-  const token = jwt.sign(
-    { id: user._id, email: user.email, name: user.name, role: user.role, modules: user.modules, presentations: user.presentations },
-    process.env.JWT_SECRET || "secret",
-    { expiresIn: "24h" }
-  )
-
-  res.json({ token, user: { name: user.name, role: user.role, modules: user.modules, presentations: user.presentations } })
-})
 async function start() {
   await client.connect()
   console.log("Connected to MongoDB Atlas!")

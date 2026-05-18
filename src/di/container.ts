@@ -2,9 +2,8 @@
  * Dependency Injection Container
  *
  * This is the ONLY file that changes when switching between phases:
- *   Modular  → MockDataAdapter + MockAgentAdapter
- *   Pilot    → ProcessedDataAdapter + ClaudeAgentAdapter  ← current
- *   Deploy   → ApiDataAdapter + ClaudeAgentAdapter (same)
+ *   Pilot   → ProcessedDataAdapter + ClaudeAgentAdapter
+ *   Deploy  → MongoDataAdapter + ClaudeAgentAdapter  ← current
  */
 
 import { MongoDataAdapter } from '../adapters/MongoDataAdapter'

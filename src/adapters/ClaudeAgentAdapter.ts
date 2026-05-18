@@ -8,7 +8,7 @@ function buildSystemPrompt(ctx: AgentContext): string {
   const studentBlock = ctx.activeStudent
     ? `Active student: #${ctx.activeStudent.id_student} | ` +
       `Tier ${ctx.activeStudent.tier_by_week[ctx.currentWeek - 1]} | ` +
-      `Risk ${(ctx.activeStudent.risk_by_week[ctx.currentWeek - 1] * 100).toFixed(0)}% | ` +
+      `Risk ${((ctx.activeStudent.risk_by_week[ctx.currentWeek - 1] ?? 0) * 100).toFixed(0)}% | ` +
       `IMD band: ${ctx.activeStudent.imd_band} | ` +
       `Prior attempts: ${ctx.activeStudent.num_of_prev_attempts}`
     : 'No student selected (discussing class-level data)'

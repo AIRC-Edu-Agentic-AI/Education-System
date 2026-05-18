@@ -1,8 +1,6 @@
 import React from 'react'
 import DashboardIcon from '@mui/icons-material/GridViewRounded'
 import PersonIcon from '@mui/icons-material/PersonRounded'
-import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
-import HubIcon from '@mui/icons-material/HubRounded'
 
 export interface ModuleConfig {
   id: string
@@ -23,17 +21,5 @@ export const moduleRegistry: ModuleConfig[] = [
     label: 'Student detail',
     path: '/student',
     icon: <PersonIcon fontSize="small" />,
-  },
-  {
-    id: 'mastery',
-    label: 'Concept mastery',
-    path: '/mastery',
-    icon: <HubIcon fontSize="small" />,
-  },
-  {
-    id: 'chat',
-    label: 'AI advisor',
-    path: '/chat',
-    icon: <ChatIcon fontSize="small" />,
   },
 ]

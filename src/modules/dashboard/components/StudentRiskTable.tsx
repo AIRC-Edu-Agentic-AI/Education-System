@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import {
-  Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer,
+  Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TableSortLabel, Chip, Box, TextField, InputAdornment,
-  LinearProgress,
+  LinearProgress, TablePagination
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/SearchRounded'
 import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded'
@@ -36,6 +36,10 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
   const [sortField, setSortField] = useState<'risk' | 'id' | 'imd'>('risk')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
+  
+  // Pagination State
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
 
   const weekIdx = Math.max(0, currentWeek - 1)
 
@@ -52,9 +56,23 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     })
   }, [students, sortField, sortDir, weekIdx, search])
 
+  // Get current page of students
+  const visibleStudents = useMemo(() => {
+    return sorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+  }, [sorted, page, rowsPerPage])
+
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
     else { setSortField(field); setSortDir('desc') }
+  }
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0)
   }
 
   const TrendIcon = ({ s }: { s: StudentProfile }) => {
@@ -65,137 +83,121 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
   }
 
   return (
-    <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC', bgcolor: '#fff', flex: 1 }}>
-      <CardContent sx={{ pb: '16px !important' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
-            Students — Week {currentWeek}
-          </Typography>
-          <TextField
-            size="small"
-            placeholder="Search by ID or IMD band…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: '#9CA3AF' }} /></InputAdornment>,
-              sx: { fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', borderRadius: 1.5 },
-            }}
-            sx={{ width: 240 }}
-          />
-        </Box>
+    <Box className="dashboard-section-card" sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
+          STUDENTS ENROLLED — WEEK {currentWeek}
+        </Typography>
+        <TextField
+          size="small"
+          placeholder="Search by ID or IMD..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: '#9CA3AF' }} /></InputAdornment>,
+            sx: { fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', borderRadius: 1.5 },
+          }}
+          sx={{ width: 240 }}
+        />
+      </Box>
 
-        <TableContainer sx={{ maxHeight: 420 }}>
-          <Table size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                {[
-                  { id: 'id', label: 'Student ID' },
-                  { id: 'imd', label: 'IMD band' },
-                  { id: null, label: 'Age' },
-                  { id: null, label: 'Attempts' },
-                  { id: 'risk', label: 'Risk score' },
-                  { id: null, label: 'Tier' },
-                  { id: null, label: 'Trend' },
-                ].map((col) => (
-                  <TableCell
-                    key={col.label}
-                    sx={{ bgcolor: '#F8F7F4', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', fontWeight: 500, py: 1 }}
-                  >
-                    {col.id ? (
-                      <TableSortLabel
-                        active={sortField === col.id}
-                        direction={sortField === col.id ? sortDir : 'asc'}
-                        onClick={() => handleSort(col.id as typeof sortField)}
-                        sx={{ fontSize: 11, color: '#6B7280 !important' }}
-                      >
-                        {col.label}
-                      </TableSortLabel>
-                    ) : col.label}
+      <TableContainer sx={{ flex: 1, maxHeight: 600 }}>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              {[
+                { id: 'id', label: 'Student ID' },
+                { id: 'imd', label: 'IMD band' },
+                { id: null, label: 'Age' },
+                { id: null, label: 'Att.' },
+                { id: 'risk', label: 'Risk score' },
+                { id: null, label: 'Tier' },
+                { id: null, label: 'Trend' },
+              ].map((col) => (
+                <TableCell
+                  key={col.label}
+                  sx={{ bgcolor: '#F8F7F4', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', fontWeight: 600, py: 1.5 }}
+                >
+                  {col.id ? (
+                    <TableSortLabel
+                      active={sortField === col.id}
+                      direction={sortField === col.id ? sortDir : 'asc'}
+                      onClick={() => handleSort(col.id as typeof sortField)}
+                      sx={{ fontSize: 11, color: '#6B7280 !important' }}
+                    >
+                      {col.label}
+                    </TableSortLabel>
+                  ) : col.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {visibleStudents.map((s) => {
+              const risk = s.risk_by_week[weekIdx] ?? 0
+              const tier = (s.tier_by_week[weekIdx] ?? 1) as Tier
+              const tc = TIER_COLORS[tier]
+              const selected = s.id_student === selectedId
+              const withdrawn = s.final_result === 'Withdrawn'
+
+              return (
+                <TableRow
+                  key={s.id_student}
+                  onClick={() => onSelect(s)}
+                  sx={{
+                    cursor: 'pointer',
+                    opacity: withdrawn ? 0.55 : 1,
+                    bgcolor: selected ? '#F0FDF8' : 'transparent',
+                    '&:hover': { bgcolor: '#F8F7F4' },
+                    borderLeft: selected ? '3px solid #1D9E75' : '3px solid transparent',
+                  }}
+                >
+                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, color: '#0A1628' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      #{s.id_student}
+                      {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: '#F3F4F6' }} />}
+                    </Box>
                   </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sorted.slice(0, 100).map((s) => {
-                const risk = s.risk_by_week[weekIdx] ?? 0
-                const tier = (s.tier_by_week[weekIdx] ?? 1) as Tier
-                const tc = TIER_COLORS[tier]
-                const selected = s.id_student === selectedId
-                const withdrawn = s.final_result === 'Withdrawn'
-
-                return (
-                  <TableRow
-                    key={s.id_student}
-                    onClick={() => onSelect(s)}
-                    sx={{
-                      cursor: 'pointer',
-                      opacity: withdrawn ? 0.55 : 1,
-                      bgcolor: selected ? '#F0FDF8' : 'transparent',
-                      '&:hover': { bgcolor: '#F8F7F4' },
-                      borderLeft: selected ? '3px solid #1D9E75' : '3px solid transparent',
-                    }}
-                  >
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, color: '#0A1628' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                        #{s.id_student}
-                        {withdrawn && (
-                          <Chip
-                            label="Withdrawn"
-                            size="small"
-                            sx={{ fontSize: 10, height: 16, bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', '& .MuiChip-label': { px: 0.75 } }}
-                          />
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>
-                      {s.imd_band}
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>
-                      {s.age_band}
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', textAlign: 'center' }}>
-                      {s.num_of_prev_attempts}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 120 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={risk * 100}
-                          sx={{
-                            flex: 1, height: 6, borderRadius: 3, bgcolor: '#F0EFE9',
-                            '& .MuiLinearProgress-bar': {
-                              bgcolor: risk < 0.33 ? '#1D9E75' : risk < 0.66 ? '#EF9F27' : '#E24B4A',
-                              borderRadius: 3,
-                            },
-                          }}
-                        />
-                        <Typography sx={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', minWidth: 32, color: '#0A1628' }}>
-                          {(risk * 100).toFixed(0)}%
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={tc.label}
-                        size="small"
-                        sx={{ bgcolor: tc.bg, color: tc.text, fontSize: 11, height: 20, fontFamily: '"IBM Plex Mono", monospace' }}
+                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.imd_band}</TableCell>
+                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.age_band}</TableCell>
+                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
+                  <TableCell sx={{ minWidth: 120 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={risk * 100}
+                        sx={{
+                          flex: 1, height: 6, borderRadius: 3, bgcolor: '#F0EFE9',
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: risk < 0.33 ? '#1D9E75' : risk < 0.66 ? '#EF9F27' : '#E24B4A',
+                            borderRadius: 3,
+                          },
+                        }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <TrendIcon s={s} />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        {sorted.length > 100 && (
-          <Typography sx={{ fontSize: 11, color: '#9CA3AF', mt: 1, fontFamily: '"IBM Plex Mono", monospace' }}>
-            Showing 100 of {sorted.length} students
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
+                      <Typography sx={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', minWidth: 32 }}>{(risk * 100).toFixed(0)}%</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={tc.label} size="small" sx={{ bgcolor: tc.bg, color: tc.text, fontSize: 10, height: 18, fontFamily: '"IBM Plex Mono", monospace' }} />
+                  </TableCell>
+                  <TableCell><TrendIcon s={s} /></TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      
+      {/* Dynamic pagination controls */}
+      <TablePagination
+        rowsPerPageOptions={[10, 25, 50]}
+        component="div"
+        count={sorted.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </Box>
   )
 }

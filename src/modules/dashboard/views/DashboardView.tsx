@@ -1,8 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import {
-  Box, Typography, Select, MenuItem, FormControl, InputLabel,
-  Slider, CircularProgress, Alert, Toolbar,
-} from '@mui/material'
+import { Box, Typography, CircularProgress, Alert, Toolbar, Grid } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { container } from '../../../di/container'
@@ -12,41 +9,40 @@ import { RiskTilesRow } from '../components/RiskTilesRow'
 import { TierDistributionChart } from '../components/TierDistributionChart'
 import { MarkDistributionChart } from '../components/MarkDistributionChart'
 import { StudentRiskTable } from '../components/StudentRiskTable'
+import { CourseInfoSections } from '../components/CourseInfoSections'
+import { CourseSchedule } from '../components/CourseSchedule'
+import './DashboardView.css'
 import type { StudentProfile } from '../../../types/domain'
 
 export function DashboardView() {
   const navigate = useNavigate()
   const {
     selectedModule, selectedPresentation, currentWeek,
-    setModule, setPresentation, setCurrentWeek, setNumWeeks, setActiveStudent,
+    setModule, setPresentation, setNumWeeks, setActiveStudent,
   } = useContextStore()
 
   const { user } = useAuthStore()
+  console.log('Auth user in Dashboard:', user)
   const isAdmin = user?.role === 'admin'
   const isAdvisor = user?.role === 'academic_advisor'
-  const isAssistant = user?.role === 'teacher_assistant'
 
-  // Load index of available courses
-  const { data: index, isLoading: indexLoading, error: indexError } = useQuery({
+  const { data: index, error: indexError } = useQuery({
     queryKey: ['oulad-index'],
     queryFn: () => container.dataService.getIndex(),
     retry: false,
   })
 
-  // Compute allowed courses based on role
   const allowedCourses = useMemo(() => {
     if (!index) return []
     if (isAdmin) return index.courses
     if (isAdvisor) return index.courses.filter((c) =>
       user?.years?.some((y) => c.presentation.startsWith(y))
     )
-    // teacher and teacher_assistant use modules + presentations
     return index.courses.filter(
       (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
     )
   }, [index, user, isAdmin, isAdvisor])
 
-  // Auto-select first allowed course when index loads
   useEffect(() => {
     if (allowedCourses.length > 0 && !selectedModule) {
       const first = allowedCourses[0]
@@ -56,14 +52,12 @@ export function DashboardView() {
     }
   }, [allowedCourses, selectedModule])
 
-  // Load course data when module/presentation is selected
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', selectedModule, selectedPresentation],
     queryFn: () => container.dataService.getCourse(selectedModule, selectedPresentation),
     enabled: !!selectedModule && !!selectedPresentation,
   })
 
-  // Update numWeeks when course loads
   useEffect(() => {
     if (course) setNumWeeks(course.num_weeks)
   }, [course, setNumWeeks])
@@ -81,109 +75,57 @@ export function DashboardView() {
     navigate(`/student/${s.id_student}`)
   }
 
-  if (indexError) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Alert severity="warning" sx={{ borderRadius: 2 }}>
-          <strong>No preprocessed data found.</strong><br />
-          Place OULAD CSV files in <code>public/data/oulad/</code> and run <code>npm run preprocess</code>.
-        </Alert>
-      </Box>
-    )
-  }
+  if (indexError) return <Box sx={{ p: 4 }}><Alert severity="warning">Data not found.</Alert></Box>
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      {/* Header toolbar */}
-      <Toolbar
-        sx={{
-          bgcolor: '#fff', borderBottom: '1px solid #E5E3DC', gap: 2, flexWrap: 'wrap',
-          minHeight: '60px !important', px: 3, py: 1,
-        }}
-      >
-        <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif', mr: 1 }}>
-          Class Overview
-        </Typography>
-
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ fontSize: 12 }}>Module</InputLabel>
-          <Select
-            value={selectedModule}
-            label="Module"
-            onChange={(e) => {
-              const mod = e.target.value
-              const firstPres = allowedCourses.find((c) => c.module === mod)?.presentation ?? ''
-              setModule(mod)
-              setPresentation(firstPres)
-            }}
-            sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {moduleOptions.map((m) => (
-              <MenuItem key={m} value={m} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{m}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ fontSize: 12 }}>Presentation</InputLabel>
-          <Select
-            value={selectedPresentation}
-            label="Presentation"
-            onChange={(e) => setPresentation(e.target.value)}
-            sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {presentationOptions.map((p) => (
-              <MenuItem key={p} value={p} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{p}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 240 }}>
-          <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', whiteSpace: 'nowrap' }}>
-            Week
-          </Typography>
-          <Slider
-            min={1}
-            max={numWeeks}
-            value={currentWeek}
-            onChange={(_, v) => setCurrentWeek(v as number)}
-            size="small"
-            sx={{ color: '#1D9E75', flex: 1 }}
-          />
-          <Typography sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', minWidth: 36 }}>
-            {currentWeek}/{numWeeks}
-          </Typography>
-        </Box>
+    <Box className="dashboard-container">
+      <Toolbar className="dashboard-header" sx={{ px: 3 }}>
+        <Typography className="dashboard-header-title">Class Analytics Overview</Typography>
       </Toolbar>
 
-      {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-        {(indexLoading || courseLoading) && (
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 3 }}>
+      <Box className="dashboard-content-scroll">
+        {courseLoading && (
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', p: 3 }}>
             <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-            <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
-              Loading OULAD data…
-            </Typography>
+            <Typography sx={{ fontSize: 13, color: '#6B7280' }}>Loading course data...</Typography>
           </Box>
         )}
 
         {students.length > 0 && (
-          <>
+          <Box sx={{ p: 3 }}>
             <RiskTilesRow students={students} currentWeek={currentWeek} />
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 2, mb: 2, alignItems: 'start' }}>
+            <Box className="dashboard-main-grid">
               <StudentRiskTable
                 students={students}
                 currentWeek={currentWeek}
                 onSelect={handleStudentSelect}
                 selectedId={useContextStore.getState().activeStudent?.id_student ?? null}
               />
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box className="dashboard-chart-column">
                 <TierDistributionChart students={students} numWeeks={numWeeks} currentWeek={currentWeek} />
                 <MarkDistributionChart students={students} currentWeek={currentWeek} />
               </Box>
             </Box>
-          </>
+
+            <Typography className="dashboard-management-title" sx={{ mt: 4, mb: 2 }}>
+              Course Management — {selectedModule}
+            </Typography>
+
+            <Grid container spacing={3} sx={{ pb: 4 }}>
+              <Grid item xs={12} lg={7}>
+                <Box className="dashboard-section-card" sx={{ height: '100%', minHeight: 450 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>Weekly Schedule</Typography>
+                  <CourseSchedule />
+                </Box>
+              </Grid>
+              <Grid item xs={12} lg={5}>
+                <Box className="dashboard-section-card" sx={{ height: '100%', minHeight: 450 }}>
+                  <CourseInfoSections />
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
         )}
       </Box>
     </Box>

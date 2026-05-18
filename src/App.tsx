@@ -5,8 +5,6 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { Shell } from './shared/components/Shell'
 import { DashboardView } from './modules/dashboard/views/DashboardView'
 import { StudentDetailView } from './modules/student/views/StudentDetailView'
-import { ChatView } from './modules/chat/views/ChatView'
-import { MasteryView } from './modules/mastery/views/MasteryView'
 import { LoginView } from './modules/auth/views/LoginView'
 import { useEffect } from 'react'
 import { useAuthStore } from './shared/stores/authStore'
@@ -44,13 +42,12 @@ const theme = createTheme({
 
 function AppRoutes() {
   const { isLoading, isAuthenticated, user, getIdTokenClaims } = useAuth0()
-  const { setUserFromAuth0, clearUser } = useAuthStore()
+  const { setUserFromAuth0, clearUser, user: storeUser } = useAuthStore()
 
   useEffect(() => {
     if (isAuthenticated && user) {
       getIdTokenClaims().then((claims) => {
         setUserFromAuth0(user, claims)
-        
       })
     } else {
       clearUser()
@@ -69,14 +66,20 @@ function AppRoutes() {
     return <LoginView />
   }
 
+  if (!storeUser) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <CircularProgress sx={{ color: '#0F6E56' }} />
+      </Box>
+    )
+  }
+
   return (
     <Shell>
       <Routes>
         <Route path="/" element={<DashboardView />} />
         <Route path="/student/:id" element={<StudentDetailView />} />
         <Route path="/student" element={<StudentDetailView />} />
-        <Route path="/mastery" element={<MasteryView />} />
-        <Route path="/chat" element={<ChatView />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>
