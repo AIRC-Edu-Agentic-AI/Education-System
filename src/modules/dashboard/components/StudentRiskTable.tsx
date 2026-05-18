@@ -9,6 +9,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded'
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded'
 import RemoveIcon from '@mui/icons-material/RemoveRounded'
 import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
+import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -80,7 +81,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
   return (
     <Box className="dashboard-section-card" sx={{ display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>
           STUDENTS ENROLLED — WEEK {currentWeek}
         </Typography>
         <TextField
@@ -89,8 +90,8 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: '#9CA3AF' }} /></InputAdornment>,
-            sx: { fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', borderRadius: 1.5 },
+            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: 'text.muted' }} /></InputAdornment>,
+            sx: { fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 1.5 },
           }}
           sx={{ width: 240 }}
         />
@@ -111,7 +112,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
               ].map((col) => (
                 <TableCell
                   key={col.label}
-                  sx={{ bgcolor: '#F8F7F4', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', fontWeight: 600, py: 1.5 }}
+                  sx={{ bgcolor: '#F8F7F4', fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280', fontWeight: 600, py: 1.5 }}
                 >
                   {col.id ? (
                     <TableSortLabel
@@ -147,15 +148,15 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                     borderLeft: selected ? '3px solid #1D9E75' : '3px solid transparent',
                   }}
                 >
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, color: '#0A1628' }}>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 12, color: '#0A1628' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                       #{s.id_student}
                       {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: '#F3F4F6' }} />}
                     </Box>
                   </TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.imd_band}</TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280' }}>{s.age_band}</TableCell>
-                  <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280' }}>{s.imd_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280' }}>{s.age_band}</TableCell>
+                  <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: '#6B7280', textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
                   <TableCell sx={{ minWidth: 120 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LinearProgress
@@ -169,7 +170,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                           },
                         }}
                       />
-                      <Typography sx={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', minWidth: 32 }}>{(risk * 100).toFixed(0)}%</Typography>
+                      <Typography sx={{ fontSize: 11, fontFamily: tokens.font.mono, minWidth: 32 }}>{(risk * 100).toFixed(0)}%</Typography>
                     </Box>
                   </TableCell>
                   <TableCell>

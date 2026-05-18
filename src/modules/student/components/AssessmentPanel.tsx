@@ -3,6 +3,7 @@ import {
   Card, CardContent, Typography, Table, TableBody, TableCell,
   TableHead, TableRow, Chip, Box, ToggleButtonGroup, ToggleButton, Collapse,
 } from '@mui/material'
+import { tokens } from '../../../theme'
 import type { AssessmentRecord, StudentProfile } from '../../../types/domain'
 import { useStudentStore, type AssessmentFilter, type AssessmentSort } from '../stores/studentStore'
 
@@ -91,7 +92,7 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
               exclusive
               value={assessmentFilter}
               onChange={(_, v) => v && setAssessmentFilter(v)}
-              sx={{ '& .MuiToggleButton-root': { fontSize: 10, fontFamily: '"IBM Plex Mono", monospace', py: 0.25, px: 1, textTransform: 'none', border: '1px solid #E5E3DC' } }}
+              sx={{ '& .MuiToggleButton-root': { fontSize: 10, py: 0.25, px: 1, textTransform: 'none', border: '1px solid #E5E3DC' } }}
             >
               {(['all', 'submitted', 'late', 'missing'] as AssessmentFilter[]).map((f) => (
                 <ToggleButton key={f} value={f}>{f}</ToggleButton>
@@ -103,7 +104,7 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
               exclusive
               value={assessmentSort}
               onChange={(_, v) => v && setAssessmentSort(v)}
-              sx={{ '& .MuiToggleButton-root': { fontSize: 10, fontFamily: '"IBM Plex Mono", monospace', py: 0.25, px: 1, textTransform: 'none', border: '1px solid #E5E3DC' } }}
+              sx={{ '& .MuiToggleButton-root': { fontSize: 10, py: 0.25, px: 1, textTransform: 'none', border: '1px solid #E5E3DC' } }}
             >
               {(['date', 'score', 'weight'] as AssessmentSort[]).map((s) => (
                 <ToggleButton key={s} value={s}>{s}</ToggleButton>
@@ -116,7 +117,7 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
           <TableHead>
             <TableRow>
               {['Type', 'Due (day)', 'Weight', 'Score', 'Status', 'Submitted'].map((h) => (
-                <TableCell key={h} sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#6B7280', bgcolor: '#F8F7F4' }}>
+                <TableCell key={h} sx={{ fontSize: 11, color: '#6B7280', bgcolor: '#F8F7F4' }}>
                   {h}
                 </TableCell>
               ))}
@@ -125,7 +126,7 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
           <TableBody>
             {assessments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} sx={{ fontSize: 12, color: '#9CA3AF', fontFamily: '"IBM Plex Mono", monospace', textAlign: 'center', py: 3 }}>
+                <TableCell colSpan={6} sx={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', py: 3 }}>
                   No assessments match this filter.
                 </TableCell>
               </TableRow>
@@ -141,19 +142,19 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
                     onClick={() => toggleExpand(a.id_assessment)}
                     sx={{ cursor: 'pointer', '&:hover': { bgcolor: '#F8F7F4' } }}
                   >
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}>{a.assessment_type}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}>{a.date_due ?? '—'}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}>{a.weight != null ? `${a.weight}%` : '—'}</TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}>
+                    <TableCell sx={{ fontSize: 11 }}>{a.assessment_type}</TableCell>
+                    <TableCell sx={{ fontSize: 11 }}>{a.date_due ?? '—'}</TableCell>
+                    <TableCell sx={{ fontSize: 11 }}>{a.weight != null ? `${a.weight}%` : '—'}</TableCell>
+                    <TableCell sx={{ fontSize: 11 }}>
                       {a.score != null
                         ? <Chip label={`${a.score}%`} size="small" sx={{ fontSize: 11, height: 20, bgcolor: a.score >= 50 ? '#E1F5EE' : '#FCEBEB', color: a.score >= 50 ? '#0F6E56' : '#A32D2D' }} />
                         : <Typography sx={{ fontSize: 11, color: '#9CA3AF' }}>—</Typography>
                       }
                     </TableCell>
                     <TableCell>
-                      <Chip label={status} size="small" sx={{ fontSize: 10, height: 18, bgcolor: sc.bg, color: sc.text, fontFamily: '"IBM Plex Mono", monospace', '& .MuiChip-label': { px: 0.75 } }} />
+                      <Chip label={status} size="small" sx={{ fontSize: 10, height: 18, bgcolor: sc.bg, color: sc.text, '& .MuiChip-label': { px: 0.75 } }} />
                     </TableCell>
-                    <TableCell sx={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: a.date_submitted ? '#0F6E56' : '#9CA3AF' }}>
+                    <TableCell sx={{ fontSize: 11, color: a.date_submitted ? '#0F6E56' : '#9CA3AF' }}>
                       {a.date_submitted != null ? `Day ${a.date_submitted}` : '—'}
                     </TableCell>
                   </TableRow>
@@ -162,7 +163,7 @@ export function AssessmentPanel({ student, currentWeek }: Props) {
                     <TableRow key={`${a.id_assessment}-detail`} sx={{ bgcolor: '#FAFAF8' }}>
                       <TableCell colSpan={6} sx={{ py: 1, px: 2 }}>
                         <Collapse in={expanded}>
-                          <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+                          <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: tokens.font.mono }}>
                             {status === 'on-time' && a.date_due != null && a.date_submitted != null &&
                               `Submitted ${a.date_due - a.date_submitted} day(s) before the deadline.`}
                             {status === 'late' && a.date_due != null && a.date_submitted != null &&

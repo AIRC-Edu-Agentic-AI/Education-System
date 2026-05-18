@@ -6,6 +6,7 @@ import {
 import SendIcon from '@mui/icons-material/SendRounded'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineRounded'
 import CloseIcon from '@mui/icons-material/CloseRounded'
+import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useContextStore } from '../../../shared/stores/contextStore'
 import { useChatStore } from '../../../shared/stores/chatStore'
@@ -101,7 +102,7 @@ export function ChatPanel() {
         display: 'flex', alignItems: 'center', gap: 1, minHeight: 60, flexShrink: 0,
       }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif' }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#0A1628', fontFamily: tokens.font.sans }}>
             AI Advisor
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, mt: 0.25, flexWrap: 'wrap' }}>
@@ -109,7 +110,7 @@ export function ChatPanel() {
               <Chip
                 label={`${selectedModule} · Wk ${currentWeek}`}
                 size="small"
-                sx={{ bgcolor: '#E1F5EE', color: '#0F6E56', fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, height: 18 }}
+                sx={{ bgcolor: '#E1F5EE', color: '#0F6E56', fontFamily: tokens.font.mono, fontSize: 10, height: 18 }}
               />
             )}
             {activeStudent && (
@@ -117,7 +118,7 @@ export function ChatPanel() {
                 label={`#${activeStudent.id_student}`}
                 size="small"
                 onDelete={() => useContextStore.getState().setActiveStudent(null)}
-                sx={{ bgcolor: '#FAEEDA', color: '#854F0B', fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, height: 18 }}
+                sx={{ bgcolor: '#FAEEDA', color: '#854F0B', fontFamily: tokens.font.mono, fontSize: 10, height: 18 }}
               />
             )}
           </Box>
@@ -146,7 +147,7 @@ export function ChatPanel() {
 
         {messages.length === 0 && (
           <Box sx={{ pt: 3 }}>
-            <Typography sx={{ fontSize: 12, color: '#9CA3AF', fontFamily: '"IBM Plex Sans", sans-serif', mb: 2, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 12, color: '#9CA3AF', fontFamily: tokens.font.sans, mb: 2, textAlign: 'center' }}>
               Ask about risk, interventions, or engagement.
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
@@ -156,7 +157,7 @@ export function ChatPanel() {
                   onClick={() => sendMessage(p)}
                   sx={{
                     fontSize: 12,
-                    fontFamily: '"IBM Plex Sans", sans-serif',
+                    fontFamily: tokens.font.sans,
                     bgcolor: '#F8F7F4',
                     border: '1px solid #E5E3DC',
                     borderRadius: 1.5,
@@ -202,7 +203,7 @@ export function ChatPanel() {
           disabled={isStreaming}
           size="small"
           sx={{
-            '& .MuiOutlinedInput-root': { borderRadius: 1.5, fontSize: 12, fontFamily: '"IBM Plex Sans", sans-serif' },
+            '& .MuiOutlinedInput-root': { borderRadius: 1.5, fontSize: 12, fontFamily: tokens.font.sans },
           }}
         />
         <IconButton

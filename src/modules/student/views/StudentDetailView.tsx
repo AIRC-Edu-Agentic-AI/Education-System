@@ -26,7 +26,7 @@ export function StudentDetailView() {
   if (isLoading) return (
     <Box sx={{ display: 'flex', p: 4, gap: 1.5, alignItems: 'center' }}>
       <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-      <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
         Loading student data…
       </Typography>
     </Box>
@@ -49,7 +49,7 @@ export function StudentDetailView() {
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} size="small" sx={{ color: '#6B7280', fontSize: 12 }}>
           Overview
         </Button>
-        <Typography sx={{ fontSize: 14, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Sans", sans-serif', flex: 1 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, color: 'text.primary', flex: 1 }}>
           Student #{student.id_student} — {selectedModule} {selectedPresentation}
         </Typography>
         <Button variant="contained" size="small" startIcon={<ChatIcon />} onClick={handleOpenChat}

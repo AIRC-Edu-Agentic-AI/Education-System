@@ -43,7 +43,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <Box>
             <Typography
               sx={{
-                fontFamily: '"IBM Plex Mono", monospace',
+                fontFamily: tokens.font.mono,
                 fontSize: 13,
                 fontWeight: 500,
                 color: '#fff',
@@ -52,7 +52,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               RTI / MTSS
             </Typography>
-            <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+            <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: tokens.font.mono }}>
               Teacher Dashboard
             </Typography>
           </Box>
@@ -63,15 +63,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {/* Context badge */}
         {hasData && (
           <Box sx={{ px: 2, py: 1.5 }}>
-            <Typography sx={{ fontSize: 10, color: '#4B5563', mb: 0.5, fontFamily: '"IBM Plex Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <Typography sx={{ fontSize: 10, color: '#4B5563', mb: 0.5, fontFamily: tokens.font.mono, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Active context
             </Typography>
             <Chip
               label={`${selectedModule} · ${selectedPresentation}`}
               size="small"
-              sx={{ bgcolor: '#1D9E7522', color: '#5DCAA5', fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', height: 22 }}
+              sx={{ bgcolor: '#1D9E7522', color: '#5DCAA5', fontSize: 11, fontFamily: tokens.font.mono, height: 22 }}
             />
-            <Typography sx={{ fontSize: 11, color: '#6B7280', mt: 0.5, fontFamily: '"IBM Plex Mono", monospace' }}>
+            <Typography sx={{ fontSize: 11, color: '#6B7280', mt: 0.5, fontFamily: tokens.font.mono }}>
               Week {currentWeek}
             </Typography>
             {activeStudent && (
@@ -116,7 +116,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       primary={mod.label}
                       primaryTypographyProps={{
                         fontSize: 13,
-                        fontFamily: '"IBM Plex Sans", sans-serif',
+                        fontFamily: tokens.font.sans,
                         color: active ? '#fff' : '#9CA3AF',
                         fontWeight: active ? 500 : 400,
                       }}
@@ -148,7 +148,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               primary="AI advisor"
               primaryTypographyProps={{
                 fontSize: 13,
-                fontFamily: '"IBM Plex Sans", sans-serif',
+                fontFamily: tokens.font.sans,
                 color: chatPanelOpen ? '#fff' : '#9CA3AF',
                 fontWeight: chatPanelOpen ? 500 : 400,
               }}
@@ -158,7 +158,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         <Divider sx={{ borderColor: '#1E2D45' }} />
         <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography sx={{ fontSize: 10, color: '#374151', fontFamily: '"IBM Plex Mono", monospace' }}>
+          <Typography sx={{ fontSize: 10, color: '#374151', fontFamily: tokens.font.mono }}>
             OULAD · Pilot v0.1
           </Typography>
         </Box>

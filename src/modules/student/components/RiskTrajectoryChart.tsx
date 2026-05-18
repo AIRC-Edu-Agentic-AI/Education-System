@@ -72,20 +72,20 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Box>
-            <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+            <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: tokens.font.mono }}>
               Risk score — Week {currentWeek}
             </Typography>
-            <Typography sx={{ fontSize: 32, fontWeight: 600, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', lineHeight: 1.2 }}>
+            <Typography sx={{ fontSize: 32, fontWeight: 600, fontFamily: tokens.font.mono, color: '#0A1628', lineHeight: 1.2 }}>
               {(risk * 100).toFixed(0)}%
             </Typography>
           </Box>
           <Chip label={tc.label} sx={{ bgcolor: tc.subtle, color: tc.text, fontWeight: 500, fontSize: 13 }} />
           <Chip
             label={`LSTM ${horizon.replace('w', 'W')}`}
-            sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11 }}
+            sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontSize: 11 }}
           />
           {student.final_result === 'Withdrawn' && (
-            <Chip label="Withdrawn" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', fontWeight: 500, fontSize: 13 }} />
+            <Chip label="Withdrawn" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 500, fontSize: 13 }} />
           )}
         </Box>
 
@@ -96,18 +96,18 @@ export function RiskTrajectoryChart({ student, currentWeek }: Props) {
         <ResponsiveContainer width="100%" height={180}>
           <ComposedChart data={data} margin={{ top: 4, right: 36, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F0EFE9" />
-            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
-            <YAxis yAxisId="left"  domain={[0, 1]}   tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
-            <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} tickFormatter={(v) => `${v}%`} />
+            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
+            <YAxis yAxisId="left"  domain={[0, 1]}   tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
+            <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 10, fontFamily: tokens.font.mono }} tickFormatter={(v) => `${v}%`} />
             <Tooltip
-              contentStyle={{ fontSize: 12, fontFamily: '"IBM Plex Mono"', borderRadius: 8 }}
+              contentStyle={{ fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 8 }}
               labelFormatter={(v) => `Week ${v}`}
               formatter={(value: number, name: string) => {
                 if (name === 'riskSolid' || name === 'Risk') return [`${(value * 100).toFixed(0)}%`, 'Risk']
                 return [`${value.toFixed(1)}%`, 'Weighted score']
               }}
             />
-            <Legend iconType="plainline" wrapperStyle={{ fontSize: 11, fontFamily: '"IBM Plex Mono", monospace' }}
+            <Legend iconType="plainline" wrapperStyle={{ fontSize: 11, fontFamily: tokens.font.mono }}
               formatter={(v) => v === 'Risk' ? 'Risk (LSTM)' : 'Weighted score'} />
             <ReferenceLine yAxisId="left" y={0.33} stroke="#1D9E75" strokeDasharray="3 3" />
             <ReferenceLine yAxisId="left" y={0.66} stroke={tokens.brand.secondary} strokeDasharray="3 3" />

@@ -3,6 +3,7 @@ import {
   Box, FormControl, InputLabel, Select, MenuItem, Slider, Typography,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
+import { tokens } from '../../theme'
 import { container } from '../../di/container'
 import { useContextStore } from '../stores/contextStore'
 
@@ -63,10 +64,10 @@ export function ContextBar() {
             setModule(mod)
             setPresentation(firstPres)
           }}
-          sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
+          sx={{ fontSize: 12, fontFamily: tokens.font.mono }}
         >
           {moduleOptions.map((m) => (
-            <MenuItem key={m} value={m} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{m}</MenuItem>
+            <MenuItem key={m} value={m} sx={{ fontSize: 12, fontFamily: tokens.font.mono }}>{m}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -77,16 +78,16 @@ export function ContextBar() {
           value={selectedPresentation}
           label="Presentation"
           onChange={(e) => setPresentation(e.target.value)}
-          sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}
+          sx={{ fontSize: 12, fontFamily: tokens.font.mono }}
         >
           {presentationOptions.map((p) => (
-            <MenuItem key={p} value={p} sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace' }}>{p}</MenuItem>
+            <MenuItem key={p} value={p} sx={{ fontSize: 12, fontFamily: tokens.font.mono }}>{p}</MenuItem>
           ))}
         </Select>
       </FormControl>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 220, flex: 1, maxWidth: 360 }}>
-        <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', whiteSpace: 'nowrap' }}>
+        <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: tokens.font.mono, whiteSpace: 'nowrap' }}>
           Week
         </Typography>
         <Slider
@@ -97,7 +98,7 @@ export function ContextBar() {
           size="small"
           sx={{ color: '#1D9E75' }}
         />
-        <Typography sx={{ fontSize: 12, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628', minWidth: 36 }}>
+        <Typography sx={{ fontSize: 12, fontFamily: tokens.font.mono, color: '#0A1628', minWidth: 36 }}>
           {currentWeek}/{numWeeks}
         </Typography>
       </Box>

@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import {
   Card, CardContent, Typography, Box, Chip, CircularProgress, Alert,
 } from '@mui/material'
+import { tokens } from '../../../theme'
 import { useQuery } from '@tanstack/react-query'
 import { container } from '../../../di/container'
 import type { ConceptNode, ConceptEdge, StudentProfile } from '../../../types/domain'
@@ -146,7 +147,7 @@ export function MasteryGraphCard({ student, module }: Props) {
             { label: 'Needs support',   bg: '#FCEBEB', color: '#791F1F' },
           ].map((l) => (
             <Chip key={l.label} label={l.label} size="small"
-              sx={{ bgcolor: l.bg, color: l.color, fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', height: 22 }}
+              sx={{ bgcolor: l.bg, color: l.color, fontSize: 11, height: 22 }}
             />
           ))}
         </Box>
@@ -154,7 +155,7 @@ export function MasteryGraphCard({ student, module }: Props) {
         {isLoading && (
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', py: 4, justifyContent: 'center' }}>
             <CircularProgress size={18} sx={{ color: '#1D9E75' }} />
-            <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace' }}>
+            <Typography sx={{ fontSize: 13, color: '#6B7280', fontFamily: tokens.font.mono }}>
               Building concept graph…
             </Typography>
           </Box>
@@ -172,30 +173,30 @@ export function MasteryGraphCard({ student, module }: Props) {
                 <Chip
                   label={masteryLabel(selectedNode.mastery)}
                   size="small"
-                  sx={{ bgcolor: nodeColor(selectedNode.mastery).f, color: nodeColor(selectedNode.mastery).t, fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, height: 20 }}
+                  sx={{ bgcolor: nodeColor(selectedNode.mastery).f, color: nodeColor(selectedNode.mastery).t, fontSize: 11, height: 20 }}
                 />
               </Box>
-              <Typography sx={{ fontSize: 20, fontWeight: 600, fontFamily: '"IBM Plex Mono", monospace', color: nodeColor(selectedNode.mastery).s }}>
+              <Typography sx={{ fontSize: 20, fontWeight: 600, fontFamily: tokens.font.mono, color: nodeColor(selectedNode.mastery).s }}>
                 {Math.round(selectedNode.mastery * 100)}%
               </Typography>
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: '"IBM Plex Mono", monospace', mb: 0.25 }}>Evidence</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628' }}>{selectedNode.evidence_count} assessments</Typography>
+                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Evidence</Typography>
+                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: '#0A1628' }}>{selectedNode.evidence_count} assessments</Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: '"IBM Plex Mono", monospace', mb: 0.25 }}>Confidence</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: '"IBM Plex Mono", monospace', color: '#0A1628' }}>{Math.round(selectedNode.confidence * 100)}%</Typography>
+                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Confidence</Typography>
+                <Typography sx={{ fontSize: 12, fontWeight: 500, fontFamily: tokens.font.mono, color: '#0A1628' }}>{Math.round(selectedNode.confidence * 100)}%</Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: '"IBM Plex Mono", monospace', mb: 0.25 }}>Prerequisites</Typography>
+                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Prerequisites</Typography>
                 <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
                   {graph?.edges.filter((e) => e.target === selectedNode.id).map((e) => graph.nodes.find((n) => n.id === e.source)?.label).join(', ') || 'None'}
                 </Typography>
               </Box>
               <Box>
-                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: '"IBM Plex Mono", monospace', mb: 0.25 }}>Unlocks</Typography>
+                <Typography sx={{ fontSize: 11, color: '#9CA3AF', fontFamily: tokens.font.mono, mb: 0.25 }}>Unlocks</Typography>
                 <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
                   {graph?.edges.filter((e) => e.source === selectedNode.id).map((e) => graph.nodes.find((n) => n.id === e.target)?.label).join(', ') || 'None'}
                 </Typography>
@@ -204,7 +205,7 @@ export function MasteryGraphCard({ student, module }: Props) {
           </Box>
         )}
 
-        <Alert severity="info" icon={false} sx={{ mt: 1.5, borderRadius: 1.5, fontSize: 11, fontFamily: '"IBM Plex Mono", monospace', py: 0.25 }}>
+        <Alert severity="info" icon={false} sx={{ mt: 1.5, borderRadius: 1.5, fontSize: 11, fontFamily: tokens.font.mono, py: 0.25 }}>
           Mock data — concept nodes sourced from G_course (Neo4j) in deployment
         </Alert>
       </CardContent>

@@ -1,4 +1,5 @@
 import { Card, CardContent, Typography, TextField } from '@mui/material'
+import { tokens } from '../../../theme'
 import { useStudentStore } from '../stores/studentStore'
 
 interface Props {
@@ -25,7 +26,7 @@ export function StudentNotesCard({ studentId }: Props) {
           InputProps={{
             sx: {
               fontSize: 12,
-              fontFamily: '"IBM Plex Mono", monospace',
+              fontFamily: tokens.font.mono,
               color: '#0A1628',
               '& textarea': { resize: 'vertical' },
             },
@@ -40,7 +41,7 @@ export function StudentNotesCard({ studentId }: Props) {
           }}
         />
         {value.length > 0 && (
-          <Typography sx={{ fontSize: 10, color: '#9CA3AF', mt: 0.5, fontFamily: '"IBM Plex Mono", monospace', textAlign: 'right' }}>
+          <Typography sx={{ fontSize: 10, color: '#9CA3AF', mt: 0.5, fontFamily: tokens.font.mono, textAlign: 'right' }}>
             Saved locally · {value.length} chars
           </Typography>
         )}

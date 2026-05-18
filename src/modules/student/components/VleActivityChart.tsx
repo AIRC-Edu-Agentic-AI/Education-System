@@ -1,5 +1,6 @@
 import { Card, CardContent, Typography } from '@mui/material'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -19,10 +20,10 @@ export function VleActivityChart({ student, currentWeek }: Props) {
         <ResponsiveContainer width="100%" height={120}>
           <BarChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F0EFE9" />
-            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
-            <YAxis tick={{ fontSize: 10, fontFamily: '"IBM Plex Mono"' }} />
+            <XAxis dataKey="week" tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
+            <YAxis tick={{ fontSize: 10, fontFamily: tokens.font.mono }} />
             <Tooltip
-              contentStyle={{ fontSize: 12, fontFamily: '"IBM Plex Mono"', borderRadius: 8 }}
+              contentStyle={{ fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 8 }}
               labelFormatter={(v) => `Week ${v}`}
             />
             <ReferenceLine x={currentWeek} stroke="#0A1628" strokeDasharray="4 3" strokeWidth={1.5} />

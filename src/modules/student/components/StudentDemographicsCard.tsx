@@ -1,4 +1,5 @@
 import { Card, CardContent, Typography, Box } from '@mui/material'
+import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
 interface Props {
@@ -27,13 +28,13 @@ export function StudentDemographicsCard({ student }: Props) {
   return (
     <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid #E5E3DC', height: '100%' }}>
       <CardContent>
-        <Typography sx={{ fontSize: 11, color: '#6B7280', fontFamily: '"IBM Plex Mono", monospace', mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <Typography sx={{ fontSize: 11, color: 'text.secondary', fontFamily: tokens.font.mono, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Demographics
         </Typography>
         {rows.map(([k, v]) => (
           <Box key={k} sx={ROW_SX}>
             <Typography sx={{ fontSize: 12, color: '#6B7280' }}>{k}</Typography>
-            <Typography sx={{ fontSize: 12, fontWeight: 500, color: '#0A1628', fontFamily: '"IBM Plex Mono", monospace' }}>{v}</Typography>
+            <Typography sx={{ fontSize: 12, fontWeight: 500, color: 'text.primary', fontFamily: tokens.font.mono }}>{v}</Typography>
           </Box>
         ))}
       </CardContent>
