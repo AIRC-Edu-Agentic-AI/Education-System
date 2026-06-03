@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/providers/providers.dart';
+import 'package:student_agent/screens/notifications/notifications_screen.dart';
 import 'package:student_agent/screens/landing/widgets/academic_progress_card.dart';
 import 'package:student_agent/screens/landing/widgets/this_week_section.dart';
 import 'package:student_agent/widgets/glass_card.dart';
@@ -68,7 +69,7 @@ class DashboardScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.notifications_outlined,
                     color: AppTheme.textSecondary),
-                onPressed: () {},
+                onPressed: () => context.push('/notifications'),
                 padding: EdgeInsets.zero,
               ),
               if (unreadCount > 0)
@@ -370,59 +371,39 @@ class _RiskCard extends StatelessWidget {
   }
 }
 
-// ── Notifications ─────────────────────────────────────────────────────────────
+// ── Notifications (compact dashboard preview) ─────────────────────────────────
 class _NotificationsSection extends ConsumerWidget {
   final List<NotificationModel> notifications;
   const _NotificationsSection({required this.notifications});
 
-  Color _dotColor(String type) => switch (type) {
-        'deadline_critical' => AppTheme.danger,
-        'deadline_warning' => AppTheme.warning,
-        'risk_intervention' => AppTheme.danger,
-        _ => AppTheme.primaryBlue,
-      };
-
-  void _handleAction(
-    BuildContext context,
-    WidgetRef ref,
-    NotificationModel notif,
-    NotificationAction action,
-  ) {
-    ref.read(notificationProvider.notifier).markRead(notif.id);
-    switch (action.action) {
-      case 'open_chat':
-        context.push('/chat');
-      case 'update_milestone':
-        final p = action.payload;
-        final idAssessment = p['id_assessment'] as int?;
-        final milestoneId = p['milestone_id'] as String? ?? '';
-        final status = p['status'] as String? ?? 'done';
-        if (idAssessment != null) {
-          final api = ref.read(apiServiceProvider);
-          final studentId = ref.read(activeStudentIdProvider);
-          api.updateMilestoneStatus(
-            studentId: studentId,
-            idAssessment: idAssessment,
-            milestoneId: milestoneId,
-            status: status,
-          );
-          ref.invalidate(assignmentMilestonesProvider(idAssessment));
-        }
-      case 'snooze':
-        break;
-    }
-  }
+  static const _previewLimit = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final preview = notifications.take(_previewLimit).toList();
+    final extra = notifications.length - preview.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Thông báo (${notifications.length})',
-            style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.textSecondary)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Thông báo (${notifications.length})',
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textSecondary)),
+            GestureDetector(
+              onTap: () => context.push('/notifications'),
+              child: const Text('Xem tất cả',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.primaryBlue)),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
@@ -435,79 +416,30 @@ class _NotificationsSection extends ConsumerWidget {
                 border: Border.all(color: AppTheme.cardBorder, width: 1),
               ),
               child: Column(
-                children: notifications
-                    .asMap()
-                    .entries
-                    .map((e) => Column(
-                          children: [
-                            if (e.key > 0)
-                              const Divider(
-                                  height: 0, indent: 14, endIndent: 14),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        margin:
-                                            const EdgeInsets.only(top: 4),
-                                        decoration: BoxDecoration(
-                                          color: _dotColor(e.value.type),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(e.value.title,
-                                                style: const TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight:
-                                                        FontWeight.w500,
-                                                    color:
-                                                        AppTheme.textPrimary)),
-                                            const SizedBox(height: 2),
-                                            Text(e.value.body,
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: AppTheme
-                                                        .textSecondary)),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (e.value.actionOptions.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: 8,
-                                      children: e.value.actionOptions
-                                          .map((action) => _ActionChip(
-                                                action: action,
-                                                onTap: () => _handleAction(
-                                                    context,
-                                                    ref,
-                                                    e.value,
-                                                    action),
-                                              ))
-                                          .toList(),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ))
-                    .toList(),
+                children: [
+                  ...preview.asMap().entries.map((e) => Column(
+                        children: [
+                          if (e.key > 0)
+                            const Divider(
+                                height: 0, indent: 14, endIndent: 14),
+                          _PreviewTile(notification: e.value),
+                        ],
+                      )),
+                  if (extra > 0) ...[
+                    const Divider(height: 0, indent: 14, endIndent: 14),
+                    GestureDetector(
+                      onTap: () => context.push('/notifications'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        alignment: Alignment.center,
+                        child: Text('+ $extra thông báo khác',
+                            style: const TextStyle(
+                                fontSize: 12, color: AppTheme.textMuted)),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
@@ -518,37 +450,53 @@ class _NotificationsSection extends ConsumerWidget {
   }
 }
 
-class _ActionChip extends StatelessWidget {
-  final NotificationAction action;
-  final VoidCallback onTap;
-  const _ActionChip({required this.action, required this.onTap});
+class _PreviewTile extends StatelessWidget {
+  final NotificationModel notification;
+  const _PreviewTile({required this.notification});
 
   @override
   Widget build(BuildContext context) {
-    final isChat = action.action == 'open_chat';
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isChat
-              ? AppTheme.primaryBlue.withValues(alpha: 0.15)
-              : AppTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isChat
-                ? AppTheme.primaryBlue.withValues(alpha: 0.4)
-                : AppTheme.cardBorder,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          action.label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: isChat ? AppTheme.primaryBlue : AppTheme.textSecondary,
-          ),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.push('/notifications'),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: notificationColor(notification.type),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(notification.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(notification.body,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppTheme.textSecondary)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppTheme.textMuted, size: 18),
+          ],
         ),
       ),
     );

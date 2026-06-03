@@ -54,9 +54,11 @@ STUDENT = {
         "studied_credits": 60,
     },
     "enrollments": [
+        # ── PRIMARY: at-risk course — drives the whole demo ──────────────────
         {
-            "code_module": "BBB",
-            "code_presentation": "2013J",
+            "code_module": "DATA201",
+            "code_presentation": "2024A",
+            "title": "Phân tích Dữ liệu & Thống kê",
             "module_length": 30,
             "registration_date": -15,
             "unregistration_date": None,
@@ -72,7 +74,7 @@ STUDENT = {
                     "submitted_date": 18,
                     "is_banked": False,
                 },
-                # TMA-02: NOT submitted, due in 3 days → deadline_warning
+                # TMA-02: NOT submitted, due in 3 days → deadline_warning + milestones
                 {
                     "id_assessment": 1753,
                     "type": "TMA",
@@ -82,7 +84,6 @@ STUDENT = {
                     "submitted_date": None,
                     "is_banked": False,
                 },
-                # CMA-01: future, no trigger
                 {
                     "id_assessment": 1754,
                     "type": "CMA",
@@ -92,7 +93,6 @@ STUDENT = {
                     "submitted_date": None,
                     "is_banked": False,
                 },
-                # Exam: future
                 {
                     "id_assessment": 1755,
                     "type": "Exam",
@@ -111,10 +111,90 @@ STUDENT = {
                     "oucontent": 1100, "quiz": 420,
                     "url": 312, "homepage": 483,
                 },
+                # Declining trend (weeks 1–7) — pairs with rising risk history
                 "weekly_clicks": [
-                    0, 142, 98, 210, 330, 287, 415, 398,
-                    *([0] * 22),
+                    320, 410, 380, 300, 210, 120, 45,
+                    *([0] * 23),
                 ],
+            },
+        },
+        # ── Đại số Tuyến tính — mixed performance ────────────────────────────
+        {
+            "code_module": "MATH102",
+            "code_presentation": "2024A",
+            "title": "Đại số Tuyến tính",
+            "module_length": 30,
+            "registration_date": -15,
+            "unregistration_date": None,
+            "final_result": None,
+            "assessments": [
+                {"id_assessment": 2010, "type": "TMA", "due_date": 22,
+                 "weight": 20, "score": 65, "submitted_date": 21, "is_banked": False},
+                {"id_assessment": 2011, "type": "CMA", "due_date": 55,
+                 "weight": 30, "score": 58, "submitted_date": 54, "is_banked": False},
+                {"id_assessment": 2012, "type": "Exam", "due_date": 250,
+                 "weight": 50, "score": None, "submitted_date": None, "is_banked": False},
+            ],
+            "vle_summary": {
+                "total_clicks": 2110,
+                "last_active_day": 45,
+                "by_activity_type": {
+                    "resource": 720, "oucontent": 640, "quiz": 410, "homepage": 340,
+                },
+                "weekly_clicks": [180, 220, 240, 210, 190, 160, 140, *([0] * 23)],
+            },
+        },
+        # ── Lập trình Python — strong performance ────────────────────────────
+        {
+            "code_module": "COMP101",
+            "code_presentation": "2024A",
+            "title": "Lập trình Python",
+            "module_length": 30,
+            "registration_date": -15,
+            "unregistration_date": None,
+            "final_result": None,
+            "assessments": [
+                {"id_assessment": 3010, "type": "TMA", "due_date": 20,
+                 "weight": 15, "score": 88, "submitted_date": 19, "is_banked": False},
+                {"id_assessment": 3011, "type": "TMA", "due_date": 48,
+                 "weight": 25, "score": 79, "submitted_date": 47, "is_banked": False},
+                {"id_assessment": 3012, "type": "Exam", "due_date": 255,
+                 "weight": 60, "score": None, "submitted_date": None, "is_banked": False},
+            ],
+            "vle_summary": {
+                "total_clicks": 5240,
+                "last_active_day": 46,
+                "by_activity_type": {
+                    "resource": 1480, "oucontent": 1620, "quiz": 1100,
+                    "forumng": 540, "homepage": 500,
+                },
+                "weekly_clicks": [410, 460, 520, 480, 500, 470, 510, *([0] * 23)],
+            },
+        },
+        # ── Xác suất & Thống kê Suy luận — on track ──────────────────────────
+        {
+            "code_module": "STAT110",
+            "code_presentation": "2024A",
+            "title": "Xác suất & Thống kê Suy luận",
+            "module_length": 30,
+            "registration_date": -15,
+            "unregistration_date": None,
+            "final_result": None,
+            "assessments": [
+                {"id_assessment": 4010, "type": "TMA", "due_date": 25,
+                 "weight": 20, "score": 71, "submitted_date": 24, "is_banked": False},
+                {"id_assessment": 4011, "type": "CMA", "due_date": 60,
+                 "weight": 20, "score": None, "submitted_date": None, "is_banked": False},
+                {"id_assessment": 4012, "type": "Exam", "due_date": 258,
+                 "weight": 60, "score": None, "submitted_date": None, "is_banked": False},
+            ],
+            "vle_summary": {
+                "total_clicks": 2980,
+                "last_active_day": 44,
+                "by_activity_type": {
+                    "resource": 980, "oucontent": 870, "quiz": 620, "homepage": 510,
+                },
+                "weekly_clicks": [260, 300, 280, 310, 270, 240, 230, *([0] * 23)],
             },
         },
     ],
@@ -135,13 +215,15 @@ TIMETABLE = {
     "total_weeks": 30,
     "streak_days": 3,
     "lectures": [
-        {"title": "Phân tích dữ liệu — BBB", "subtitle": "Thứ 2, 08:00",
+        {"title": "Phân tích Dữ liệu & Thống kê", "subtitle": "Thứ 2, 08:00",
          "is_completed": False, "is_urgent": False},
-        {"title": "Hồi quy tuyến tính — BBB", "subtitle": "Thứ 4, 10:00",
+        {"title": "Đại số Tuyến tính", "subtitle": "Thứ 4, 10:00",
          "is_completed": False, "is_urgent": False},
     ],
     "classes": [
-        {"title": "Lab thực hành Python", "subtitle": "Thứ 3, 13:00 · Phòng B204",
+        {"title": "Lab Lập trình Python", "subtitle": "Thứ 3, 13:00 · Phòng B204",
+         "is_completed": False, "is_urgent": False},
+        {"title": "Xác suất & Thống kê Suy luận", "subtitle": "Thứ 5, 09:00",
          "is_completed": False, "is_urgent": False},
     ],
     "assignments": [
@@ -154,7 +236,7 @@ TIMETABLE = {
 STUDY_PLAN = {
     "student_id": STUDENT_ID,
     "sessions": [
-        {"subject": "Ôn tập Tuần 6 — BBB", "type": "review",
+        {"subject": "Ôn tập Tuần 6 — Phân tích Dữ liệu", "type": "review",
          "duration": 45, "day": "Thứ 2", "time": "19:00", "sm2_interval": 3},
         {"subject": "Luyện tập TMA-02", "type": "practice",
          "duration": 90, "day": "Thứ 4", "time": "19:30", "sm2_interval": None},
@@ -183,7 +265,7 @@ KNOWLEDGE_STATES = {
 MILESTONES = {
     "student_id": STUDENT_ID,
     "id_assessment": 1753,
-    "module": "BBB",
+    "module": "DATA201",
     "title": "TMA-02 — Phân tích hồi quy",
     "milestones": [
         {"id": "m1", "title": "Đọc đề bài & tài liệu tham khảo",
@@ -198,11 +280,25 @@ MILESTONES = {
     "created_at": datetime.utcnow().isoformat(),
 }
 
+RISK_HISTORY = {
+    "student_id": STUDENT_ID,
+    "entries": [
+        {"week": 1, "score": 0.30, "tier": 1},
+        {"week": 2, "score": 0.38, "tier": 1},
+        {"week": 3, "score": 0.46, "tier": 2},
+        {"week": 4, "score": 0.55, "tier": 2},
+        {"week": 5, "score": 0.66, "tier": 2},
+        {"week": 6, "score": 0.74, "tier": 3},
+        {"week": 7, "score": 0.82, "tier": 3},
+    ],
+    "updated_at": datetime.utcnow().isoformat(),
+}
+
 RESOURCES = [
     {
         "student_id": STUDENT_ID,
         "title": "Slide Tuần 7 — Kiểm định giả thuyết",
-        "module": "BBB",
+        "module": "DATA201",
         "type": "slide",
         "subject": "Kiểm định giả thuyết",
         "url": "https://example.com/bbb-w7-slides.pdf",
@@ -212,7 +308,7 @@ RESOURCES = [
     {
         "student_id": STUDENT_ID,
         "title": "Hướng dẫn hồi quy tuyến tính với Python",
-        "module": "BBB",
+        "module": "DATA201",
         "type": "document",
         "subject": "Hồi quy tuyến tính",
         "url": "https://example.com/linear-regression.pdf",
@@ -222,7 +318,7 @@ RESOURCES = [
     {
         "student_id": STUDENT_ID,
         "title": "Video: Thống kê cơ bản từ đầu",
-        "module": "BBB",
+        "module": "DATA201",
         "type": "video",
         "subject": "Thống kê cơ bản",
         "url": "https://example.com/stats-basics",
@@ -232,7 +328,7 @@ RESOURCES = [
     {
         "student_id": STUDENT_ID,
         "title": "Quiz tự luyện — Đại số tuyến tính",
-        "module": "BBB",
+        "module": "DATA201",
         "type": "quiz",
         "subject": "Đại số tuyến tính",
         "url": "https://example.com/linear-algebra-quiz",
@@ -262,7 +358,8 @@ async def seed() -> None:
     # Clear existing demo data for this student
     collections = [
         "students", "timetable_blocks", "study_plans",
-        "knowledge_states", "assignment_milestones", "resources", "notifications",
+        "knowledge_states", "assignment_milestones", "resources",
+        "notifications", "risk_history",
     ]
     for col in collections:
         result = await db[col].delete_many({"student_id": STUDENT_ID})
@@ -281,6 +378,9 @@ async def seed() -> None:
     await db.knowledge_states.insert_one(KNOWLEDGE_STATES)
     n_states = len(KNOWLEDGE_STATES["states"])
     print(f"  Inserted knowledge states ({n_states} concepts)")
+
+    await db.risk_history.insert_one(RISK_HISTORY)
+    print(f"  Inserted risk history ({len(RISK_HISTORY['entries'])} weeks)")
 
     await db.assignment_milestones.insert_one(MILESTONES)
     overdue_count = sum(

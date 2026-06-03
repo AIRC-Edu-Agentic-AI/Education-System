@@ -1,7 +1,7 @@
 # ── student.py ────────────────────────────────────────────────────────────────
 from fastapi import APIRouter
 from db.mongodb import get_db
-from db.mock_data import MOCK_STUDENT, MOCK_KNOWLEDGE_STATES
+from db.mock_data import MOCK_STUDENT, MOCK_KNOWLEDGE_STATES, MOCK_RISK_HISTORY
 
 router = APIRouter()
 
@@ -27,3 +27,15 @@ async def get_knowledge(student_id: int):
     if not doc:
         return MOCK_KNOWLEDGE_STATES.get("states", {})
     return doc.get("states", {})
+
+
+@router.get("/{student_id}/risk-history")
+async def get_risk_history(student_id: int):
+    """Return weekly risk score snapshots for the student."""
+    db = get_db()
+    if db is None:
+        return MOCK_RISK_HISTORY.get("entries", [])
+    doc = await db.risk_history.find_one({"student_id": student_id})
+    if not doc:
+        return MOCK_RISK_HISTORY.get("entries", [])
+    return doc.get("entries", [])

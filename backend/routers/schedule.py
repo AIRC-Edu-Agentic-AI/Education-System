@@ -11,7 +11,10 @@ async def get_weekly_schedule(student_id: int):
     if db is None:
         return MOCK_SCHEDULE
     doc = await db.timetable_blocks.find_one({"student_id": student_id})
-    return doc or MOCK_SCHEDULE
+    if not doc:
+        return MOCK_SCHEDULE
+    doc.pop("_id", None)
+    return doc
 
 @router.get("/{student_id}/plan")
 async def get_study_plan(student_id: int):

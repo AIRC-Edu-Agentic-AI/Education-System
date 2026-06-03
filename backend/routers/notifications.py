@@ -20,7 +20,8 @@ async def get_notifications(student_id: int, unread_only: bool = True):
     docs = await cursor.to_list(length=20)
     for d in docs:
         d["_id"] = str(d["_id"])
-    return docs or MOCK_NOTIFICATIONS
+    # When connected, return real notifications (empty list is valid — no mock fallback)
+    return docs
 
 @router.patch("/{notif_id}/read")
 async def mark_read(notif_id: str):
@@ -28,7 +29,13 @@ async def mark_read(notif_id: str):
     if db is None:
         return {"ok": True}
     from bson import ObjectId
+    from bson.errors import InvalidId
+    try:
+        oid = ObjectId(notif_id)
+    except (InvalidId, TypeError):
+        # Non-ObjectId id (e.g. a mock/string id) — nothing to update
+        return {"ok": True}
     await db.notifications.update_one(
-        {"_id": ObjectId(notif_id)}, {"$set": {"read": True}}
+        {"_id": oid}, {"$set": {"read": True}}
     )
     return {"ok": True}

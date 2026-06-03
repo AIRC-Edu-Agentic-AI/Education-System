@@ -205,6 +205,18 @@ class ApiService {
     }
   }
 
+  // ── Risk history ──────────────────────────────────────────────
+  Future<List<RiskPoint>> getRiskHistory(int studentId) async {
+    if (_useMock) return MockData.riskHistory;
+    try {
+      final res = await _dio.get('/student/$studentId/risk-history');
+      return (res.data as List).map((e) => RiskPoint.fromJson(e)).toList();
+    } catch (_) {
+      _useMock = true;
+      return MockData.riskHistory;
+    }
+  }
+
   // ── Study Plan ────────────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getStudyPlan(int studentId) async {
     if (_useMock) return MockData.studyPlanSessions;

@@ -73,7 +73,11 @@ def _extract_context(doc: dict) -> dict:
         "risk_tier": risk.get("tier", risk.get("risk_tier", 1)),
         "risk_score": risk.get("score", risk.get("risk_score", 0.0)),
         "risk_flags": risk.get("flags", risk.get("risk_flags", [])),
-        "module": enrollment.get("code_module", ""),
+        "module": enrollment.get("title") or enrollment.get("code_module", ""),
+        "enrolled_courses": [
+            e.get("title") or e.get("code_module", "")
+            for e in doc.get("enrollments", [])
+        ],
         "unsubmitted_count": len(unsubmitted),
         "next_due": min((a["due_date"] for a in unsubmitted), default=None),
         "prerequisite_gaps": doc.get("prerequisite_gaps", []),
@@ -217,8 +221,10 @@ def make_tools(student_id: int) -> list:
         assessments = []
         for enrollment in profile.get("enrollments", []):
             module = enrollment.get("code_module", "")
+            module_title = enrollment.get("title", "")
             for a in enrollment.get("assessments", []):
-                assessments.append({**a, "module": module})
+                assessments.append(
+                    {**a, "module": module, "module_title": module_title})
         return json.dumps(assessments, ensure_ascii=False, default=str)
 
     @tool
@@ -263,8 +269,7 @@ def make_tools(student_id: int) -> list:
         notif = {
             "student_id": student_id,
             "type": type,
-            "title": title,
-            "body": body,
+            "payload": {"title": title, "body": body},
             "read": False,
             "created_at": datetime.utcnow().isoformat(),
         }

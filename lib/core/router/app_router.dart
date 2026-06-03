@@ -12,6 +12,7 @@ import 'package:student_agent/screens/resource_center/resource_center_screen.dar
 import 'package:student_agent/screens/analytics/analytics_screen.dart';
 import 'package:student_agent/screens/profile/profile_screen.dart';
 import 'package:student_agent/screens/more/more_screen.dart';
+import 'package:student_agent/screens/notifications/notifications_screen.dart';
 import 'package:student_agent/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -36,6 +37,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (ctx, state) => const LoginScreen()),
       GoRoute(path: '/chat', builder: (ctx, state) => const ChatScreen()),
       GoRoute(path: '/profile', builder: (ctx, state) => const ProfileScreen()),
+      GoRoute(
+          path: '/notifications',
+          builder: (ctx, state) => const NotificationsScreen()),
 
       // Shell routes (bottom nav + floating chat button)
       ShellRoute(

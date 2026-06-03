@@ -19,113 +19,156 @@ class MockData {
       studiedCredits: 60,
     ),
     enrollments: [
+      // PRIMARY — at-risk course
       const Enrollment(
-        codeModule: 'BBB',
-        codePresentation: '2013J',
+        codeModule: 'DATA201',
+        codePresentation: '2024A',
+        title: 'Phân tích Dữ liệu & Thống kê',
         moduleLength: 30,
         finalResult: null,
         assessments: [
           Assessment(
-            idAssessment: 1752,
-            type: 'TMA',
-            dueDate: 19,
-            weight: 10,
-            score: 78,
-            submittedDate: 18,
-            isBanked: false,
+            idAssessment: 1752, type: 'TMA', dueDate: 19, weight: 10,
+            score: 42, submittedDate: 18, isBanked: false,
           ),
           Assessment(
-            idAssessment: 1753,
-            type: 'TMA',
-            dueDate: 47,
-            weight: 25,
-            score: null,
-            submittedDate: null,
-            isBanked: false,
+            idAssessment: 1753, type: 'TMA', dueDate: 49, weight: 25,
+            score: null, submittedDate: null, isBanked: false,
           ),
           Assessment(
-            idAssessment: 1754,
-            type: 'CMA',
-            dueDate: 68,
-            weight: 15,
-            score: null,
-            submittedDate: null,
-            isBanked: false,
+            idAssessment: 1754, type: 'CMA', dueDate: 68, weight: 15,
+            score: null, submittedDate: null, isBanked: false,
           ),
           Assessment(
-            idAssessment: 1755,
-            type: 'Exam',
-            dueDate: 261,
-            weight: 50,
-            score: null,
-            submittedDate: null,
-            isBanked: false,
+            idAssessment: 1755, type: 'Exam', dueDate: 261, weight: 50,
+            score: null, submittedDate: null, isBanked: false,
           ),
         ],
         vleSummary: VleSummary(
           totalClicks: 3842,
-          lastActiveDay: 46,
+          lastActiveDay: 42,
           byActivityType: {
-            'resource': 1240,
-            'forumng': 287,
-            'oucontent': 1100,
-            'quiz': 420,
-            'url': 312,
-            'homepage': 483,
+            'resource': 1240, 'forumng': 287, 'oucontent': 1100,
+            'quiz': 420, 'url': 312, 'homepage': 483,
           },
           weeklyClicks: [
-            0, 142, 98, 210, 330, 287, 415,
-            398, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0,
+            320, 410, 380, 300, 210, 120, 45,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           ],
         ),
       ),
-      Enrollment(
-        codeModule: 'FFF',
-        codePresentation: '2013J',
+      // Đại số Tuyến tính — mixed
+      const Enrollment(
+        codeModule: 'MATH102',
+        codePresentation: '2024A',
+        title: 'Đại số Tuyến tính',
         moduleLength: 30,
-        finalResult: 'Pass',
+        finalResult: null,
         assessments: [
-          const Assessment(
-            idAssessment: 2100,
-            type: 'TMA',
-            dueDate: 26,
-            weight: 20,
-            score: 82,
-            submittedDate: 25,
-            isBanked: false,
+          Assessment(
+            idAssessment: 2010, type: 'TMA', dueDate: 22, weight: 20,
+            score: 65, submittedDate: 21, isBanked: false,
           ),
-          const Assessment(
-            idAssessment: 2101,
-            type: 'Exam',
-            dueDate: 261,
-            weight: 80,
-            score: 71,
-            submittedDate: 261,
-            isBanked: false,
+          Assessment(
+            idAssessment: 2011, type: 'CMA', dueDate: 55, weight: 30,
+            score: 58, submittedDate: 54, isBanked: false,
+          ),
+          Assessment(
+            idAssessment: 2012, type: 'Exam', dueDate: 250, weight: 50,
+            score: null, submittedDate: null, isBanked: false,
           ),
         ],
         vleSummary: VleSummary(
-          totalClicks: 5210,
-          lastActiveDay: 261,
+          totalClicks: 2110,
+          lastActiveDay: 45,
           byActivityType: {
-            'resource': 2100,
-            'quiz': 980,
-            'forumng': 430,
-            'oucontent': 1700,
+            'resource': 720, 'oucontent': 640, 'quiz': 410, 'homepage': 340,
           },
-          weeklyClicks: List.generate(30, (i) => i < 10 ? 180 + i * 12 : 0),
+          weeklyClicks: [
+            180, 220, 240, 210, 190, 160, 140,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          ],
+        ),
+      ),
+      // Lập trình Python — strong
+      const Enrollment(
+        codeModule: 'COMP101',
+        codePresentation: '2024A',
+        title: 'Lập trình Python',
+        moduleLength: 30,
+        finalResult: null,
+        assessments: [
+          Assessment(
+            idAssessment: 3010, type: 'TMA', dueDate: 20, weight: 15,
+            score: 88, submittedDate: 19, isBanked: false,
+          ),
+          Assessment(
+            idAssessment: 3011, type: 'TMA', dueDate: 48, weight: 25,
+            score: 79, submittedDate: 47, isBanked: false,
+          ),
+          Assessment(
+            idAssessment: 3012, type: 'Exam', dueDate: 255, weight: 60,
+            score: null, submittedDate: null, isBanked: false,
+          ),
+        ],
+        vleSummary: VleSummary(
+          totalClicks: 5240,
+          lastActiveDay: 46,
+          byActivityType: {
+            'resource': 1480, 'oucontent': 1620, 'quiz': 1100,
+            'forumng': 540, 'homepage': 500,
+          },
+          weeklyClicks: [
+            410, 460, 520, 480, 500, 470, 510,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          ],
+        ),
+      ),
+      // Xác suất & Thống kê — on track
+      const Enrollment(
+        codeModule: 'STAT110',
+        codePresentation: '2024A',
+        title: 'Xác suất & Thống kê Suy luận',
+        moduleLength: 30,
+        finalResult: null,
+        assessments: [
+          Assessment(
+            idAssessment: 4010, type: 'TMA', dueDate: 25, weight: 20,
+            score: 71, submittedDate: 24, isBanked: false,
+          ),
+          Assessment(
+            idAssessment: 4011, type: 'CMA', dueDate: 60, weight: 20,
+            score: null, submittedDate: null, isBanked: false,
+          ),
+          Assessment(
+            idAssessment: 4012, type: 'Exam', dueDate: 258, weight: 60,
+            score: null, submittedDate: null, isBanked: false,
+          ),
+        ],
+        vleSummary: VleSummary(
+          totalClicks: 2980,
+          lastActiveDay: 44,
+          byActivityType: {
+            'resource': 980, 'oucontent': 870, 'quiz': 620, 'homepage': 510,
+          },
+          weeklyClicks: [
+            260, 300, 280, 310, 270, 240, 230,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          ],
         ),
       ),
     ],
     risk: RiskProfile(
-      tier: 2,
-      score: 0.62,
-      flags: ['low_vle_engagement', 'assessment_due_soon'],
+      tier: 3,
+      score: 0.82,
+      flags: const ['low_vle_engagement', 'assessment_due_soon', 'assessment_shock'],
       computedAt: DateTime.now().subtract(const Duration(hours: 6)),
     ),
-    prerequisiteGaps: ['Thống kê cơ bản', 'Đại số tuyến tính'],
+    prerequisiteGaps: const ['Thống kê cơ bản', 'Đại số tuyến tính'],
   );
 
   static final WeeklySchedule weeklySchedule = WeeklySchedule(
@@ -134,13 +177,13 @@ class MockData {
     streakDays: 12,
     lectures: [
       WeekItem(
-        title: 'Phân tích dữ liệu — BBB',
+        title: 'Phân tích Dữ liệu & Thống kê',
         subtitle: 'Thứ 2, 08:00',
         dateTime: DateTime.now().add(const Duration(days: 1)),
         isCompleted: false,
       ),
       WeekItem(
-        title: 'Hồi quy tuyến tính — BBB',
+        title: 'Đại số Tuyến tính',
         subtitle: 'Thứ 4, 10:00',
         dateTime: DateTime.now().add(const Duration(days: 3)),
         isCompleted: false,
@@ -154,13 +197,13 @@ class MockData {
     ],
     classes: [
       WeekItem(
-        title: 'Lab thực hành Python',
+        title: 'Lab Lập trình Python',
         subtitle: 'Thứ 3, 13:00 · Phòng B204',
         dateTime: DateTime.now().add(const Duration(days: 2)),
         isCompleted: false,
       ),
       WeekItem(
-        title: 'Thảo luận nhóm — BBB',
+        title: 'Xác suất & Thống kê Suy luận',
         subtitle: 'Thứ 5, 09:00 · Online',
         dateTime: DateTime.now().add(const Duration(days: 4)),
         isCompleted: false,
@@ -175,7 +218,7 @@ class MockData {
         isUrgent: true,
       ),
       WeekItem(
-        title: 'CMA-01 — Quiz chương 3',
+        title: 'CMA — Đại số Tuyến tính',
         subtitle: 'Nộp trước Thứ 7',
         dateTime: DateTime.now().add(const Duration(days: 6)),
         isCompleted: false,
@@ -190,15 +233,15 @@ class MockData {
       id: 'notif_001',
       studentId: 28400,
       type: 'deadline_warning',
-      title: 'TMA-02 — BBB sắp đến hạn',
-      body: 'Còn 3 ngày (đến ngày 47). Hãy bắt đầu sớm.',
+      title: 'TMA-02 — Phân tích Dữ liệu sắp đến hạn',
+      body: 'Còn 3 ngày (đến ngày 49). Hãy bắt đầu sớm.',
       read: false,
       createdAt: DateTime.now().subtract(const Duration(hours: 2)),
       actionOptions: [
         const NotificationAction(
           label: 'Lên kế hoạch',
           action: 'open_chat',
-          payload: {'message': 'Giúp tôi lên kế hoạch hoàn thành TMA-02 môn BBB'},
+          payload: {'message': 'Giúp tôi lên kế hoạch hoàn thành TMA-02 môn Phân tích Dữ liệu'},
         ),
         const NotificationAction(
           label: 'Nhắc lại sau',
@@ -227,7 +270,7 @@ class MockData {
 
   static final List<Map<String, dynamic>> studyPlanSessions = [
     {
-      'subject': 'Ôn tập Tuần 6 — BBB',
+      'subject': 'Ôn tập Tuần 6 — Phân tích Dữ liệu',
       'type': 'review',
       'duration': 45,
       'day': 'Thứ 2',
@@ -291,32 +334,42 @@ class MockData {
     },
   };
 
+  static const List<RiskPoint> riskHistory = [
+    RiskPoint(week: 1, score: 0.30, tier: 1),
+    RiskPoint(week: 2, score: 0.38, tier: 1),
+    RiskPoint(week: 3, score: 0.46, tier: 2),
+    RiskPoint(week: 4, score: 0.55, tier: 2),
+    RiskPoint(week: 5, score: 0.66, tier: 2),
+    RiskPoint(week: 6, score: 0.74, tier: 3),
+    RiskPoint(week: 7, score: 0.82, tier: 3),
+  ];
+
   static AssignmentMilestonesData milestonesFor(int idAssessment) {
     if (idAssessment == 1753) {
-      return AssignmentMilestonesData(
+      return const AssignmentMilestonesData(
         idAssessment: 1753,
-        module: 'BBB',
+        module: 'DATA201',
         title: 'TMA-02 — Phân tích hồi quy',
         milestones: [
-          const MilestoneModel(
+          MilestoneModel(
             id: 'm1',
             title: 'Đọc đề bài & tài liệu tham khảo',
             status: MilestoneStatus.done,
             dueOffsetDays: -14,
           ),
-          const MilestoneModel(
+          MilestoneModel(
             id: 'm2',
             title: 'Phân tích dữ liệu ban đầu',
             status: MilestoneStatus.inProgress,
             dueOffsetDays: -7,
           ),
-          const MilestoneModel(
+          MilestoneModel(
             id: 'm3',
             title: 'Viết báo cáo nháp',
             status: MilestoneStatus.pending,
             dueOffsetDays: -3,
           ),
-          const MilestoneModel(
+          MilestoneModel(
             id: 'm4',
             title: 'Nộp bài chính thức',
             status: MilestoneStatus.pending,
@@ -336,30 +389,30 @@ class MockData {
   static final List<Map<String, dynamic>> resources = [
     {
       'title': 'Slide Tuần 7 — Kiểm định giả thuyết',
-      'module': 'BBB',
+      'module': 'DATA201',
       'type': 'slide',
-      'url': 'https://example.com/bbb-w7-slides.pdf',
+      'url': 'https://example.com/data201-w7-slides.pdf',
       'bookmarked': true,
     },
     {
       'title': 'Tài liệu đọc thêm — Hồi quy tuyến tính',
-      'module': 'BBB',
+      'module': 'DATA201',
       'type': 'document',
       'url': 'https://example.com/linear-regression.pdf',
       'bookmarked': false,
     },
     {
       'title': 'Video hướng dẫn Python pandas',
-      'module': 'BBB',
+      'module': 'COMP101',
       'type': 'video',
       'url': 'https://example.com/pandas-tutorial',
       'bookmarked': true,
     },
     {
-      'title': 'Quiz tự luyện chương 3',
-      'module': 'BBB',
+      'title': 'Quiz tự luyện — Đại số tuyến tính',
+      'module': 'MATH102',
       'type': 'quiz',
-      'url': 'https://example.com/quiz-ch3',
+      'url': 'https://example.com/linear-algebra-quiz',
       'bookmarked': false,
     },
   ];

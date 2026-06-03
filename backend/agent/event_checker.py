@@ -30,7 +30,7 @@ async def run_event_check(student_id: int) -> None:
 
     # ── 1. Upcoming deadlines ──────────────────────────────────────────────────
     for enrollment in doc.get("enrollments", []):
-        module = enrollment.get("code_module", "")
+        module = enrollment.get("title") or enrollment.get("code_module", "")
         for assessment in enrollment.get("assessments", []):
             if assessment.get("submitted_date"):
                 continue
@@ -61,7 +61,7 @@ async def run_event_check(student_id: int) -> None:
 
     # ── 2. Assessment shock ────────────────────────────────────────────────────
     for enrollment in doc.get("enrollments", []):
-        module = enrollment.get("code_module", "")
+        module = enrollment.get("title") or enrollment.get("code_module", "")
         for assessment in enrollment.get("assessments", []):
             score = assessment.get("score")
             atype = assessment.get("type", "")
@@ -75,15 +75,17 @@ async def run_event_check(student_id: int) -> None:
                         "payload": {"message": f"Tôi bị điểm thấp trong {atype} môn {module}, cần kế hoạch cải thiện"},
                     },
                 ]
-                await _push(
+                is_new = await _push(
                     db, student_id, "assessment_shock",
                     f"Điểm {atype} — {module} thấp ({score:.0f}%)",
                     "Điểm dưới 50%. Trợ lý có thể giúp bạn lên kế hoạch cải thiện.",
                     action_options,
                 )
-                # Dynamic trigger: O2 course planning orchestration
-                from agent.orchestrators.course_planning import run_course_planning_orchestration
-                await run_course_planning_orchestration(student_id, trigger="assessment_shock")
+                # Only run the expensive O2 orchestration when this is a NEW shock
+                # (not seen in the last 24h) — avoids re-planning on every tick.
+                if is_new:
+                    from agent.orchestrators.course_planning import run_course_planning_orchestration
+                    await run_course_planning_orchestration(student_id, trigger="assessment_shock")
 
     # ── 3. VLE inactivity ──────────────────────────────────────────────────────
     vle = doc.get("enrollments", [{}])[0].get("vle_summary", {})
@@ -102,10 +104,11 @@ async def run_event_check(student_id: int) -> None:
                 },
             ]
             await _push(db, student_id, "vle_inactivity", title, body, action_options)
-        # Wellbeing trigger: severe inactivity
+        # Wellbeing trigger: severe inactivity (deduped — once per 24h)
         if days_inactive > WELLBEING_INACTIVITY_DAYS:
-            from agent.wellbeing import run_wellbeing_check
-            await run_wellbeing_check(student_id, trigger="inactivity")
+            if not await _recently_fired(db, student_id, "wellbeing"):
+                from agent.wellbeing import run_wellbeing_check
+                await run_wellbeing_check(student_id, trigger="inactivity")
 
     # ── 4. Milestone overdue check ─────────────────────────────────────────────
     milestone_docs = []
@@ -146,14 +149,18 @@ async def run_event_check(student_id: int) -> None:
 
     # ── 5. High risk → O1 Risk Intervention Orchestrator ──────────────────────
     if risk_score > RISK_THRESHOLD:
-        # Wellbeing check for severe risk
+        # Wellbeing check for severe risk (deduped — once per 24h)
         if risk_score > RISK_WELLBEING_THRESHOLD:
-            from agent.wellbeing import run_wellbeing_check
-            await run_wellbeing_check(student_id, trigger="risk")
+            if not await _recently_fired(db, student_id, "wellbeing"):
+                from agent.wellbeing import run_wellbeing_check
+                await run_wellbeing_check(student_id, trigger="risk")
 
-        # O1: full intervention chain (Performance Analysis → Course Planning → Weekly Planning)
-        from agent.orchestrators.risk_intervention import run_risk_intervention
-        await run_risk_intervention(student_id)
+        # O1: full intervention chain (Performance Analysis → Course Planning → Weekly Planning).
+        # Gated to once per 24h — re-running on every tick with unchanged risk
+        # would needlessly rebuild the study plan and burn tokens.
+        if not await _recently_fired(db, student_id, "risk_intervention"):
+            from agent.orchestrators.risk_intervention import run_risk_intervention
+            await run_risk_intervention(student_id)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -164,6 +171,24 @@ def _current_day(schedule_doc: dict | None) -> int:
     return week * 7 - 3
 
 
+async def _recently_fired(db, student_id: int, notif_type: str, hours: int = 24) -> bool:
+    """True if a notification of this type was created within the window.
+
+    Used to gate expensive agent runs (O1, Wellbeing) that produce a
+    notification of `notif_type` — prevents re-running them every tick
+    when the underlying state (e.g. risk_score) is unchanged.
+    """
+    if db is None:
+        return False
+    cutoff = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+    existing = await db.notifications.find_one({
+        "student_id": student_id,
+        "type": notif_type,
+        "created_at": {"$gt": cutoff},
+    })
+    return existing is not None
+
+
 async def _push(
     db,
     student_id: int,
@@ -171,7 +196,13 @@ async def _push(
     title: str,
     body: str,
     action_options: list,
-) -> None:
+) -> bool:
+    """Insert a notification, deduped within a 24h window per type.
+
+    Returns True if a new notification was inserted, False if it was
+    suppressed as a duplicate. Callers use this to gate expensive
+    follow-up agent runs so they only fire when something is genuinely new.
+    """
     notif = {
         "student_id": student_id,
         "type": notif_type,
@@ -188,7 +219,9 @@ async def _push(
             "created_at": {"$gt": cutoff},
         })
         if existing:
-            return
+            return False
         await db.notifications.insert_one(notif)
+        return True
     else:
         print(f"[event_checker] {notif_type} — {title}")
+        return True

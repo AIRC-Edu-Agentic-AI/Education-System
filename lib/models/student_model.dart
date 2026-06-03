@@ -73,6 +73,7 @@ class Demographics {
 class Enrollment {
   final String codeModule;
   final String codePresentation;
+  final String title;
   final int moduleLength;
   final String? finalResult;
   final List<Assessment> assessments;
@@ -81,6 +82,7 @@ class Enrollment {
   const Enrollment({
     required this.codeModule,
     required this.codePresentation,
+    this.title = '',
     required this.moduleLength,
     this.finalResult,
     required this.assessments,
@@ -90,6 +92,7 @@ class Enrollment {
   factory Enrollment.fromJson(Map<String, dynamic> json) => Enrollment(
         codeModule: json['code_module'] ?? '',
         codePresentation: json['code_presentation'] ?? '',
+        title: json['title'] ?? '',
         moduleLength: json['module_length'] ?? 30,
         finalResult: json['final_result'],
         assessments: (json['assessments'] as List? ?? [])
@@ -98,7 +101,9 @@ class Enrollment {
         vleSummary: VleSummary.fromJson(json['vle_summary'] ?? {}),
       );
 
-  String get displayName => '$codeModule ($codePresentation)';
+  String get displayName =>
+      title.isNotEmpty ? title : '$codeModule ($codePresentation)';
+  String get codeLabel => '$codeModule · $codePresentation';
 }
 
 class Assessment {
@@ -183,6 +188,20 @@ class RiskProfile {
         3 => 'Tier 3 — Can thiệp ngay',
         _ => 'Không xác định',
       };
+}
+
+class RiskPoint {
+  final int week;
+  final double score;
+  final int tier;
+
+  const RiskPoint({required this.week, required this.score, required this.tier});
+
+  factory RiskPoint.fromJson(Map<String, dynamic> json) => RiskPoint(
+        week: json['week'] ?? 0,
+        score: (json['score'] ?? 0.0).toDouble(),
+        tier: json['tier'] ?? 1,
+      );
 }
 
 class NotificationAction {

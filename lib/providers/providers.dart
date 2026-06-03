@@ -115,6 +115,13 @@ final knowledgeStateProvider =
   return api.getKnowledgeState(studentId);
 });
 
+// ── Risk history ──────────────────────────────────────────────────────────────
+final riskHistoryProvider = FutureProvider<List<RiskPoint>>((ref) async {
+  final api = ref.read(apiServiceProvider);
+  final studentId = ref.read(activeStudentIdProvider);
+  return api.getRiskHistory(studentId);
+});
+
 // ── Assignment Milestones (family keyed by id_assessment) ─────────────────────
 final assignmentMilestonesProvider =
     FutureProvider.family<AssignmentMilestonesData, int>((ref, idAssessment) async {
