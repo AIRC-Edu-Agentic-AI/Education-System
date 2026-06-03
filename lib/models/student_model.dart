@@ -1,3 +1,17 @@
+/// Parse a server timestamp. The backend writes naive UTC (no timezone suffix),
+/// so we append 'Z' when absent and convert to local — otherwise DateTime.parse
+/// treats it as local and times are off by the timezone offset.
+DateTime parseServerTime(dynamic raw) {
+  if (raw == null) return DateTime.now();
+  final s = raw.toString();
+  final hasTz = RegExp(r'[zZ]|[+-]\d\d:?\d\d$').hasMatch(s);
+  try {
+    return DateTime.parse(hasTz ? s : '${s}Z').toLocal();
+  } catch (_) {
+    return DateTime.now();
+  }
+}
+
 class StudentModel {
   final String id;
   final String auth0Id;
@@ -177,9 +191,7 @@ class RiskProfile {
         tier: json['tier'] ?? 1,
         score: (json['score'] ?? 0.0).toDouble(),
         flags: List<String>.from(json['flags'] ?? []),
-        computedAt: json['computed_at'] != null
-            ? DateTime.parse(json['computed_at'])
-            : DateTime.now(),
+        computedAt: parseServerTime(json['computed_at']),
       );
 
   String get tierLabel => switch (tier) {
@@ -252,9 +264,7 @@ class NotificationModel {
         title: json['payload']?['title'] ?? '',
         body: json['payload']?['body'] ?? '',
         read: json['read'] ?? false,
-        createdAt: json['created_at'] != null
-            ? DateTime.parse(json['created_at'])
-            : DateTime.now(),
+        createdAt: parseServerTime(json['created_at']),
         actionOptions: (json['action_options'] as List? ?? [])
             .map((a) => NotificationAction.fromJson(a))
             .toList(),

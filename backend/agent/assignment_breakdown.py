@@ -1,18 +1,12 @@
-import os
-
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
 
 from agent.base import get_student_context, make_tools
+from agent.llm_pool import ROLE_AGENT, get_pool
 
 
 async def run_breakdown(student_id: int, id_assessment: int) -> None:
     """Generate and store milestones for a specific assessment."""
-    base_url = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/api/v1")
-    lm_root = base_url.rstrip("/api/v1").rstrip("/")
-    model = os.getenv("LM_STUDIO_MODEL", "qwen/qwen3.5-9b")
-
     ctx = await get_student_context(student_id)
     context_block = (
         f"Student: {ctx['full_name']} (ID: {student_id})\n"
@@ -22,13 +16,6 @@ async def run_breakdown(student_id: int, id_assessment: int) -> None:
     )
 
     tools = make_tools(student_id)
-    llm = ChatOpenAI(
-        base_url=f"{lm_root}/v1",
-        api_key="lm-studio",
-        model=model,
-        temperature=0.5,
-    )
-
     system_prompt = (
         "You are an Assignment Breakdown Agent that creates study milestones.\n"
         + context_block
@@ -46,13 +33,14 @@ async def run_breakdown(student_id: int, id_assessment: int) -> None:
         "Answer in Vietnamese."
     )
 
-    agent = create_agent(llm, tools, system_prompt=system_prompt)
-
     try:
-        await agent.ainvoke(
-            {"messages": [HumanMessage(f"Break down assessment {id_assessment} into milestones.")]},
-            config={"recursion_limit": 12},
-        )
+        async with get_pool().acquire(ROLE_AGENT) as lease:
+            agent = create_agent(
+                lease.chat(temperature=0.5), tools, system_prompt=system_prompt)
+            await agent.ainvoke(
+                {"messages": [HumanMessage(f"Break down assessment {id_assessment} into milestones.")]},
+                config={"recursion_limit": 12},
+            )
         print(f"[assignment_breakdown] Completed for assessment {id_assessment}")
     except Exception as e:
         print(f"[assignment_breakdown] Error: {type(e).__name__}: {e}")

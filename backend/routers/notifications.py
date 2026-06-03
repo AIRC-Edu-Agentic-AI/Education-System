@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter
 from db.mongodb import get_db
 from db.mock_data import MOCK_NOTIFICATIONS
@@ -16,6 +18,13 @@ async def get_notifications(student_id: int, unread_only: bool = True):
     query = {"student_id": student_id}
     if unread_only:
         query["read"] = False
+    # Dispatcher: hide notifications scheduled for later (send_at in the future).
+    # Missing send_at = immediate (backward compatible).
+    now_iso = datetime.now(timezone.utc).isoformat()
+    query["$or"] = [
+        {"send_at": {"$exists": False}},
+        {"send_at": {"$lte": now_iso}},
+    ]
     cursor = db.notifications.find(query).sort("created_at", -1).limit(20)
     docs = await cursor.to_list(length=20)
     for d in docs:

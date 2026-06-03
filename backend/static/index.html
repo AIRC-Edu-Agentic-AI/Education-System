@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Agent — Backend Dashboard</title>
+<style>
+  :root {
+    --bg:#0f1419; --card:#1a2129; --border:#2a333d; --muted:#8a97a3;
+    --text:#e6edf3; --blue:#3b82f6; --green:#22c55e; --amber:#f59e0b;
+    --red:#ef4444; --chip:#222c36;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    position:sticky; top:0; background:var(--bg); z-index:10; }
+  header h1 { font-size:16px; margin:0; font-weight:700; }
+  .pill { padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;
+    border:1px solid var(--border); }
+  .pill.ok { color:var(--green); border-color:rgba(34,197,94,.4); }
+  .pill.warn { color:var(--amber); border-color:rgba(245,158,11,.4); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr));
+    gap:14px; padding:16px 20px; align-items:start; }
+  .card { background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:14px; }
+  .card h2 { font-size:12px; text-transform:uppercase; letter-spacing:.6px;
+    color:var(--muted); margin:0 0 10px; font-weight:600; }
+  input,textarea,button { font:inherit; }
+  input[type=number],input[type=text],textarea {
+    background:#0c1116; border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:6px 9px; }
+  button { cursor:pointer; background:var(--chip); color:var(--text);
+    border:1px solid var(--border); border-radius:8px; padding:7px 12px;
+    transition:.12s; }
+  button:hover { border-color:var(--blue); color:var(--blue); }
+  button.primary { background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.5);
+    color:var(--blue); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { text-align:left; padding:5px 6px; border-bottom:1px solid var(--border);
+    font-size:13px; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; }
+  .bar { height:7px; border-radius:4px; background:#0c1116; overflow:hidden; }
+  .bar > span { display:block; height:100%; }
+  .muted { color:var(--muted); }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+  .tag { display:inline-block; padding:1px 7px; border-radius:6px; font-size:11px;
+    background:var(--chip); color:var(--muted); margin-right:4px; }
+  .notif { padding:8px 0; border-bottom:1px solid var(--border); }
+  .notif:last-child { border-bottom:none; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+  .log-row { font-size:12px; padding:4px 0; border-bottom:1px solid var(--border);
+    display:flex; gap:8px; align-items:baseline; }
+  .st { font-weight:700; }
+  .st.started { color:var(--blue); } .st.dispatched { color:var(--blue); }
+  .st.completed { color:var(--green); } .st.error { color:var(--red); }
+  #chatlog { background:#0c1116; border:1px solid var(--border); border-radius:8px;
+    padding:10px; height:260px; overflow:auto; font-size:13px; }
+  .think { color:var(--muted); font-style:italic; white-space:pre-wrap; }
+  .content { white-space:pre-wrap; }
+  .evt { color:var(--amber); font-size:11px; }
+  .full { grid-column:1/-1; }
+  label.f { font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎓 Student Agent — Backend</h1>
+  <span id="health" class="pill warn">connecting…</span>
+  <span class="muted">·</span>
+  <label class="f">student_id
+    <input id="sid" type="number" value="28400" style="width:90px" />
+  </label>
+  <button onclick="loadAll()">↻ Refresh</button>
+  <button id="demoBtn" class="primary" style="font-weight:700" onclick="runDemo()">▶ Run Demo</button>
+  <span id="demoStatus" class="muted"></span>
+  <span id="lastUpdate" class="muted"></span>
+</header>
+
+<div class="grid">
+  <!-- Overview -->
+  <div class="card">
+    <h2>Overview</h2>
+    <div id="overview" class="muted">loading…</div>
+  </div>
+
+  <!-- Grades -->
+  <div class="card">
+    <h2>Điểm thành phần</h2>
+    <div id="grades" class="muted">loading…</div>
+  </div>
+
+  <!-- Knowledge -->
+  <div class="card">
+    <h2>Knowledge mastery</h2>
+    <div id="knowledge" class="muted">loading…</div>
+  </div>
+
+  <!-- Risk history -->
+  <div class="card">
+    <h2>Risk over time</h2>
+    <div id="riskhist" class="muted">loading…</div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card">
+    <h2>Notifications <span id="notifCount" class="muted"></span></h2>
+    <div id="notifs" class="muted">loading…</div>
+  </div>
+
+  <!-- Notification plan -->
+  <div class="card">
+    <h2>Notification plan <span class="muted">(scheduled, not yet sent)</span></h2>
+    <div id="notifPlan" class="muted">loading…</div>
+  </div>
+
+  <!-- Agent control -->
+  <div class="card">
+    <h2>Agent Control Panel</h2>
+    <div class="muted" style="font-size:12px;margin-bottom:6px">Scheduler jobs</div>
+    <div id="jobBtns" class="btns"></div>
+    <div class="muted" style="font-size:12px;margin:12px 0 6px">Agents / Orchestrators</div>
+    <div class="row" style="margin-bottom:8px">
+      <label class="f">trigger <input id="trigger" type="text" value="orchestrated" style="width:130px"/></label>
+      <label class="f">id_assessment <input id="idass" type="number" value="1753" style="width:90px"/></label>
+    </div>
+    <div id="agentBtns" class="btns"></div>
+  </div>
+
+  <!-- Scheduler -->
+  <div class="card">
+    <h2>Scheduler <span class="muted">(planned jobs)</span></h2>
+    <div id="scheduler" class="muted">loading…</div>
+    <div class="row" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+      <label class="f"><input type="checkbox" id="schedToggle" onchange="saveSettings()"/> Spread notifications across the day</label>
+      <label class="f">spread(min) <input id="schedSpread" type="number" value="240" style="width:70px" onchange="saveSettings()"/></label>
+      <span id="schedStatus" class="muted" style="font-size:11px"></span>
+    </div>
+    <div class="muted" style="font-size:11px;margin-top:4px">Off = every notification immediate. Run Demo always sends immediately.</div>
+  </div>
+
+  <!-- Emit data event -->
+  <div class="card">
+    <h2>Emit data event → notify + replan</h2>
+    <div class="muted" style="font-size:12px;margin-bottom:6px">New score (existing assessment)</div>
+    <div class="row" style="margin-bottom:6px">
+      <label class="f">id_assessment <input id="evScoreId" type="number" value="1754" style="width:90px"/></label>
+      <label class="f">score <input id="evScoreVal" type="number" value="38" style="width:70px"/></label>
+      <button onclick="emitScore()">Send score</button>
+    </div>
+    <div class="muted" style="font-size:12px;margin:10px 0 6px">New assignment</div>
+    <div class="row" style="margin-bottom:6px">
+      <label class="f">module <input id="evModule" type="text" value="DATA201" style="width:90px"/></label>
+      <label class="f">type <input id="evType" type="text" value="TMA" style="width:60px"/></label>
+      <label class="f">due day <input id="evDue" type="number" value="60" style="width:70px"/></label>
+      <label class="f">weight% <input id="evWeight" type="number" value="20" style="width:60px"/></label>
+      <button onclick="emitAssignment()">Add assignment</button>
+    </div>
+    <div id="emitStatus" class="muted" style="font-size:12px"></div>
+  </div>
+
+  <!-- Activity log -->
+  <div class="card full">
+    <h2>Activity log <span class="muted">(agent runs)</span></h2>
+    <div id="runs" class="muted">no runs yet</div>
+  </div>
+
+  <!-- Chat tester -->
+  <div class="card full">
+    <h2>Chat tester (two-phase agent · SSE)</h2>
+    <div class="row" style="margin-bottom:8px">
+      <textarea id="chatInput" rows="2" style="flex:1" placeholder="vd: giải thích hồi quy tuyến tính"></textarea>
+      <button class="primary" id="sendBtn" onclick="sendChat()">Send</button>
+    </div>
+    <div id="chatlog"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const sid = () => parseInt($('sid').value || '28400', 10);
+const esc = (s) => (s ?? '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// created_at is UTC isoformat without a 'Z'; treat it as UTC, return {ago, local}
+function fmtTime(iso) {
+  if (!iso) return { ago: '', local: '' };
+  const s = /[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : iso + 'Z';
+  const d = new Date(s);
+  if (isNaN(d)) return { ago: '', local: iso };
+  const sec = Math.max(0, (Date.now() - d.getTime()) / 1000);
+  let ago;
+  if (sec < 60) ago = 'vừa xong';
+  else if (sec < 3600) ago = Math.floor(sec / 60) + 'm trước';
+  else if (sec < 86400) ago = Math.floor(sec / 3600) + 'h trước';
+  else ago = Math.floor(sec / 86400) + 'd trước';
+  return { ago, local: d.toLocaleString() };
+}
+
+// future-facing "in Xm/Xh/Xd" for scheduled next-run times (tz-aware ISO)
+function fmtUntil(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const sec = (d.getTime() - Date.now()) / 1000;
+  if (sec <= 0) return 'now';
+  if (sec < 3600) return 'in ' + Math.round(sec / 60) + 'm';
+  if (sec < 86400) return 'in ' + Math.round(sec / 3600) + 'h';
+  return 'in ' + Math.round(sec / 86400) + 'd';
+}
+
+function riskColor(score) {
+  return score > 0.7 ? 'var(--red)' : score > 0.4 ? 'var(--amber)' : 'var(--green)';
+}
+function masteryColor(m) {
+  return m >= 0.7 ? 'var(--green)' : m >= 0.5 ? 'var(--amber)' : 'var(--red)';
+}
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(r.status + ' ' + url);
+  return r.json();
+}
+
+// ── Health ──
+async function loadHealth() {
+  try {
+    const h = await getJSON('/health');
+    const ok = h.db === 'connected';
+    $('health').className = 'pill ' + (ok ? 'ok' : 'warn');
+    $('health').textContent = `${h.status} · db:${h.db} · ${h.environment}`;
+  } catch (e) {
+    $('health').className = 'pill warn';
+    $('health').textContent = 'backend offline';
+  }
+}
+
+// ── Overview + grades ──
+async function loadStudent() {
+  try {
+    const s = await getJSON('/student/' + sid());
+    const risk = s.risk || {};
+    const score = risk.score ?? 0;
+    const enr = (s.enrollments || []);
+    let unsub = 0, nextDue = null;
+    enr.forEach(e => (e.assessments || []).forEach(a => {
+      if (!a.submitted_date) { unsub++; if (nextDue == null || a.due_date < nextDue) nextDue = a.due_date; }
+    }));
+    $('overview').innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div><div class="muted">${esc(s.full_name)}</div><div class="mono">ID ${s.student_id}</div></div>
+        <div style="text-align:right">
+          <div style="font-size:26px;font-weight:700;color:${riskColor(score)}">${Math.round(score*100)}%</div>
+          <div class="muted">risk · tier ${risk.tier ?? '?'}</div>
+        </div>
+      </div>
+      <div style="margin-top:8px">${(risk.flags||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div>
+      <div class="row" style="margin-top:10px;gap:18px">
+        <div><b>${unsub}</b> <span class="muted">unsubmitted</span></div>
+        <div>next due <b>day ${nextDue ?? '—'}</b></div>
+        <div><b>${enr.length}</b> <span class="muted">môn</span></div>
+      </div>`;
+
+    // grades
+    let g = '';
+    enr.forEach(e => {
+      g += `<div style="margin-bottom:10px"><div style="font-weight:600">${esc(e.title || e.code_module)}</div>`;
+      g += '<table>';
+      (e.assessments||[]).forEach(a => {
+        const submitted = a.submitted_date != null;
+        const sc = a.score;
+        const col = sc == null ? 'var(--muted)' : (sc >= 40 ? 'var(--green)' : 'var(--red)');
+        g += `<tr><td>${esc(a.type)}</td><td class="muted">${a.weight}%</td>
+          <td style="color:${col};font-weight:600">${sc==null?(submitted?'—':'chưa nộp'):sc}</td></tr>`;
+      });
+      g += '</table></div>';
+    });
+    $('grades').innerHTML = g || '<span class="muted">no enrollments</span>';
+  } catch (e) {
+    $('overview').innerHTML = '<span class="muted">failed: '+esc(e.message)+'</span>';
+    $('grades').innerHTML = '';
+  }
+}
+
+// ── Knowledge ──
+async function loadKnowledge() {
+  try {
+    const k = await getJSON('/student/' + sid() + '/knowledge');
+    const entries = Object.entries(k).sort((a,b)=>(a[1].mastery||0)-(b[1].mastery||0));
+    $('knowledge').innerHTML = entries.map(([c,v]) => {
+      const m = v.mastery ?? 0; const pct = Math.round(m*100);
+      return `<div style="margin-bottom:8px">
+        <div class="row" style="justify-content:space-between">
+          <span>${esc(c)}</span><span style="color:${masteryColor(m)};font-weight:600">${pct}%</span></div>
+        <div class="bar"><span style="width:${pct}%;background:${masteryColor(m)}"></span></div></div>`;
+    }).join('') || '<span class="muted">none</span>';
+  } catch (e) { $('knowledge').innerHTML = '<span class="muted">failed</span>'; }
+}
+
+// ── Risk history ──
+async function loadRiskHist() {
+  try {
+    const h = await getJSON('/student/' + sid() + '/risk-history');
+    if (!h.length) { $('riskhist').innerHTML = '<span class="muted">no history</span>'; return; }
+    const max = 1;
+    $('riskhist').innerHTML = `<div class="row" style="align-items:flex-end;gap:6px;height:90px">` +
+      h.map(p => {
+        const ph = Math.round((p.score/max)*80) + 4;
+        return `<div style="flex:1;text-align:center">
+          <div title="week ${p.week}: ${Math.round(p.score*100)}%"
+               style="height:${ph}px;background:${riskColor(p.score)};border-radius:3px"></div>
+          <div class="muted" style="font-size:10px;margin-top:3px">T${p.week}</div></div>`;
+      }).join('') + `</div>
+      <div class="muted" style="font-size:11px;margin-top:4px">
+        ${Math.round(h[0].score*100)}% → ${Math.round(h[h.length-1].score*100)}%</div>`;
+  } catch (e) { $('riskhist').innerHTML = '<span class="muted">failed</span>'; }
+}
+
+// ── Notifications ──
+async function loadNotifs() {
+  try {
+    const n = await getJSON('/notify/' + sid() + '?unread_only=false');
+    $('notifCount').textContent = '(' + n.length + ')';
+    $('notifs').innerHTML = n.map(x => {
+      const p = x.payload || {};
+      const title = p.title || x.title || '';
+      const body = p.body || x.body || '';
+      const opts = (x.action_options || []).map(o=>`<span class="tag">${esc(o.label)}</span>`).join('');
+      const t = fmtTime(x.created_at);
+      return `<div class="notif">
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <span><span class="dot" style="background:var(--blue)"></span><b>${esc(title)}</b></span>
+          <span class="muted mono" style="font-size:11px" title="${esc(t.local)}">${esc(t.ago)}</span>
+        </div>
+        <div class="muted" style="font-size:12px">${esc(body)}</div>
+        <div style="margin-top:4px"><span class="tag" style="color:var(--blue)">${esc(x.type)}</span>${opts}</div>
+      </div>`;
+    }).join('') || '<span class="muted">none</span>';
+  } catch (e) { $('notifs').innerHTML = '<span class="muted">failed</span>'; }
+}
+
+async function loadNotifPlan() {
+  try {
+    const p = await getJSON('/admin/notification-plan?student_id=' + sid());
+    if (!p.length) {
+      $('notifPlan').innerHTML =
+        '<span class="muted">none scheduled — immediate mode, or all already sent</span>';
+      return;
+    }
+    $('notifPlan').innerHTML =
+      '<table><tr><th>Send</th><th>Type</th><th>Title</th></tr>' +
+      p.map(n => {
+        const t = fmtTime(n.send_at);
+        return `<tr><td style="font-size:12px;white-space:nowrap" title="${esc(t.local)}">${esc(fmtUntil(n.send_at))}</td>` +
+               `<td><span class="tag">${esc(n.type)}</span></td>` +
+               `<td style="font-size:12px">${esc(n.title)}</td></tr>`;
+      }).join('') + '</table>';
+  } catch (e) { $('notifPlan').innerHTML = '<span class="muted">unavailable</span>'; }
+}
+
+// ── Agent control panel ──
+let AGENTS = null;
+async function loadAgents() {
+  try {
+    AGENTS = await getJSON('/admin/agents');
+    $('jobBtns').innerHTML = AGENTS.jobs.map(j =>
+      `<button onclick="trigger('${j.id}')" title="next: ${j.next_run_time||'—'}">${j.id}</button>`).join('');
+    $('agentBtns').innerHTML = AGENTS.agents.map(a =>
+      `<button class="primary" onclick="trigger('${a.target}')" title="${esc(a.description)}">${esc(a.label)}</button>`).join('');
+    // Scheduler plan (read-only)
+    $('scheduler').innerHTML =
+      '<table><tr><th>Job</th><th>Cadence</th><th>Next run</th></tr>' +
+      AGENTS.jobs.map(j => {
+        const t = fmtTime(j.next_run_time);
+        const next = j.next_run_time
+          ? `${esc(t.local)} <span class="muted">(${esc(fmtUntil(j.next_run_time))})</span>` : '—';
+        return `<tr><td class="mono">${esc(j.id)}</td>` +
+               `<td>${esc(j.schedule||'')}</td><td style="font-size:12px">${next}</td></tr>`;
+      }).join('') + '</table>';
+  } catch (e) {
+    $('jobBtns').innerHTML = '<span class="muted">admin API unavailable</span>';
+    $('scheduler').innerHTML = '<span class="muted">unavailable</span>';
+  }
+  try {
+    const s = await getJSON('/admin/settings');
+    $('schedToggle').checked = !!s.enabled;
+    $('schedSpread').value = s.spread_minutes;
+    $('schedStatus').textContent = s.enabled ? `on · ${s.spread_minutes}m` : 'off (immediate)';
+  } catch (e) {}
+}
+
+async function saveSettings() {
+  const body = {
+    schedule_enabled: $('schedToggle').checked,
+    spread_minutes: parseInt($('schedSpread').value || '240', 10),
+  };
+  try {
+    const s = await (await fetch('/admin/settings', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })).json();
+    $('schedStatus').textContent = s.enabled ? `on · ${s.spread_minutes}m` : 'off (immediate)';
+  } catch (e) { $('schedStatus').textContent = 'save failed'; }
+}
+
+async function trigger(target) {
+  const body = { target, student_id: sid(),
+    trigger: $('trigger').value || undefined,
+    id_assessment: parseInt($('idass').value || '0', 10) || undefined };
+  try {
+    const r = await fetch('/admin/trigger', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!r.ok) { const t = await r.text(); alert('Trigger failed: ' + t); return; }
+    loadRuns();
+  } catch (e) { alert('Trigger failed: ' + e.message); }
+}
+
+async function loadRuns() {
+  try {
+    const runs = await getJSON('/admin/runs');
+    $('runs').innerHTML = runs.map(r => {
+      const dur = r.ended_at && r.started_at
+        ? ((new Date(r.ended_at) - new Date(r.started_at))/1000).toFixed(1)+'s' : '…';
+      return `<div class="log-row">
+        <span class="mono muted">${(r.started_at||'').substr(11,8)}</span>
+        <span class="st ${r.status}">${r.status}</span>
+        <b>${esc(r.target)}</b>
+        <span class="muted">${esc(r.detail||'')}</span>
+        <span class="muted" style="margin-left:auto">${dur}</span></div>`;
+    }).join('') || '<span class="muted">no runs yet</span>';
+  } catch (e) {}
+}
+
+// ── One-click idempotent demo ──
+async function runDemo() {
+  const btn = $('demoBtn');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = '⏳ Resetting…';
+  $('demoStatus').textContent = '';
+  try {
+    const r = await fetch('/admin/demo/run', { method: 'POST' });
+    const j = await r.json();
+    if (!r.ok) {
+      $('demoStatus').innerHTML = `<span style="color:var(--red)">${esc(j.detail || ('HTTP ' + r.status))}</span>`;
+      return;
+    }
+    $('sid').value = j.summary.student_id;
+    $('demoStatus').innerHTML =
+      `<span style="color:var(--green)">✅ reset · cascade running — watch Notifications & Activity log</span>`;
+    loadAll();
+    // Poll a bit more eagerly for the first minute so the cascade is visible
+    let n = 0;
+    const t = setInterval(() => { loadNotifs(); loadRuns(); if (++n >= 20) clearInterval(t); }, 3000);
+  } catch (e) {
+    $('demoStatus').innerHTML = `<span style="color:var(--red)">demo failed: ${esc(e.message)}</span>`;
+  } finally {
+    btn.textContent = label;
+    btn.disabled = false;
+  }
+}
+
+// ── Emit data events (new score / new assignment) ──
+async function _emit(url, body, okMsg) {
+  $('emitStatus').textContent = 'sending…';
+  try {
+    const r = await fetch(url, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok) {
+      $('emitStatus').innerHTML = `<span style="color:var(--red)">${esc(j.detail || ('HTTP '+r.status))}</span>`;
+      return;
+    }
+    $('emitStatus').innerHTML = `<span style="color:var(--green)">✅ ${esc(j.summary)} — agent notifying + replanning</span>`;
+    loadStudent(); loadRuns();
+    let n = 0;
+    const t = setInterval(() => { loadNotifs(); loadRuns(); if (++n >= 15) clearInterval(t); }, 3000);
+  } catch (e) {
+    $('emitStatus').innerHTML = `<span style="color:var(--red)">failed: ${esc(e.message)}</span>`;
+  }
+}
+function emitScore() {
+  _emit('/admin/event/score', {
+    student_id: sid(),
+    id_assessment: parseInt($('evScoreId').value, 10),
+    score: parseFloat($('evScoreVal').value),
+  });
+}
+function emitAssignment() {
+  _emit('/admin/event/assignment', {
+    student_id: sid(),
+    module_code: $('evModule').value.trim(),
+    type: $('evType').value.trim() || 'TMA',
+    due_date: parseInt($('evDue').value, 10),
+    weight: parseFloat($('evWeight').value),
+  });
+}
+
+// ── Chat (SSE over POST via fetch stream) ──
+async function sendChat() {
+  const text = $('chatInput').value.trim();
+  if (!text) return;
+  $('sendBtn').disabled = true;
+  const log = $('chatlog');
+  log.innerHTML += `<div style="margin:6px 0"><b style="color:var(--blue)">›</b> ${esc(text)}</div>`;
+  const respId = 'r' + Date.now();
+  log.innerHTML += `<div id="${respId}"></div>`;
+  const box = $(respId);
+  let thinkEl = null, contentEl = null;
+
+  try {
+    const r = await fetch('/chat/stream', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ student_id: sid(), messages:[{role:'user', content:text}] }),
+    });
+    const reader = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream:true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const raw = line.slice(5).trim();
+        if (!raw) continue;
+        let ev; try { ev = JSON.parse(raw); } catch { continue; }
+        if (ev.type === 'tool_call') {
+          box.innerHTML += `<div class="evt">🔧 ${esc(ev.name)}</div>`;
+        } else if (ev.type === 'data_updated') {
+          box.innerHTML += `<div class="evt">⟳ updated: ${esc((ev.resources||[]).join(', '))}</div>`;
+        } else if (ev.type === 'thinking') {
+          if (!thinkEl) { thinkEl = document.createElement('div'); thinkEl.className='think'; box.appendChild(thinkEl); }
+          thinkEl.textContent += ev.delta || '';
+        } else if (ev.type === 'thinking_done') {
+          thinkEl = null;
+        } else if (ev.type === 'content') {
+          if (!contentEl) { contentEl = document.createElement('div'); contentEl.className='content'; box.appendChild(contentEl); }
+          contentEl.textContent += ev.delta || '';
+        } else if (ev.type === 'error') {
+          box.innerHTML += `<div style="color:var(--red)">error: ${esc(ev.message||'')}</div>`;
+        }
+        log.scrollTop = log.scrollHeight;
+      }
+    }
+  } catch (e) {
+    box.innerHTML += `<div style="color:var(--red)">stream failed: ${esc(e.message)}</div>`;
+  } finally {
+    $('sendBtn').disabled = false;
+    $('chatInput').value = '';
+    loadNotifs();
+  }
+}
+
+// ── Orchestration ──
+function loadAll() {
+  loadHealth(); loadStudent(); loadKnowledge(); loadRiskHist();
+  loadNotifs(); loadNotifPlan(); loadAgents(); loadRuns();
+  $('lastUpdate').textContent = '· updated ' + new Date().toLocaleTimeString();
+}
+loadAll();
+setInterval(() => { loadNotifs(); loadNotifPlan(); }, 5000);
+setInterval(loadRuns, 3000);
+setInterval(loadHealth, 10000);
+</script>
+</body>
+</html>

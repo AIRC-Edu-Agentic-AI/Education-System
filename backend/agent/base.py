@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -266,13 +266,17 @@ def make_tools(student_id: int) -> list:
     async def create_reminder(title: str, body: str, type: str = "reminder") -> str:
         """Create a notification/reminder for the student. type can be: reminder, alert, intervention."""
         db = get_db()
+        from notify_schedule import compute_send_at
         notif = {
             "student_id": student_id,
             "type": type,
             "payload": {"title": title, "body": body},
             "read": False,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
+        send_at = compute_send_at(type)
+        if send_at:
+            notif["send_at"] = send_at
         if db is not None:
             await db.notifications.insert_one(notif)
             return json.dumps({"status": "ok"})
@@ -283,7 +287,7 @@ def make_tools(student_id: int) -> list:
         """Mark an assignment as submitted/complete. module_code is the module (e.g. BBB), assessment_type is TMA/CMA/Exam."""
         db = get_db()
         if db is not None:
-            submitted = datetime.utcnow().isoformat()
+            submitted = datetime.now(timezone.utc).isoformat()
             await db.students.update_one(
                 {"student_id": student_id},
                 {"$set": {"enrollments.$[e].assessments.$[a].submitted_date": submitted}},
@@ -305,7 +309,7 @@ def make_tools(student_id: int) -> list:
             "title": title,
             "content": content,
             "type": "note",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         if db is not None:
             await db.resources.insert_one(note)
@@ -336,7 +340,7 @@ def make_tools(student_id: int) -> list:
             new_mastery = update_mastery(current, evidence_type, score)
             states[concept] = {
                 "mastery": new_mastery,
-                "last_updated": datetime.utcnow().strftime("%Y-%m-%d"),
+                "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 "evidence_count": states.get(concept, {}).get("evidence_count", 0) + 1,
             }
             await db.knowledge_states.update_one(
@@ -396,7 +400,7 @@ def make_tools(student_id: int) -> list:
             "module": module,
             "title": title,
             "milestones": milestones,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         if db is not None:
             await db.assignment_milestones.update_one(

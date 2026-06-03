@@ -306,7 +306,7 @@ class MockData {
       'type': 'assignment',
       'duration': 120,
       'day': 'Thứ 6',
-      'time': '14:00',
+      'time': '19:00',
       'sm2_interval': null,
     },
   ];

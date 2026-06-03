@@ -1,15 +1,11 @@
 import asyncio
 import json
-import os
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
-
-from langchain_core.messages import SystemMessage
 
 from agent.base import (
     WRITE_TOOL_NAMES,
@@ -22,6 +18,7 @@ from agent.base import (
     get_student_context,
     make_tools,
 )
+from agent.llm_pool import ROLE_CHAT, ROLE_CLASSIFY, get_pool
 
 _INTENT_SYSTEM = (
     'Classify the student message. Reply ONLY with valid JSON: {"intent": "<value>"}\n'
@@ -35,24 +32,17 @@ _INTENT_SYSTEM = (
 )
 
 
-async def _classify_intent(llm: ChatOpenAI, text: str) -> str:
-    """Non-streaming LLM call → structured JSON intent classification."""
+async def _classify_intent(text: str) -> str:
+    """Non-streaming LLM call on a `classify` endpoint → structured JSON intent."""
     if not text.strip():
         return "general"
     try:
-        # Use a separate non-streaming client to avoid interfering with the main stream
-        classifier = ChatOpenAI(
-            base_url=llm.openai_api_base,
-            api_key=llm.openai_api_key,
-            model=llm.model_name,
-            temperature=0.0,
-            streaming=False,
-            max_tokens=20,
-        )
-        result = await classifier.ainvoke([
-            SystemMessage(content=_INTENT_SYSTEM),
-            HumanMessage(content=text),
-        ])
+        async with get_pool().acquire(ROLE_CLASSIFY) as lease:
+            classifier = lease.chat(temperature=0.0, max_tokens=20)
+            result = await classifier.ainvoke([
+                SystemMessage(content=_INTENT_SYSTEM),
+                HumanMessage(content=text),
+            ])
         data = json.loads(result.content.strip())
         intent = data.get("intent", "general")
         return intent if intent in ("tutoring", "performance", "recommendation", "wellbeing", "general") else "general"
@@ -84,10 +74,6 @@ class ChatRequest(BaseModel):
 
 @router.post("/stream")
 async def chat_stream(req: ChatRequest):
-    base_url = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/api/v1")
-    lm_root = base_url.rstrip("/api/v1").rstrip("/")
-    model = os.getenv("LM_STUDIO_MODEL", "qwen/qwen3.5-9b")
-
     msgs = req.messages
     if msgs and msgs[-1].role == "user":
         user_input = msgs[-1].content or ""
@@ -108,13 +94,6 @@ async def chat_stream(req: ChatRequest):
     gaps_note = f"Prerequisite gaps: {', '.join(gaps)}." if gaps else ""
 
     tools = make_tools(req.student_id)
-    llm = ChatOpenAI(
-        base_url=f"{lm_root}/v1",
-        api_key="lm-studio",
-        model=model,
-        temperature=0.6,
-        streaming=True,
-    )
 
     proactive_system = (
         "You are a proactive student advisor running a background check.\n"
@@ -125,7 +104,7 @@ async def chat_stream(req: ChatRequest):
         "Do NOT repeat tool calls. Stop as soon as you have acted or confirmed no action needed."
     )
 
-    intent = await _classify_intent(llm, user_input)
+    intent = await _classify_intent(user_input)
 
     if intent == "tutoring":
         qa_system = (
@@ -188,88 +167,91 @@ async def chat_stream(req: ChatRequest):
             "Be warm, concise, and specific."
         )
 
-    proactive_agent = create_agent(llm, tools, system_prompt=proactive_system)
-    qa_agent = create_agent(llm, tools, system_prompt=qa_system)
-
     async def generate():
         ds_thinking = False
         qw_thinking = False
         buf = ""
         try:
-            # ── Phase 1: Proactive check (tool_call + data_updated only) ─────
-            async for event in proactive_agent.astream_events(
-                {"messages": [HumanMessage("Run proactive check.")]},
-                version="v2",
-                config={"recursion_limit": _PROACTIVE_LIMIT},
-            ):
-                kind = event["event"]
-                if kind == "on_tool_start":
-                    name = event.get("name", "")
-                    yield f"data: {json.dumps({'type': 'tool_call', 'name': name})}\n\n"
-                elif kind == "on_tool_end":
-                    name = event.get("name", "")
-                    if name in WRITE_TOOL_NAMES:
-                        resources = WRITE_TOOL_RESOURCES.get(name, [])
-                        yield f"data: {json.dumps({'type': 'data_updated', 'resources': resources})}\n\n"
+            # Hold one `chat` endpoint for the whole turn (proactive + Q&A).
+            async with get_pool().acquire(ROLE_CHAT) as lease:
+                llm = lease.chat(temperature=0.6, streaming=True)
+                proactive_agent = create_agent(llm, tools, system_prompt=proactive_system)
+                qa_agent = create_agent(llm, tools, system_prompt=qa_system)
 
-            # ── Phase 2: Q&A (full streaming) ────────────────────────────────
-            async for event in qa_agent.astream_events(
-                {"messages": history_lc + [HumanMessage(user_input)]},
-                version="v2",
-                config={"recursion_limit": _QA_LIMIT},
-            ):
-                kind = event["event"]
-                if kind == "on_tool_start":
-                    name = event.get("name", "")
-                    yield f"data: {json.dumps({'type': 'tool_call', 'name': name})}\n\n"
-                elif kind == "on_tool_end":
-                    name = event.get("name", "")
-                    if name in WRITE_TOOL_NAMES:
-                        resources = WRITE_TOOL_RESOURCES.get(name, [])
-                        yield f"data: {json.dumps({'type': 'data_updated', 'resources': resources})}\n\n"
-                    if name == "mark_assignment_complete":
-                        from agent.weekly_planner import run_weekly_planning
-                        asyncio.create_task(
-                            run_weekly_planning(req.student_id, trigger="task_complete")
-                        )
-                elif kind == "on_chat_model_stream":
-                    chunk = event["data"]["chunk"]
-                    reasoning = chunk.additional_kwargs.get("reasoning_content", "")
-                    if reasoning:
-                        ds_thinking = True
-                        yield f"data: {json.dumps({'type': 'thinking', 'delta': reasoning})}\n\n"
-                        continue
-                    content = chunk.content
-                    if not content:
-                        continue
-                    if ds_thinking:
-                        ds_thinking = False
-                        yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
-                    buf += content
-                    while buf:
-                        tag = _THINK_CLOSE if qw_thinking else _THINK_OPEN
-                        idx = buf.find(tag)
-                        if idx == -1:
-                            p = _partial_tag(buf, tag)
-                            emit, buf = buf[: len(buf) - p], buf[len(buf) - p :]
-                            if emit:
-                                etype = "thinking" if qw_thinking else "content"
-                                yield f"data: {json.dumps({'type': etype, 'delta': emit})}\n\n"
-                            break
-                        before, buf = buf[:idx], buf[idx + len(tag) :]
-                        if before:
-                            etype = "thinking" if qw_thinking else "content"
-                            yield f"data: {json.dumps({'type': etype, 'delta': before})}\n\n"
-                        if qw_thinking:
+                # ── Phase 1: Proactive check (tool_call + data_updated only) ──
+                async for event in proactive_agent.astream_events(
+                    {"messages": [HumanMessage("Run proactive check.")]},
+                    version="v2",
+                    config={"recursion_limit": _PROACTIVE_LIMIT},
+                ):
+                    kind = event["event"]
+                    if kind == "on_tool_start":
+                        name = event.get("name", "")
+                        yield f"data: {json.dumps({'type': 'tool_call', 'name': name})}\n\n"
+                    elif kind == "on_tool_end":
+                        name = event.get("name", "")
+                        if name in WRITE_TOOL_NAMES:
+                            resources = WRITE_TOOL_RESOURCES.get(name, [])
+                            yield f"data: {json.dumps({'type': 'data_updated', 'resources': resources})}\n\n"
+
+                # ── Phase 2: Q&A (full streaming) ────────────────────────────
+                async for event in qa_agent.astream_events(
+                    {"messages": history_lc + [HumanMessage(user_input)]},
+                    version="v2",
+                    config={"recursion_limit": _QA_LIMIT},
+                ):
+                    kind = event["event"]
+                    if kind == "on_tool_start":
+                        name = event.get("name", "")
+                        yield f"data: {json.dumps({'type': 'tool_call', 'name': name})}\n\n"
+                    elif kind == "on_tool_end":
+                        name = event.get("name", "")
+                        if name in WRITE_TOOL_NAMES:
+                            resources = WRITE_TOOL_RESOURCES.get(name, [])
+                            yield f"data: {json.dumps({'type': 'data_updated', 'resources': resources})}\n\n"
+                        if name == "mark_assignment_complete":
+                            from agent.weekly_planner import run_weekly_planning
+                            asyncio.create_task(
+                                run_weekly_planning(req.student_id, trigger="task_complete")
+                            )
+                    elif kind == "on_chat_model_stream":
+                        chunk = event["data"]["chunk"]
+                        reasoning = chunk.additional_kwargs.get("reasoning_content", "")
+                        if reasoning:
+                            ds_thinking = True
+                            yield f"data: {json.dumps({'type': 'thinking', 'delta': reasoning})}\n\n"
+                            continue
+                        content = chunk.content
+                        if not content:
+                            continue
+                        if ds_thinking:
+                            ds_thinking = False
                             yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
-                        qw_thinking = not qw_thinking
+                        buf += content
+                        while buf:
+                            tag = _THINK_CLOSE if qw_thinking else _THINK_OPEN
+                            idx = buf.find(tag)
+                            if idx == -1:
+                                p = _partial_tag(buf, tag)
+                                emit, buf = buf[: len(buf) - p], buf[len(buf) - p :]
+                                if emit:
+                                    etype = "thinking" if qw_thinking else "content"
+                                    yield f"data: {json.dumps({'type': etype, 'delta': emit})}\n\n"
+                                break
+                            before, buf = buf[:idx], buf[idx + len(tag) :]
+                            if before:
+                                etype = "thinking" if qw_thinking else "content"
+                                yield f"data: {json.dumps({'type': etype, 'delta': before})}\n\n"
+                            if qw_thinking:
+                                yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
+                            qw_thinking = not qw_thinking
 
-            if buf:
-                etype = "thinking" if qw_thinking else "content"
-                yield f"data: {json.dumps({'type': etype, 'delta': buf})}\n\n"
-            if ds_thinking or qw_thinking:
-                yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
-            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                if buf:
+                    etype = "thinking" if qw_thinking else "content"
+                    yield f"data: {json.dumps({'type': etype, 'delta': buf})}\n\n"
+                if ds_thinking or qw_thinking:
+                    yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
+                yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
         except Exception as e:
             print(f"[chat] {type(e).__name__}: {e}")

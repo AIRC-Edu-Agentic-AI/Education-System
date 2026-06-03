@@ -1,19 +1,13 @@
-import os
-
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
 
 from agent.base import get_student_context, get_knowledge_state_stub, make_tools
+from agent.llm_pool import ROLE_AGENT, get_pool
 from agent.student_skills import get_skill_gaps
 
 
 async def run_performance_analysis(student_id: int) -> dict:
     """Orchestrator O3 — synthesise KT state, VLE, and scores into a performance snapshot."""
-    base_url = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/api/v1")
-    lm_root = base_url.rstrip("/api/v1").rstrip("/")
-    model = os.getenv("LM_STUDIO_MODEL", "qwen/qwen3.5-9b")
-
     ctx = await get_student_context(student_id)
     kt = await get_knowledge_state_stub(student_id)
     gaps = await get_skill_gaps(student_id, threshold=0.6)
@@ -28,13 +22,6 @@ async def run_performance_analysis(student_id: int) -> dict:
     )
 
     tools = make_tools(student_id)
-    llm = ChatOpenAI(
-        base_url=f"{lm_root}/v1",
-        api_key="lm-studio",
-        model=model,
-        temperature=0.4,
-    )
-
     system_prompt = (
         "You are a Performance Analysis Agent (Orchestrator O3).\n"
         + context_block
@@ -53,14 +40,15 @@ async def run_performance_analysis(student_id: int) -> dict:
         "Be concise and specific. Answer in Vietnamese."
     )
 
-    agent = create_agent(llm, tools, system_prompt=system_prompt)
-
     result = {"weak_concepts": gaps, "vle_trend": "unknown", "next_action": ""}
     try:
-        await agent.ainvoke(
-            {"messages": [HumanMessage("Run performance analysis.")]},
-            config={"recursion_limit": 21},
-        )
+        async with get_pool().acquire(ROLE_AGENT) as lease:
+            agent = create_agent(
+                lease.chat(temperature=0.4), tools, system_prompt=system_prompt)
+            await agent.ainvoke(
+                {"messages": [HumanMessage("Run performance analysis.")]},
+                config={"recursion_limit": 21},
+            )
         result["next_action"] = "See saved study note"
         print(f"[performance_analysis] Completed for student {student_id}")
     except Exception as e:

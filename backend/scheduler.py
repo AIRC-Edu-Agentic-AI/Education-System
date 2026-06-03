@@ -27,6 +27,11 @@ async def _progress_report_job() -> None:
     await run_progress_report(MOCK_STUDENT["student_id"])
 
 
+async def _progress_check_job() -> None:
+    from agent.event_checker import run_progress_check
+    await run_progress_check(MOCK_STUDENT["student_id"])
+
+
 def setup_scheduler() -> None:
     scheduler.add_job(
         _event_check_job,
@@ -52,8 +57,15 @@ def setup_scheduler() -> None:
         id="progress_report",
         replace_existing=True,
     )
+    scheduler.add_job(
+        _progress_check_job,
+        CronTrigger(hour=12, minute=0),
+        id="progress_check",
+        replace_existing=True,
+    )
     scheduler.start()
-    print("[scheduler] Started — event_check/15min, daily_plan/08:00, weekly_plan/Mon 08:05, progress_report/Sun 20:00")
+    print("[scheduler] Started — event_check/15min, daily_plan/08:00, weekly_plan/Mon 08:05, "
+          "progress_report/Sun 20:00, progress_check/12:00")
 
 
 def teardown_scheduler() -> None:

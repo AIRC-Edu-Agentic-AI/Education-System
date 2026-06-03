@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from agent.base import update_mastery, get_knowledge_state_stub
 from db.mock_data import MOCK_KNOWLEDGE_STATES
@@ -23,7 +23,7 @@ async def run_skills_update(
     new_mastery = update_mastery(current, evidence_type, score)
     states[concept] = {
         "mastery": new_mastery,
-        "last_updated": datetime.utcnow().strftime("%Y-%m-%d"),
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "evidence_count": states.get(concept, {}).get("evidence_count", 0) + 1,
     }
     await db.knowledge_states.update_one(

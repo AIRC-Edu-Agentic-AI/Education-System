@@ -3,7 +3,7 @@
 Triggered when: risk_score > 0.8 OR VLE inactivity > 7 days OR stress keywords detected in chat.
 Creates an empathetic notification and optionally triggers schedule relief.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 from db.mongodb import get_db
 
@@ -58,7 +58,7 @@ async def run_wellbeing_check(student_id: int, trigger: str = "risk") -> None:
              "payload": {"message": "Cho tôi xem lịch học đã được điều chỉnh"}},
         ],
         "read": False,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
     if db is not None:

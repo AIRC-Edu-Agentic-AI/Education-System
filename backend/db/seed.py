@@ -19,9 +19,10 @@ Chat intents also demonstrated:
     - "tôi đang căng thẳng"            → wellbeing → empathetic response
 """
 import asyncio
+import copy
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -203,10 +204,10 @@ STUDENT = {
         "tier": 3,
         "score": 0.82,
         "flags": ["low_vle_engagement", "assessment_due_soon", "assessment_shock"],
-        "computed_at": datetime.utcnow().isoformat(),
+        "computed_at": datetime.now(timezone.utc).isoformat(),
     },
     "prerequisite_gaps": ["Thống kê cơ bản", "Đại số tuyến tính"],
-    "updated_at": datetime.utcnow().isoformat(),
+    "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 
 TIMETABLE = {
@@ -243,9 +244,9 @@ STUDY_PLAN = {
         {"subject": "Flashcard Thống kê cơ bản", "type": "spaced_rep",
          "duration": 20, "day": "Thứ 5", "time": "08:00", "sm2_interval": 7},
         {"subject": "Hoàn thiện TMA-02", "type": "assignment",
-         "duration": 120, "day": "Thứ 6", "time": "14:00", "sm2_interval": None},
+         "duration": 120, "day": "Thứ 6", "time": "19:00", "sm2_interval": None},
     ],
-    "updated_at": datetime.utcnow().isoformat(),
+    "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 
 KNOWLEDGE_STATES = {
@@ -258,7 +259,7 @@ KNOWLEDGE_STATES = {
         "Hồi quy tuyến tính":  {"mastery": 0.55, "last_updated": "2025-01-18", "evidence_count": 3},
         "Kiểm định giả thuyết":{"mastery": 0.42, "last_updated": "2025-01-20", "evidence_count": 2},
     },
-    "updated_at": datetime.utcnow().isoformat(),
+    "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 
 # TMA-02 due day 49. m2 due day 42 (past). m3 due day 45 (past). Both trigger milestone_check.
@@ -277,7 +278,7 @@ MILESTONES = {
         {"id": "m4", "title": "Nộp bài chính thức",
          "status": "pending", "due_offset_days": 0},    # due day 49 — not yet due
     ],
-    "created_at": datetime.utcnow().isoformat(),
+    "created_at": datetime.now(timezone.utc).isoformat(),
 }
 
 RISK_HISTORY = {
@@ -291,7 +292,7 @@ RISK_HISTORY = {
         {"week": 6, "score": 0.74, "tier": 3},
         {"week": 7, "score": 0.82, "tier": 3},
     ],
-    "updated_at": datetime.utcnow().isoformat(),
+    "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 
 RESOURCES = [
@@ -303,7 +304,7 @@ RESOURCES = [
         "subject": "Kiểm định giả thuyết",
         "url": "https://example.com/bbb-w7-slides.pdf",
         "bookmarked": True,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "student_id": STUDENT_ID,
@@ -313,7 +314,7 @@ RESOURCES = [
         "subject": "Hồi quy tuyến tính",
         "url": "https://example.com/linear-regression.pdf",
         "bookmarked": False,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "student_id": STUDENT_ID,
@@ -323,7 +324,7 @@ RESOURCES = [
         "subject": "Thống kê cơ bản",
         "url": "https://example.com/stats-basics",
         "bookmarked": True,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "student_id": STUDENT_ID,
@@ -333,12 +334,53 @@ RESOURCES = [
         "subject": "Đại số tuyến tính",
         "url": "https://example.com/linear-algebra-quiz",
         "bookmarked": False,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     },
 ]
 
 
-# ── Seed ───────────────────────────────────────────────────────────────────────
+# ── Reusable seed routine ───────────────────────────────────────────────────────
+
+DEMO_COLLECTIONS = [
+    "students", "timetable_blocks", "study_plans",
+    "knowledge_states", "assignment_milestones", "resources",
+    "notifications", "risk_history",
+]
+
+
+async def seed_demo(db) -> dict:
+    """Idempotently reset one demo student to the known at-risk state.
+
+    Clears the student's docs across all demo collections (including
+    notifications — which resets the 24h agent dedup window) and re-inserts a
+    fresh dataset. Safe to call repeatedly. Returns a small summary.
+
+    Takes a live `db` handle (motor database) so it can be reused by both the
+    CLI (`python db/seed.py`) and the dashboard endpoint (`POST /admin/demo/run`).
+    """
+    cleared = {}
+    for col in DEMO_COLLECTIONS:
+        result = await db[col].delete_many({"student_id": STUDENT_ID})
+        cleared[col] = result.deleted_count
+
+    # deepcopy so motor's _id injection never mutates the module-level templates
+    await db.students.insert_one(copy.deepcopy(STUDENT))
+    await db.timetable_blocks.insert_one(copy.deepcopy(TIMETABLE))
+    await db.study_plans.insert_one(copy.deepcopy(STUDY_PLAN))
+    await db.knowledge_states.insert_one(copy.deepcopy(KNOWLEDGE_STATES))
+    await db.risk_history.insert_one(copy.deepcopy(RISK_HISTORY))
+    await db.assignment_milestones.insert_one(copy.deepcopy(MILESTONES))
+    await db.resources.insert_many([copy.deepcopy(r) for r in RESOURCES])
+
+    return {
+        "student_id": STUDENT_ID,
+        "cleared": cleared,
+        "risk_score": STUDENT["risk"]["score"],
+        "modules": [e["code_module"] for e in STUDENT["enrollments"]],
+    }
+
+
+# ── CLI ──────────────────────────────────────────────────────────────────────────
 
 async def seed() -> None:
     if not MONGODB_URI or "placeholder" in MONGODB_URI:
@@ -354,44 +396,10 @@ async def seed() -> None:
         sys.exit(1)
 
     db = client[MONGODB_DB]
-
-    # Clear existing demo data for this student
-    collections = [
-        "students", "timetable_blocks", "study_plans",
-        "knowledge_states", "assignment_milestones", "resources",
-        "notifications", "risk_history",
-    ]
-    for col in collections:
-        result = await db[col].delete_many({"student_id": STUDENT_ID})
-        print(f"  Cleared {result.deleted_count:>3} docs from {col}")
-
-    # Insert demo data
-    await db.students.insert_one(STUDENT)
-    print(f"  Inserted student {STUDENT_ID} (risk: {STUDENT['risk']['score']})")
-
-    await db.timetable_blocks.insert_one(TIMETABLE)
-    print("  Inserted timetable (week 7)")
-
-    await db.study_plans.insert_one(STUDY_PLAN)
-    print(f"  Inserted study plan ({len(STUDY_PLAN['sessions'])} sessions)")
-
-    await db.knowledge_states.insert_one(KNOWLEDGE_STATES)
-    n_states = len(KNOWLEDGE_STATES["states"])
-    print(f"  Inserted knowledge states ({n_states} concepts)")
-
-    await db.risk_history.insert_one(RISK_HISTORY)
-    print(f"  Inserted risk history ({len(RISK_HISTORY['entries'])} weeks)")
-
-    await db.assignment_milestones.insert_one(MILESTONES)
-    overdue_count = sum(
-        1 for m in MILESTONES["milestones"]
-        if m["status"] not in ("done", "skipped")
-        and (49 + m["due_offset_days"]) < CURRENT_DAY
-    )
-    print(f"  Inserted milestones ({overdue_count} overdue)")
-
-    await db.resources.insert_many(RESOURCES)
-    print(f"  Inserted {len(RESOURCES)} resources")
+    summary = await seed_demo(db)
+    print(f"  Reset student {summary['student_id']} (risk {summary['risk_score']}), "
+          f"modules: {', '.join(summary['modules'])}")
+    print(f"  Cleared: {summary['cleared']}")
 
     print()
     print("Seed complete. Expected event_check triggers:")

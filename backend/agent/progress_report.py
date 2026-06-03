@@ -1,19 +1,13 @@
-import os
-
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
 
 from agent.base import get_student_context, get_knowledge_state_stub, make_tools
+from agent.llm_pool import ROLE_AGENT, get_pool
 from agent.student_skills import get_skill_gaps
 
 
 async def run_progress_report(student_id: int) -> None:
     """Generate a weekly progress report and push a summary notification."""
-    base_url = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/api/v1")
-    lm_root = base_url.rstrip("/api/v1").rstrip("/")
-    model = os.getenv("LM_STUDIO_MODEL", "qwen/qwen3.5-9b")
-
     ctx = await get_student_context(student_id)
     kt = await get_knowledge_state_stub(student_id)
     gaps = await get_skill_gaps(student_id, threshold=0.6)
@@ -28,13 +22,6 @@ async def run_progress_report(student_id: int) -> None:
     )
 
     tools = make_tools(student_id)
-    llm = ChatOpenAI(
-        base_url=f"{lm_root}/v1",
-        api_key="lm-studio",
-        model=model,
-        temperature=0.5,
-    )
-
     system_prompt = (
         "You are a Progress Report Agent. It is Sunday evening — time for the weekly review.\n"
         + context_block
@@ -50,13 +37,14 @@ async def run_progress_report(student_id: int) -> None:
         "Keep it concise: 3–5 bullet points max per section."
     )
 
-    agent = create_agent(llm, tools, system_prompt=system_prompt)
-
     try:
-        await agent.ainvoke(
-            {"messages": [HumanMessage("Generate the weekly progress report.")]},
-            config={"recursion_limit": 18},
-        )
+        async with get_pool().acquire(ROLE_AGENT) as lease:
+            agent = create_agent(
+                lease.chat(temperature=0.5), tools, system_prompt=system_prompt)
+            await agent.ainvoke(
+                {"messages": [HumanMessage("Generate the weekly progress report.")]},
+                config={"recursion_limit": 18},
+            )
         print(f"[progress_report] Completed for student {student_id}")
     except Exception as e:
         print(f"[progress_report] Error for student {student_id}: {type(e).__name__}: {e}")

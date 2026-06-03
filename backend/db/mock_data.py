@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 MOCK_STUDENT = {
     "_id": "mock_student_001",
@@ -127,10 +127,10 @@ MOCK_STUDENT = {
         "tier": 3,
         "score": 0.82,
         "flags": ["low_vle_engagement", "assessment_due_soon", "assessment_shock"],
-        "computed_at": datetime.utcnow().isoformat(),
+        "computed_at": datetime.now(timezone.utc).isoformat(),
     },
     "prerequisite_gaps": ["Thống kê cơ bản", "Đại số tuyến tính"],
-    "updated_at": datetime.utcnow().isoformat(),
+    "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 
 MOCK_SCHEDULE = {
@@ -255,7 +255,7 @@ MOCK_NOTIFICATIONS = [
             {"label": "Nhắc lại sau", "action": "snooze", "payload": {}},
         ],
         "read": False,
-        "created_at": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
+        "created_at": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
     },
     {
         "_id": "notif_002",
@@ -273,7 +273,7 @@ MOCK_NOTIFICATIONS = [
             },
         ],
         "read": False,
-        "created_at": (datetime.utcnow() - timedelta(hours=5)).isoformat(),
+        "created_at": (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat(),
     },
 ]
 
@@ -287,7 +287,7 @@ MOCK_STUDY_PLAN = [
     {"subject": "Flashcard Tuần 5–6", "type": "spaced_rep",
      "duration": 20, "day": "Thứ 5", "time": "08:00", "sm2_interval": 7},
     {"subject": "Hoàn thiện TMA-02", "type": "assignment",
-     "duration": 120, "day": "Thứ 6", "time": "14:00", "sm2_interval": None},
+     "duration": 120, "day": "Thứ 6", "time": "19:00", "sm2_interval": None},
 ]
 
 MOCK_RESOURCES = [

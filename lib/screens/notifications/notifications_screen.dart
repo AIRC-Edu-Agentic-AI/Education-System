@@ -61,6 +61,16 @@ void handleNotificationAction(
           status: status,
         );
         ref.invalidate(assignmentMilestonesProvider(idAssessment));
+        final msg = status == 'done'
+            ? 'Đã đánh dấu hoàn thành ✓'
+            : status == 'in_progress'
+                ? 'Đang làm ▶'
+                : status == 'pending'
+                    ? 'Đã đặt: chưa bắt đầu'
+                    : 'Đã cập nhật tiến độ';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
+        );
       }
     case 'snooze':
       break;

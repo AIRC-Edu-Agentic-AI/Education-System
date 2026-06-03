@@ -3,7 +3,7 @@
 Triggered when risk_score > 0.7. Chains O3 Performance Analysis →
 Course Planning → Weekly Planning, then pushes a summary intervention.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 from agent.performance_analysis import run_performance_analysis
 from agent.course_planner import run_course_planning
@@ -44,7 +44,7 @@ async def run_risk_intervention(student_id: int) -> None:
                  "payload": {"message": "Cho tôi xem kế hoạch học tập mới"}},
             ],
             "read": False,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         if db is not None:
             await db.notifications.insert_one(notif)

@@ -1,17 +1,11 @@
-import os
-
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
 
 from agent.base import get_student_context, get_knowledge_state_stub, make_tools
+from agent.llm_pool import ROLE_AGENT, get_pool
 
 
 async def run_course_planning(student_id: int, trigger: str = "midpoint") -> None:
-    base_url = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/api/v1")
-    lm_root = base_url.rstrip("/api/v1").rstrip("/")
-    model = os.getenv("LM_STUDIO_MODEL", "qwen/qwen3.5-9b")
-
     ctx = await get_student_context(student_id)
     kt = await get_knowledge_state_stub(student_id)
     kt_summary = ", ".join(f"{c}: {v:.0%}" for c, v in kt.items()) if kt else "none"
@@ -32,13 +26,6 @@ async def run_course_planning(student_id: int, trigger: str = "midpoint") -> Non
     )
 
     tools = make_tools(student_id)
-    llm = ChatOpenAI(
-        base_url=f"{lm_root}/v1",
-        api_key="lm-studio",
-        model=model,
-        temperature=0.6,
-    )
-
     system_prompt = (
         f"You are a course planning advisor. {trigger_desc}\n"
         + context_block
@@ -57,13 +44,14 @@ async def run_course_planning(student_id: int, trigger: str = "midpoint") -> Non
         "Answer in Vietnamese."
     )
 
-    agent = create_agent(llm, tools, system_prompt=system_prompt)
-
     try:
-        await agent.ainvoke(
-            {"messages": [HumanMessage("Assess my course trajectory and give me a plan.")]},
-            config={"recursion_limit": 18},
-        )
+        async with get_pool().acquire(ROLE_AGENT) as lease:
+            agent = create_agent(
+                lease.chat(temperature=0.6), tools, system_prompt=system_prompt)
+            await agent.ainvoke(
+                {"messages": [HumanMessage("Assess my course trajectory and give me a plan.")]},
+                config={"recursion_limit": 18},
+            )
         print(f"[course_planner] Completed for student {student_id} (trigger={trigger})")
     except Exception as e:
         print(f"[course_planner] Error for student {student_id}: {type(e).__name__}: {e}")

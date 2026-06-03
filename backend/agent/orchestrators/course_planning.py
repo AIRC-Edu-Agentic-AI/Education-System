@@ -3,7 +3,7 @@
 Triggered by: enrollment, module midpoint, assessment shock, or called by O1.
 Chains Student Skills gap check → Course Recommendation → Course Planning Agent.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 
 from agent.student_skills import get_skill_gaps
 from agent.course_recommendation import recommend_courses
@@ -47,8 +47,12 @@ async def run_course_planning_orchestration(student_id: int, trigger: str) -> No
                  "payload": {"message": "Tôi nên học môn gì tiếp theo?"}},
             ],
             "read": False,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
+        from notify_schedule import compute_send_at
+        send_at = compute_send_at("course_guidance")
+        if send_at:
+            notif["send_at"] = send_at
         if db is not None:
             await db.notifications.insert_one(notif)
         else:
