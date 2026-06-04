@@ -239,8 +239,10 @@ async def get_settings():
 @router.post("/settings")
 async def set_settings(req: SettingsRequest):
     import notify_schedule
-    return notify_schedule.set_settings(
+    result = notify_schedule.set_settings(
         enabled=req.schedule_enabled, spread_minutes=req.spread_minutes)
+    await notify_schedule.save_settings_db()  # persist across restarts
+    return result
 
 
 @router.post("/demo/run")

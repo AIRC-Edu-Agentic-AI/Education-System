@@ -28,6 +28,8 @@ class NoCacheStaticFiles(StaticFiles):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
+    import notify_schedule
+    await notify_schedule.load_settings()
     init_pool()
     await get_pool().healthcheck()
     setup_scheduler()

@@ -35,10 +35,11 @@ ALL_ROLES = {ROLE_CLASSIFY, ROLE_CHAT, ROLE_AGENT}
 
 @dataclass
 class EndpointSpec:
-    base_url: str               # ends with /v1
+    base_url: str               # ends with /v1 (ignored for anthropic)
     model: str
     roles: set[str] = field(default_factory=lambda: set(ALL_ROLES))
     api_key: str = "lm-studio"
+    provider: str = "openai"    # "openai" (local LM Studio) | "anthropic"
 
 
 class _Endpoint:
@@ -53,12 +54,20 @@ class _Endpoint:
 
 
 class Lease:
-    """A borrowed endpoint. Build any number of ChatOpenAI configs on it."""
+    """A borrowed endpoint. Build a chat model bound to it (local or cloud)."""
 
     def __init__(self, spec: EndpointSpec):
         self.spec = spec
 
-    def chat(self, **kwargs) -> ChatOpenAI:
+    def chat(self, **kwargs):
+        if self.spec.provider == "anthropic":
+            from langchain_anthropic import ChatAnthropic
+            kwargs.setdefault("max_tokens", 4096)  # Anthropic requires a cap
+            return ChatAnthropic(
+                model=self.spec.model,
+                api_key=self.spec.api_key,
+                **kwargs,
+            )
         return ChatOpenAI(
             base_url=self.spec.base_url,
             api_key=self.spec.api_key,
@@ -109,27 +118,57 @@ class LLMPool:
                 self._cond.notify_all()
 
     async def healthcheck(self) -> None:
-        """Ping each endpoint's /models; drop unreachable ones. Keeps the full
-        list if all fail (so errors surface normally instead of an empty pool)."""
+        """Ping each local endpoint's /models; drop unreachable ones. If NONE are
+        reachable and ANTHROPIC_API_KEY is set, fall back to Claude (Anthropic)."""
         live: list[_Endpoint] = []
         async with httpx.AsyncClient(timeout=4.0) as client:
             for e in self._eps:
+                if e.spec.provider != "openai":
+                    live.append(e)  # cloud endpoints aren't ping-checked
+                    continue
                 try:
                     r = await client.get(f"{e.spec.base_url}/models")
-                    if r.status_code == 200:
+                    if r.status_code != 200:
+                        print(f"[llm_pool] DOWN {e.spec.base_url} (HTTP {r.status_code})")
+                        continue
+                    # LM Studio answers 200 even with no model loaded → check data.
+                    models = (r.json() or {}).get("data", [])
+                    if models:
                         live.append(e)
                         print(f"[llm_pool] OK   {e.spec.base_url} ({e.spec.model})")
                     else:
-                        print(f"[llm_pool] DOWN {e.spec.base_url} (HTTP {r.status_code})")
+                        print(f"[llm_pool] DOWN {e.spec.base_url} (no model loaded)")
                 except Exception as ex:
                     print(f"[llm_pool] DOWN {e.spec.base_url} ({type(ex).__name__})")
+
         if live:
             self._eps = live
+            return
+
+        anthropic = _anthropic_spec()
+        if anthropic is not None:
+            cap = int(os.getenv("ANTHROPIC_CONCURRENCY", "4"))
+            self._eps = [_Endpoint(anthropic, cap)]
+            print(f"[llm_pool] No local LLM reachable — falling back to Anthropic "
+                  f"({anthropic.model}) x{cap}")
         else:
-            print("[llm_pool] WARNING: no endpoints reachable — keeping configured list")
+            print("[llm_pool] WARNING: no local endpoint reachable and no "
+                  "ANTHROPIC_API_KEY set — keeping configured list")
 
 
 # ── Config parsing ─────────────────────────────────────────────────────────────
+
+def _anthropic_spec() -> EndpointSpec | None:
+    """Cloud fallback spec from env, or None if no API key is configured."""
+    key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not key:
+        return None
+    model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001").strip()
+    return EndpointSpec(
+        base_url="anthropic", model=model, roles=set(ALL_ROLES),
+        api_key=key, provider="anthropic",
+    )
+
 
 def _parse_specs() -> list[EndpointSpec]:
     raw = os.getenv("LM_STUDIO_ENDPOINTS", "").strip()

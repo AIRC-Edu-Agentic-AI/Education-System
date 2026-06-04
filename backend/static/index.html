@@ -185,6 +185,16 @@ const $ = (id) => document.getElementById(id);
 const sid = () => parseInt($('sid').value || '28400', 10);
 const esc = (s) => (s ?? '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
+// markdown-lite: escape first (XSS-safe), then **bold**, bullet lines, newlines
+function mdLite(s) {
+  let h = esc(s);
+  h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  return h.split('\n').map(l => {
+    const m = l.match(/^\s*[-*•]\s+(.*)/);
+    return m ? '•&nbsp;' + m[1] : l;
+  }).join('<br>');
+}
+
 // created_at is UTC isoformat without a 'Z'; treat it as UTC, return {ago, local}
 function fmtTime(iso) {
   if (!iso) return { ago: '', local: '' };
@@ -335,7 +345,7 @@ async function loadNotifs() {
           <span><span class="dot" style="background:var(--blue)"></span><b>${esc(title)}</b></span>
           <span class="muted mono" style="font-size:11px" title="${esc(t.local)}">${esc(t.ago)}</span>
         </div>
-        <div class="muted" style="font-size:12px">${esc(body)}</div>
+        <div class="muted" style="font-size:12px">${mdLite(body)}</div>
         <div style="margin-top:4px"><span class="tag" style="color:var(--blue)">${esc(x.type)}</span>${opts}</div>
       </div>`;
     }).join('') || '<span class="muted">none</span>';
@@ -507,7 +517,7 @@ async function sendChat() {
   const respId = 'r' + Date.now();
   log.innerHTML += `<div id="${respId}"></div>`;
   const box = $(respId);
-  let thinkEl = null, contentEl = null;
+  let thinkEl = null, contentEl = null, contentRaw = '';
 
   try {
     const r = await fetch('/chat/stream', {
@@ -538,7 +548,8 @@ async function sendChat() {
           thinkEl = null;
         } else if (ev.type === 'content') {
           if (!contentEl) { contentEl = document.createElement('div'); contentEl.className='content'; box.appendChild(contentEl); }
-          contentEl.textContent += ev.delta || '';
+          contentRaw += ev.delta || '';
+          contentEl.innerHTML = mdLite(contentRaw);
         } else if (ev.type === 'error') {
           box.innerHTML += `<div style="color:var(--red)">error: ${esc(ev.message||'')}</div>`;
         }
