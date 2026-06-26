@@ -15,6 +15,12 @@ from .channel import (
     get_channel,
 )
 
+# Message functions
+from .message import (
+    get_channel_messages,
+    add_channel_message,
+)
+
 
 __all__ = [
     # Course
@@ -26,5 +32,7 @@ __all__ = [
     # Channel
     "get_course_channels",
     "get_channel",
-    
+    # Message
+    "get_channel_messages",
+    "add_channel_message",
 ]
