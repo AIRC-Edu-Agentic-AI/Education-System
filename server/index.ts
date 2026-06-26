@@ -62,6 +62,28 @@ app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
   res.json(student)
 })
 
+// Schedules: store per-course schedules in collection `schedules`
+app.get('/api/schedules/:module/:presentation', async (req, res) => {
+  const { module, presentation } = req.params
+  const doc = await db.collection('schedules').findOne({ module, presentation }, { projection: { _id: 0 } })
+  if (!doc) return res.json({ schedules: [] })
+  res.json({ schedules: doc.schedules ?? [] })
+})
+
+app.post('/api/schedules/:module/:presentation', async (req, res) => {
+  const { module, presentation } = req.params
+  const { schedules } = req.body
+  if (!Array.isArray(schedules)) return res.status(400).json({ error: 'Invalid schedules payload' })
+
+  await db.collection('schedules').updateOne(
+    { module, presentation },
+    { $set: { schedules } },
+    { upsert: true }
+  )
+
+  res.json({ ok: true })
+})
+
 async function start() {
   await client.connect()
   console.log("Connected to MongoDB Atlas!")
