@@ -7,10 +7,14 @@ import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/models/student_model.dart';
 
 class ApiService {
+  
   late final Dio _dio;
   bool _useMock = false;
 
   ApiService({String? token}) {
+    print('API_BASE_URL = ${EnvConfig.apiBaseUrl}');
+    print('USE_MOCK_DATA = ${EnvConfig.useMockData}');
+    
     _dio = Dio(BaseOptions(
       baseUrl: EnvConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 5),
@@ -79,15 +83,19 @@ class ApiService {
   }
 
   Future<List<CourseModel>> getStudentCourses(int studentId) async {
-    if (_useMock) return [];
+    if (_useMock) return MockData.courses;
     try {
-      final res = await _dio.get('/course/student/$studentId');
+      final res = await _dio.get('/course/course-communication/student/$studentId');
       return (res.data as List)
-          .map((course) => CourseModel.fromJson(Map<String, dynamic>.from(course)))
+          .map((course) => CourseModel.fromJson(
+            Map<String, dynamic>.from(course),
+          ))
           .toList();
-    } catch (_) {
+    } catch (e, s) {
+      print('GET COURSES ERROR = $e');
+      print(s);
       _useMock = true;
-      return [];
+      return MockData.courses;  // fallback mock thay vì []
     }
   }
 
@@ -109,7 +117,7 @@ class ApiService {
       );
     }
     try {
-      final res = await _dio.get('/course/courses/$courseCode');
+      final res = await _dio.get('/course/course-communication/$courseCode');
       return CourseModel.fromJson(Map<String, dynamic>.from(res.data));
     } catch (_) {
       _useMock = true;
@@ -131,15 +139,15 @@ class ApiService {
   }
 
   Future<List<CourseChannel>> getCourseChannels(String courseCode) async {
-    if (_useMock) return [];
+    if (_useMock) return MockData.channelsFor(courseCode);
     try {
-      final res = await _dio.get('/course/courses/$courseCode/channels');
+      final res = await _dio.get('/course/course-communication/courses/$courseCode/channels');
       return (res.data as List)
-          .map((channel) => CourseChannel.fromJson(Map<String, dynamic>.from(channel)))
-          .toList();
+        .map((channel) => CourseChannel.fromJson(Map<String, dynamic>.from(channel)))
+        .toList();
     } catch (_) {
       _useMock = true;
-      return [];
+      return MockData.channelsFor(courseCode);
     }
   }
 
@@ -158,7 +166,7 @@ class ApiService {
       );
     }
     try {
-      final res = await _dio.get('/course/channels/$channelId');
+      final res = await _dio.get('/course/course-communication/$channelId');
       return CourseChannel.fromJson(Map<String, dynamic>.from(res.data));
     } catch (_) {
       _useMock = true;
@@ -180,7 +188,7 @@ class ApiService {
       {String? parentId}) async {
     if (_useMock) return [];
     try {
-      final res = await _dio.get('/course/channels/$channelId/messages',
+      final res = await _dio.get('/course/course-communication/$channelId/messages',
           queryParameters: parentId == null ? null : {'parent_id': parentId});
       return (res.data as List)
           .map((message) => CourseMessage.fromJson(Map<String, dynamic>.from(message)))
@@ -199,7 +207,7 @@ class ApiService {
   }) async {
     if (_useMock) return null;
     try {
-      final res = await _dio.post('/course/channels/$channelId/messages', data: {
+      final res = await _dio.post('/course/course-communication/$channelId/messages', data: {
         'sender_id': senderId,
         'content': content,
         if (parentId != null) 'parent_id': parentId,
@@ -215,7 +223,7 @@ class ApiService {
       String messageId, int userId, String emoji) async {
     if (_useMock) return false;
     try {
-      await _dio.post('/course/messages/$messageId/reactions', data: {
+      await _dio.post('/course/course-communication/messages/$messageId/reactions', data: {
         'user_id': userId,
         'emoji': emoji,
       });

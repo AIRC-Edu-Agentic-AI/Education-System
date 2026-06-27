@@ -1,6 +1,7 @@
 import 'package:student_agent/models/assignment_milestone_model.dart';
 import 'package:student_agent/models/student_model.dart';
 
+import 'package:student_agent/models/course_model.dart';
 class MockData {
   static final StudentModel student = StudentModel(
     id: 'mock_student_001',
@@ -416,4 +417,53 @@ class MockData {
       'bookmarked': false,
     },
   ];
+
+    // ── Course Communication ──────────────────────────────────────
+  static List<CourseModel> get courses {
+    final now = DateTime.now();
+    return student.enrollments.map((e) {
+      return CourseModel(
+        id: 'mock_course_${e.codeModule}',
+        courseCode: e.codeModule,
+        title: e.title,
+        presentation: e.codePresentation,
+        term: '2024A',
+        instructors: const [10001],
+        classReps: const [28501],
+        members: [student.studentId],
+        status: 'active',
+        settings: const {},
+        createdAt: now,
+        updatedAt: now,
+      );
+    }).toList();
+  }
+
+  static List<CourseChannel> channelsFor(String courseCode) {
+    final now = DateTime.now();
+    return [
+      CourseChannel(
+        id: 'mock_${courseCode}_announcement',
+        courseCode: courseCode,
+        type: 'announcement',
+        name: 'Class Announcement',
+        isReadOnly: true,
+        allowedPostRoles: const ['instructor', 'class_rep'],
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      CourseChannel(
+        id: 'mock_${courseCode}_discussion',
+        courseCode: courseCode,
+        type: 'discussion',
+        name: 'Discuss',
+        isReadOnly: false,
+        allowedPostRoles: const ['student', 'instructor', 'class_rep'],
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
+  }
 }
