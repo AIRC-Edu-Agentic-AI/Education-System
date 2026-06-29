@@ -156,3 +156,19 @@ export interface ConceptGraph {
   edges: ConceptEdge[]
   subject_domain: string
 }
+
+// ─── Scheduling items (UI + persistence) ───────────────────────────────────
+export interface ScheduleItem {
+  id: string
+  week: number
+  activity: string
+  time: string
+  is_makeup?: boolean
+  note?: string | null
+}
+
+export interface CourseSchedules {
+  module: string
+  presentation: string
+  schedules: ScheduleItem[]
+}
