@@ -1,6 +1,9 @@
 import 'package:student_agent/models/assignment_milestone_model.dart';
 import 'package:student_agent/models/student_model.dart';
 
+import 'package:student_agent/models/course_model.dart';
+
+import 'package:student_agent/data/mock/mock_message_store.dart';
 class MockData {
   static final StudentModel student = StudentModel(
     id: 'mock_student_001',
@@ -416,4 +419,120 @@ class MockData {
       'bookmarked': false,
     },
   ];
+
+    // ── Course Communication ──────────────────────────────────────
+  static List<CourseModel> get courses {
+    final now = DateTime.now();
+    return student.enrollments.map((e) {
+      return CourseModel(
+        id: 'mock_course_${e.codeModule}',
+        courseCode: e.codeModule,
+        title: e.title,
+        presentation: e.codePresentation,
+        term: '2024A',
+        instructors: const [10001],
+        classReps: const [28501],
+        members: [student.studentId],
+        status: 'active',
+        settings: const {},
+        createdAt: now,
+        updatedAt: now,
+      );
+    }).toList();
+  }
+
+  static List<CourseChannel> channelsFor(String courseCode) {
+    final now = DateTime.now();
+    return [
+      CourseChannel(
+        id: 'mock_${courseCode}_announcement',
+        courseCode: courseCode,
+        type: 'announcement',
+        name: 'Class Announcement',
+        isReadOnly: true,
+        allowedPostRoles: const ['instructor', 'class_rep'],
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      CourseChannel(
+        id: 'mock_${courseCode}_discussion',
+        courseCode: courseCode,
+        type: 'discussion',
+        name: 'Discuss',
+        isReadOnly: false,
+        allowedPostRoles: const ['student', 'instructor', 'class_rep'],
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
+  }
+
+    static List<CourseMessage> seedMessagesFor(String channelId) {
+    final now = DateTime.now();
+    final courseCode = MockMessageStore.courseCodeFromChannelId(channelId);
+
+    // ── Kênh thông báo ──
+    if (channelId.endsWith('_announcement')) {
+      const rootId = 'mock_ann_root_1';
+      return [
+        CourseMessage(
+          id: rootId,
+          channelId: channelId,
+          courseCode: courseCode,
+          senderId: 10001,
+          senderRole: 'instructor',
+          content: 'Nhắc nhở: TMA-02 nộp trước ngày 49. Mọi người kiểm tra rubric trên LMS.',
+          createdAt: now.subtract(const Duration(hours: 5)),
+        ),
+        CourseMessage(
+          id: 'mock_ann_reply_1',
+          channelId: channelId,
+          courseCode: courseCode,
+          senderId: 28400,
+          senderRole: 'student',
+          content: 'Em xin hỏi có được nộp muộn 1 ngày không ạ?',
+          createdAt: now.subtract(const Duration(hours: 4)),
+          parentId: rootId,
+        ),
+        CourseMessage(
+          id: 'mock_ann_reply_2',
+          channelId: channelId,
+          courseCode: courseCode,
+          senderId: 28501,
+          senderRole: 'class_rep',
+          content: 'Theo quy định lớp thì không nộp muộn. Nếu có lý do đặc biệt, nhắn GV qua email.',
+          createdAt: now.subtract(const Duration(hours: 3)),
+          parentId: rootId,
+        ),
+      ];
+    }
+
+    // ── Kênh thảo luận ──
+    if (channelId.endsWith('_discussion')) {
+      return [
+        CourseMessage(
+          id: 'mock_disc_1',
+          channelId: channelId,
+          courseCode: courseCode,
+          senderId: 28400,
+          senderRole: 'student',
+          content: 'Tuần này phần hồi quy tuyến tính ai có slide bài giảng không?',
+          createdAt: now.subtract(const Duration(hours: 6)),
+        ),
+        CourseMessage(
+          id: 'mock_disc_2',
+          channelId: channelId,
+          courseCode: courseCode,
+          senderId: 28501,
+          senderRole: 'class_rep',
+          content: 'Slide tuần 7 có trên Resource Center, mục DATA201.',
+          createdAt: now.subtract(const Duration(hours: 5)),
+        ),
+      ];
+    }
+
+    return [];
+  }
 }

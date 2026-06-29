@@ -15,6 +15,9 @@ import 'package:student_agent/screens/more/more_screen.dart';
 import 'package:student_agent/screens/notifications/notifications_screen.dart';
 import 'package:student_agent/widgets/app_shell.dart';
 
+import 'package:student_agent/screens/course_communication/course_channels_screen.dart';
+import 'package:student_agent/screens/course_communication/course_channel_messages_screen.dart';
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.read(authNotifierProvider);
 
@@ -53,6 +56,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/my-class', builder: (ctx, state) => const MyClassScreen()),
           GoRoute(path: '/my-enrollment', builder: (ctx, state) => const MyEnrollmentScreen()),
           GoRoute(path: '/resources', builder: (ctx, state) => const ResourceCenterScreen()),
+          GoRoute(
+            path: '/course/:courseCode/channels',
+            builder: (ctx, state) => const CourseChannelsScreen(),
+            routes: [
+              GoRoute(
+                path: ':channelId/messages', // Đuôi path nối tiếp, không cần lặp lại đoạn của cha
+                builder: (ctx, state) => CourseChannelMessagesScreen(
+                  courseCode: state.pathParameters['courseCode']!, // Vẫn lấy được tham số của cha
+                  channelId: state.pathParameters['channelId']!,
+                  channelName: state.uri.queryParameters['name'],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     ],

@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 
 from routers import student, chat, schedule, notifications, auth, assignments, admin
+from routers.course_communication import router as course_communication_router
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
@@ -56,6 +57,7 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
 app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
 app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
+app.include_router(course_communication_router, prefix="/course", tags=["course_communication"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 # ── Browser dashboard (served at /dashboard/) ──────────────────────────────────

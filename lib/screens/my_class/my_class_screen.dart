@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/providers/providers.dart';
 
@@ -90,6 +91,17 @@ class MyClassScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                icon: const Icon(Icons.forum_outlined, size: 18),
+                label: const Text('Mở kênh lớp'),
+                onPressed: () {
+                  context.go(
+                    '/course/${enrollment.codeModule}/channels',
+                    extra: {'courseTitle': enrollment.displayName},
+                  );
+                },
               ),
               const SizedBox(height: 16),
               const Text('Bài kiểm tra & bài nộp',
