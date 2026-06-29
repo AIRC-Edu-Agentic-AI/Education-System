@@ -33,6 +33,8 @@ def get_user_role(course: dict, user_id: int) -> str | None:
 def prepare_message_json(doc: dict) -> dict:
     """Prepare message document for JSON response."""
     doc = to_json(doc)
+    if doc.get("channel_id") is not None:
+        doc["channel_id"] = str(doc["channel_id"])
     if doc.get("parent_id") is not None:
         doc["parent_id"] = str(doc["parent_id"])
     if isinstance(doc.get("reactions"), list):
