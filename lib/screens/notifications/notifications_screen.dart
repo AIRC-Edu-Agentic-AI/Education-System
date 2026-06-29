@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/providers/providers.dart';
+import 'package:student_agent/widgets/formatted_text.dart';
 
 Color notificationColor(String type) => switch (type) {
       'deadline_critical' => AppTheme.danger,
@@ -288,9 +289,9 @@ void _showDetail(
                 style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
               ),
               const SizedBox(height: 16),
-              Text(
+              FormattedText(
                 notif.body,
-                style: const TextStyle(
+                baseStyle: const TextStyle(
                     fontSize: 14, color: AppTheme.textSecondary, height: 1.5),
               ),
               if (notif.actionOptions.isNotEmpty) ...[
