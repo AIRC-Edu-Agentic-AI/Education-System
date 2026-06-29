@@ -9,6 +9,7 @@ import 'package:student_agent/widgets/glass_card.dart';
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
+
   static const _items = [
     _MoreItem(
       icon: Icons.school_outlined,
@@ -26,6 +27,13 @@ class MoreScreen extends ConsumerWidget {
       icon: Icons.library_books_outlined,
       label: 'Resource Center',
       route: '/resources',
+      color: AppTheme.primaryBlue,
+    ),
+
+    _MoreItem(
+      icon: Icons.group_outlined,
+      label: 'Nhóm học tập',
+      route: '/study-groups',
       color: AppTheme.primaryBlue,
     ),
     _MoreItem(
@@ -82,33 +90,44 @@ class MoreScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(student.fullName,
-                            style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textPrimary)),
+                        Text(
+                          student.fullName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('MSV ${student.studentId}',
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textSecondary)),
+                        Text(
+                          'MSV ${student.studentId}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.textMuted),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppTheme.textMuted,
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
 
-          // Navigation grid
-          const Text('Quick Access',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.textSecondary)),
+          // ── Navigation grid ──
+          const Text(
+            'Quick Access',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textSecondary,
+            ),
+          ),
           const SizedBox(height: 12),
           GridView.count(
             crossAxisCount: 2,
@@ -124,7 +143,7 @@ class MoreScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
-          // Logout
+          // ── Logout ──
           GestureDetector(
             onTap: () async {
               await ref.read(authNotifierProvider).logout();
@@ -135,17 +154,26 @@ class MoreScreen extends ConsumerWidget {
                 color: AppTheme.dangerGlow,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: AppTheme.danger.withValues(alpha: 0.3), width: 1),
+                  color: AppTheme.danger.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.logout_rounded, color: AppTheme.danger, size: 20),
+                  Icon(
+                    Icons.logout_rounded,
+                    color: AppTheme.danger,
+                    size: 20,
+                  ),
                   SizedBox(width: 12),
-                  Text('Đăng xuất',
-                      style: TextStyle(
-                          color: AppTheme.danger,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    'Đăng xuất',
+                    style: TextStyle(
+                      color: AppTheme.danger,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -153,8 +181,10 @@ class MoreScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
           const Center(
-            child: Text('Student Agent v1.0',
-                style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+            child: Text(
+              'Student Agent v1.0',
+              style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+            ),
           ),
         ],
       ),
@@ -174,7 +204,10 @@ class _MoreCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: item.color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: item.color.withValues(alpha: 0.25), width: 1),
+          border: Border.all(
+            color: item.color.withValues(alpha: 0.25),
+            width: 1,
+          ),
         ),
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -185,9 +218,10 @@ class _MoreCard extends StatelessWidget {
             Text(
               item.label,
               style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500),
+                color: AppTheme.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -217,9 +251,17 @@ class _ProfileSkeleton extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(width: 120, height: 14, color: AppTheme.surfaceDark),
+              Container(
+                width: 120,
+                height: 14,
+                color: AppTheme.surfaceDark,
+              ),
               const SizedBox(height: 6),
-              Container(width: 80, height: 12, color: AppTheme.surfaceDark),
+              Container(
+                width: 80,
+                height: 12,
+                color: AppTheme.surfaceDark,
+              ),
             ],
           ),
         ],
@@ -233,6 +275,7 @@ class _MoreItem {
   final String label;
   final String route;
   final Color color;
+
   const _MoreItem({
     required this.icon,
     required this.label,
