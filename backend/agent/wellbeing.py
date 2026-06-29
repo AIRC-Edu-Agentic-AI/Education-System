@@ -3,9 +3,8 @@
 Triggered when: risk_score > 0.8 OR VLE inactivity > 7 days OR stress keywords detected in chat.
 Creates an empathetic notification and optionally triggers schedule relief.
 """
-from datetime import datetime, timezone
-
 from db.mongodb import get_db
+from db.notifications import push_notification
 
 WELLBEING_RELIEF_TRIGGER = "wellbeing_relief"
 
@@ -40,31 +39,18 @@ async def run_wellbeing_check(student_id: int, trigger: str = "risk") -> None:
     }
     reason = trigger_messages.get(trigger, "")
 
-    notif = {
-        "student_id": student_id,
-        "type": "wellbeing",
-        "payload": {
-            "title": "Trợ lý quan tâm đến bạn",
-            "body": (
-                f"{reason} Học tập có thể căng thẳng — "
-                "nhưng bạn không cần đối mặt một mình. "
-                "Trợ lý đã điều chỉnh lịch học để giảm tải cho bạn."
-            ),
-        },
-        "action_options": [
+    await push_notification(
+        db, student_id, "wellbeing",
+        "Trợ lý quan tâm đến bạn",
+        f"{reason} Học tập có thể căng thẳng — nhưng bạn không cần đối mặt một mình. "
+        "Trợ lý đã điều chỉnh lịch học để giảm tải cho bạn.",
+        action_options=[
             {"label": "Nói chuyện với trợ lý", "action": "open_chat",
              "payload": {"message": "Tôi đang cảm thấy rất áp lực, hãy giúp tôi"}},
             {"label": "Xem lịch học mới", "action": "open_chat",
              "payload": {"message": "Cho tôi xem lịch học đã được điều chỉnh"}},
         ],
-        "read": False,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-
-    if db is not None:
-        await db.notifications.insert_one(notif)
-    else:
-        print(f"[wellbeing] {notif['payload']['body']}")
+    )
 
     # Schedule relief: trigger weekly planner to lighten the load
     try:
