@@ -36,4 +36,21 @@ export class ProcessedDataAdapter implements DataService {
     const course = await this.getCourse(module, presentation)
     return course.students.find((s) => s.id_student === studentId) ?? null
   }
+
+  async getSchedules(module: string, presentation: string) {
+    const key = `schedules_${module}_${presentation}`
+    try {
+      const raw = localStorage.getItem(key)
+      if (!raw) return []
+      return JSON.parse(raw) as import('../types/domain').ScheduleItem[]
+    } catch (e) {
+      console.warn('Failed to load schedules from localStorage', e)
+      return []
+    }
+  }
+
+  async saveSchedules(module: string, presentation: string, schedules: import('../types/domain').ScheduleItem[]) {
+    const key = `schedules_${module}_${presentation}`
+    localStorage.setItem(key, JSON.stringify(schedules))
+  }
 }
