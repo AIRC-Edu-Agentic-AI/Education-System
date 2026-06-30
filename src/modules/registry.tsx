@@ -1,7 +1,7 @@
 import React from 'react'
 import DashboardIcon from '@mui/icons-material/GridViewRounded'
 import PersonIcon from '@mui/icons-material/PersonRounded'
-import ScheduleIcon from '@mui/icons-material/EventNoteRounded'
+import ClassIcon from '@mui/icons-material/ClassRounded';
 
 export interface ModuleConfig {
   id: string
@@ -24,9 +24,9 @@ export const moduleRegistry: ModuleConfig[] = [
     icon: <PersonIcon fontSize="small" />,
   },
   {
-    id: 'schedule',
-    label: 'Teaching schedule',
-    path: '/schedule',
-    icon: <ScheduleIcon fontSize="small" />,
+    id: 'class',
+    label: 'Class Management',
+    path: '/class',
+    icon: <ClassIcon fontSize="small" />,
   },
 ]
