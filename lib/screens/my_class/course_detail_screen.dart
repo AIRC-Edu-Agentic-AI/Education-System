@@ -75,7 +75,10 @@ class CourseDetailScreen extends ConsumerWidget {
               const SizedBox(height: 10),
               ..._pendingAssessments(enrollment)
                   .take(3)
-                  .map((a) => _AssessmentTile(assessment: a)),
+                  .map((a) => _AssessmentTile(
+                        assessment: a,
+                        courseCode: enrollment.codeModule,
+                      )),
               if (_pendingAssessments(enrollment).isEmpty)
                 const _EmptyPanel(text: 'Khong co bai tap dang cho nop'),
               const SizedBox(height: 18),
@@ -114,6 +117,7 @@ class CourseAssignmentsScreen extends ConsumerWidget {
           ...enrollment.assessments.map(
             (a) => _AssignmentCard(
               assessment: a,
+              courseCode: courseCode,
             ),
           ),
         ],
@@ -222,7 +226,12 @@ class CourseExamsScreen extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            ...fallback.map((a) => _AssessmentTile(assessment: a)),
+            ...fallback.map(
+              (a) => _AssessmentTile(
+                assessment: a,
+                courseCode: courseCode,
+              ),
+            ),
             if (fallback.isEmpty)
               const _EmptyPanel(text: 'Chua co lich thi cho mon nay'),
           ],
@@ -568,46 +577,61 @@ class _FeatureTile extends StatelessWidget {
 
 class _AssessmentTile extends StatelessWidget {
   final Assessment assessment;
+  final String courseCode;
 
-  const _AssessmentTile({required this.assessment});
+  const _AssessmentTile({
+    required this.assessment,
+    required this.courseCode,
+  });
+
+  void _openDetail(BuildContext context) {
+    context.go(
+      '/my-class/$courseCode/assignments/${assessment.idAssessment}',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.cardBorder, width: 1),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.assignment_late_outlined, color: AppTheme.warning),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${assessment.type} - ${assessment.weight.round()}%',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+    return InkWell(
+      onTap: () => _openDetail(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.cardBorder, width: 1),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.assignment_late_outlined, color: AppTheme.warning),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${assessment.type} - ${assessment.weight.round()}%',
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Text(
-                  'Han nop: ngay ${assessment.dueDate}',
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 12,
+                  Text(
+                    'Han nop: ngay ${assessment.dueDate}',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+          ],
+        ),
       ),
     );
   }
@@ -666,10 +690,18 @@ class _GradesPreview extends StatelessWidget {
 
 class _AssignmentCard extends ConsumerWidget {
   final Assessment assessment;
+  final String courseCode;
 
   const _AssignmentCard({
     required this.assessment,
+    required this.courseCode,
   });
+
+  void _openDetail(BuildContext context) {
+    context.go(
+      '/my-class/$courseCode/assignments/${assessment.idAssessment}',
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -677,7 +709,10 @@ class _AssignmentCard extends ConsumerWidget {
     final milestonesAsync =
         ref.watch(assignmentMilestonesProvider(assessment.idAssessment));
 
-    return Container(
+    return InkWell(
+      onTap: () => _openDetail(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -741,6 +776,15 @@ class _AssignmentCard extends ConsumerWidget {
           ),
           if (!assessment.isSubmitted) ...[
             const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _openDetail(context),
+                icon: const Icon(Icons.upload_rounded, size: 16),
+                label: const Text('Nop bai'),
+              ),
+            ),
+            const SizedBox(height: 6),
             milestonesAsync.when(
               loading: () => const LinearProgressIndicator(minHeight: 2),
               error: (_, __) => const SizedBox.shrink(),
@@ -798,6 +842,7 @@ class _AssignmentCard extends ConsumerWidget {
           ],
         ],
       ),
+    ),
     );
   }
 }
