@@ -62,6 +62,135 @@ app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
   res.json(student)
 })
 
+<<<<<<< HEAD
+=======
+app.post('/api/students/import', async (req, res) => {
+  try {
+    const { students } = req.body
+    if (!Array.isArray(students)) {
+      return res.status(400).json({ error: "Invalid data format" })
+    }
+    const result = await db.collection("students").insertMany(students)
+    res.status(200).json({ message: "Imported successfully", count: result.insertedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/schedules', async (req, res) => {
+  try {
+    const schedules = await db.collection("schedules").find({}).toArray()
+    res.status(200).json(schedules)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/schedules', async (req, res) => {
+  try {
+    const schedule = req.body
+    const result = await db.collection("schedules").insertOne(schedule)
+    res.status(201).json({ _id: result.insertedId, ...schedule })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.put('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const updateData = req.body
+    delete updateData._id
+    const result = await db.collection("schedules").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    )
+    res.status(200).json({ updated: result.modifiedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.delete('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await db.collection("schedules").deleteOne({ _id: new ObjectId(id) })
+    res.status(200).json({ deleted: result.deletedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/notifications', async (_req, res) => {
+  try {
+    const notifications = await db.collection("notifications")
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray()
+    res.status(200).json(notifications)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/notifications', async (req, res) => {
+  try {
+    const { senderRole, receiverRole, type, title, content } = req.body
+    const newNotification = {
+      senderRole,
+      receiverRole,
+      type,
+      title,
+      content,
+      createdAt: new Date().toISOString()
+    }
+    const result = await db.collection("notifications").insertOne(newNotification)
+    res.status(201).json({ _id: result.insertedId, ...newNotification })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// ĐÃ CẬP NHẬT: Lấy dữ liệu live từ MongoDB theo từng lớp
+app.get('/api/attendance-stats/:module/:presentation', async (req, res) => {
+  try {
+    const { module, presentation } = req.params;
+
+    const rawData = await db.collection("processed_students").aggregate([
+      {
+        $match: {
+          code_module: module,
+          code_presentation: presentation
+        }
+      },
+      {
+        $group: {
+          _id: "$final_result",
+          count: { $sum: 1 }
+        }
+      }
+    ]).toArray();
+
+    const colorMap: Record<string, string> = {
+      'Pass': '#4CAF50',
+      'Fail': '#F44336',
+      'Withdrawn': '#FFC107',
+      'Distinction': '#2196F3'
+    };
+
+    const stats = rawData.map(item => ({
+      name: item._id || 'Unknown',
+      value: item.count,
+      color: colorMap[item._id] || '#9E9E9E'
+    }));
+
+    res.status(200).json(stats);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
+>>>>>>> 311f9f3 (feat(api): update attendance stats endpoint to fetch live MongoDB data)
 // Schedules: store per-course schedules in collection `schedules`
 app.get('/api/schedules/:module/:presentation', async (req, res) => {
   const { module, presentation } = req.params
