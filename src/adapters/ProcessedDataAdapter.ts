@@ -1,5 +1,5 @@
 import type { DataService } from '../ports/DataService'
-import type { OuladIndex, ProcessedCourse, StudentProfile } from '../types/domain'
+import type { OuladIndex, ProcessedCourse, ScheduleItem, StudentProfile } from '../types/domain'
 
 // In-memory cache so we only fetch each file once per session
 const cache = new Map<string, ProcessedCourse>()
@@ -37,19 +37,33 @@ export class ProcessedDataAdapter implements DataService {
     return course.students.find((s) => s.id_student === studentId) ?? null
   }
 
+<<<<<<< HEAD
   async getSchedules(module: string, presentation: string) {
+=======
+  async getSchedules(module: string, presentation: string): Promise<ScheduleItem[]> {
+>>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
     const key = `schedules_${module}_${presentation}`
     try {
       const raw = localStorage.getItem(key)
       if (!raw) return []
+<<<<<<< HEAD
       return JSON.parse(raw) as import('../types/domain').ScheduleItem[]
     } catch (e) {
       console.warn('Failed to load schedules from localStorage', e)
+=======
+      return JSON.parse(raw) as ScheduleItem[]
+    } catch (error) {
+      console.warn('Failed to load schedules from localStorage', error)
+>>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
       return []
     }
   }
 
+<<<<<<< HEAD
   async saveSchedules(module: string, presentation: string, schedules: import('../types/domain').ScheduleItem[]) {
+=======
+  async saveSchedules(module: string, presentation: string, schedules: ScheduleItem[]): Promise<void> {
+>>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
     const key = `schedules_${module}_${presentation}`
     localStorage.setItem(key, JSON.stringify(schedules))
   }
