@@ -26,7 +26,37 @@ export default function AttendanceDashboard({ module, presentation }: Attendance
         const res = await fetch(`http://localhost:8000/api/attendance-stats/${module}/${presentation}`);
         if (!res.ok) throw new Error('Network response was not ok');
         const stats = await res.json();
-        setData(stats);
+
+        const groupedStats = stats.reduce((acc: AttendanceStat[], item: any) => {
+          const nameMap: Record<string, string> = {
+            'Pass': 'On Time',
+            'Distinction': 'On Time',
+            'Fail': 'Late',
+            'Withdrawn': 'Absent'
+          };
+          
+          const newName = nameMap[item.name] || item.name;
+          const existing = acc.find(x => x.name === newName);
+          
+          if (existing) {
+            existing.value += item.value;
+          } else {
+            const colorMap: Record<string, string> = {
+              'On Time': '#4CAF50',
+              'Late': '#FFC107',
+              'Absent': '#F44336'
+            };
+            
+            acc.push({
+              name: newName,
+              value: item.value,
+              color: colorMap[newName] || item.color || '#9E9E9E'
+            });
+          }
+          return acc;
+        }, []);
+
+        setData(groupedStats);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
