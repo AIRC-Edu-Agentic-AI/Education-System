@@ -18,6 +18,7 @@ import 'package:student_agent/widgets/app_shell.dart';
 import 'package:student_agent/screens/course_communication/course_channels_screen.dart';
 import 'package:student_agent/screens/course_communication/course_channel_messages_screen.dart';
 import 'package:student_agent/screens/my_class/course_detail_screen.dart';
+import 'package:student_agent/screens/my_class/assignment_detail_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.read(authNotifierProvider);
@@ -69,6 +70,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (ctx, state) => CourseAssignmentsScreen(
                       courseCode: state.pathParameters['courseCode']!,
                     ),
+                    routes: [
+                      GoRoute(
+                        path: ':assessmentId',
+                        builder: (ctx, state) => AssignmentDetailScreen(
+                          courseCode: state.pathParameters['courseCode']!,
+                          assessmentId: int.parse(
+                            state.pathParameters['assessmentId']!,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'grades',
