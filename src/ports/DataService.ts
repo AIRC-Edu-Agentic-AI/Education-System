@@ -1,4 +1,4 @@
-import type { OuladIndex, ProcessedCourse, StudentProfile } from '../types/domain'
+import type { OuladIndex, ProcessedCourse, ScheduleItem, StudentProfile } from '../types/domain'
 
 export interface DataService {
   /** Returns the index of available modules and presentations. */
@@ -14,7 +14,7 @@ export interface DataService {
     studentId: number
   ): Promise<StudentProfile | null>
 
-  /** Scheduling APIs: get and save teaching schedules for a course */
-  getSchedules(module: string, presentation: string): Promise<import('../types/domain').ScheduleItem[]>
-  saveSchedules(module: string, presentation: string, schedules: import('../types/domain').ScheduleItem[]): Promise<void>
+  /** Scheduling APIs: get and save teaching schedules for a course. */
+  getSchedules(module: string, presentation: string): Promise<ScheduleItem[]>
+  saveSchedules(module: string, presentation: string, schedules: ScheduleItem[]): Promise<void>
 }
