@@ -1,8 +1,9 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
 from db.mongodb import get_db
 from db.mock_data import MOCK_MILESTONES
+from db.submissions import get_submission, submit_assignment
 
 router = APIRouter()
 
@@ -12,6 +13,11 @@ class MilestoneUpdateRequest(BaseModel):
     id_assessment: int
     milestone_id: str
     status: str
+
+
+class SubmitAssignmentRequest(BaseModel):
+    student_id: int
+    content: str = Field(..., min_length=1, max_length=8000)
 
 
 @router.get("/{id_assessment}/milestones")
@@ -80,3 +86,29 @@ async def update_milestone_status(body: MilestoneUpdateRequest):
         {"$set": {"milestones.$.status": body.status}},
     )
     return {"ok": True}
+
+
+@router.get("/{id_assessment}/submission")
+async def read_submission(id_assessment: int, student_id: int):
+    """Return the student's submission for an assessment, if any."""
+    db = get_db()
+    doc = await get_submission(db, student_id, id_assessment)
+    if not doc:
+        return {"id_assessment": id_assessment, "submission": None}
+    return {"id_assessment": id_assessment, "submission": doc}
+
+
+@router.post("/{id_assessment}/submit")
+async def submit(id_assessment: int, body: SubmitAssignmentRequest):
+    """Submit assignment work (text or link). Marks assessment as submitted."""
+    db = get_db()
+    try:
+        submission = await submit_assignment(
+            db, body.student_id, id_assessment, body.content
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {"ok": True, "submission": submission}
