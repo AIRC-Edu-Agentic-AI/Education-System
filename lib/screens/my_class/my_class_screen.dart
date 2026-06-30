@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
+import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/providers/providers.dart';
 
 class MyClassScreen extends ConsumerWidget {
@@ -13,169 +14,220 @@ class MyClassScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
-      appBar: AppBar(title: const Text('MyClass')),
+      appBar: AppBar(title: const Text('My Class')),
       body: studentAsync.when(
         loading: () => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
-        error: (e, _) =>
-            Center(child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+        error: (e, _) => Center(
+          child: Text(
+            'Loi tai lop hoc: $e',
+            style: const TextStyle(color: AppTheme.danger),
+          ),
+        ),
         data: (student) {
-          final enrollment = student.enrollments.isNotEmpty
-              ? student.enrollments.first
-              : null;
-          if (enrollment == null) {
+          if (student.enrollments.isEmpty) {
             return const Center(
-                child: Text('Không có lớp học',
-                    style: TextStyle(color: AppTheme.textSecondary)));
+              child: Text(
+                'Chua co lop hoc',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            );
           }
+
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             children: [
-              // Class info card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceCard,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.cardBorder, width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.blueGreenGradient,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(enrollment.codeModule,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(enrollment.displayName,
-                                style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.textPrimary)),
-                            Text('${enrollment.moduleLength} tuần',
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.textSecondary)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    const Divider(),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Tương tác VLE: ${enrollment.vleSummary.totalClicks} lượt',
-                      style: const TextStyle(
-                          fontSize: 13, color: AppTheme.textSecondary),
-                    ),
-                    Text(
-                      'Hoạt động gần nhất: Ngày ${enrollment.vleSummary.lastActiveDay}',
-                      style: const TextStyle(
-                          fontSize: 13, color: AppTheme.textSecondary),
-                    ),
-                  ],
+              Text(
+                '${student.enrollments.length} lop dang hoc',
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                icon: const Icon(Icons.forum_outlined, size: 18),
-                label: const Text('Mở kênh lớp'),
-                onPressed: () {
-                  context.go(
-                    '/course/${enrollment.codeModule}/channels',
-                    extra: {'courseTitle': enrollment.displayName},
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              const Text('Bài kiểm tra & bài nộp',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.textSecondary)),
-              const SizedBox(height: 10),
-              ...enrollment.assessments.map((a) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceCard,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: a.isSubmitted
-                              ? AppTheme.accentGreen.withValues(alpha: 0.3)
-                              : AppTheme.cardBorder,
-                          width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${a.type} — ${a.weight.round()}%',
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppTheme.textPrimary)),
-                              Text('Hạn nộp: Ngày ${a.dueDate}',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.textSecondary)),
-                            ],
-                          ),
-                        ),
-                        if (a.score != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentGreenGlow,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: AppTheme.accentGreen.withValues(alpha: 0.3),
-                                  width: 1),
-                            ),
-                            child: Text('${a.score!.round()}/100',
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppTheme.accentGreen)),
-                          )
-                        else
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text('Chưa nộp',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.textMuted)),
-                          ),
-                      ],
-                    ),
-                  )),
+              const SizedBox(height: 12),
+              ...student.enrollments.map((e) => _ClassCard(enrollment: e)),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _ClassCard extends StatelessWidget {
+  final Enrollment enrollment;
+
+  const _ClassCard({required this.enrollment});
+
+  @override
+  Widget build(BuildContext context) {
+    final submitted = enrollment.assessments.where((a) => a.isSubmitted).length;
+    final total = enrollment.assessments.length;
+    final progress = total == 0 ? 0.0 : submitted / total;
+    final pending = enrollment.assessments.where((a) => !a.isSubmitted).toList()
+      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    final next = pending.isNotEmpty ? pending.first : null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.cardBorder, width: 1),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => context.go('/my-class/${enrollment.codeModule}'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                gradient: AppTheme.blueGreenGradientDiagonal,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    enrollment.codeModule,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    enrollment.displayName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    enrollment.codePresentation,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.82),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _InfoChip(
+                          icon: Icons.assignment_turned_in_outlined,
+                          label: '$submitted/$total bai da nop',
+                          color: AppTheme.accentGreen,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _InfoChip(
+                          icon: Icons.touch_app_outlined,
+                          label: '${enrollment.vleSummary.totalClicks} luot VLE',
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 6,
+                      backgroundColor: AppTheme.surfaceDark,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppTheme.accentGreen,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          next == null
+                              ? 'Tat ca bai tap da duoc nop'
+                              : 'Sap toi: ${next.type} - ngay ${next.dueDate}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppTheme.textMuted,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

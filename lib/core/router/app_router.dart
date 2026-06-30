@@ -17,6 +17,7 @@ import 'package:student_agent/widgets/app_shell.dart';
 
 import 'package:student_agent/screens/course_communication/course_channels_screen.dart';
 import 'package:student_agent/screens/course_communication/course_channel_messages_screen.dart';
+import 'package:student_agent/screens/my_class/course_detail_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.read(authNotifierProvider);
@@ -53,7 +54,44 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/study-plan', builder: (ctx, state) => const StudyPlanScreen()),
           GoRoute(path: '/analytics', builder: (ctx, state) => const AnalyticsScreen()),
           GoRoute(path: '/more', builder: (ctx, state) => const MoreScreen()),
-          GoRoute(path: '/my-class', builder: (ctx, state) => const MyClassScreen()),
+          GoRoute(
+            path: '/my-class',
+            builder: (ctx, state) => const MyClassScreen(),
+            routes: [
+              GoRoute(
+                path: ':courseCode',
+                builder: (ctx, state) => CourseDetailScreen(
+                  courseCode: state.pathParameters['courseCode']!,
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'assignments',
+                    builder: (ctx, state) => CourseAssignmentsScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'grades',
+                    builder: (ctx, state) => CourseGradesScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'progress',
+                    builder: (ctx, state) => CourseProgressScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'exams',
+                    builder: (ctx, state) => CourseExamsScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
           GoRoute(path: '/my-enrollment', builder: (ctx, state) => const MyEnrollmentScreen()),
           GoRoute(path: '/resources', builder: (ctx, state) => const ResourceCenterScreen()),
           GoRoute(
