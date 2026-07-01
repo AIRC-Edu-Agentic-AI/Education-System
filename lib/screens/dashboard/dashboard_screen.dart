@@ -183,6 +183,8 @@ class DashboardScreen extends ConsumerWidget {
                     data: (schedule) =>
                         AcademicProgressCard(schedule: schedule),
                   ),
+                  const SizedBox(height: 10),
+                  _LearningHealthSection(student: student),
                   const SizedBox(height: 16),
 
                   // ── 3. Notifications ────────────────────────────────
@@ -215,7 +217,7 @@ class DashboardScreen extends ConsumerWidget {
                     data: (schedule) => ThisWeekSection(schedule: schedule),
                   ),
                   const SizedBox(height: 16),
-          
+                  
                 ]),
               ),
             ),
@@ -500,6 +502,113 @@ class _PriorityCard extends StatelessWidget {
         return a.dateTime.compareTo(b.dateTime);
       });
     return items.isEmpty ? null : items.first;
+  }
+}
+
+class _LearningHealthSection extends StatelessWidget {
+  final StudentModel student;
+
+  const _LearningHealthSection({required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    final assessments = student.enrollments.expand((e) => e.assessments);
+    final total = assessments.length;
+    final submitted = assessments.where((a) => a.isSubmitted).length;
+    final submittedRatio = total == 0 ? 0 : ((submitted / total) * 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sức khỏe học tập',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _HealthMetric(
+              label: 'Rui ro',
+              value: '${(student.risk.score * 100).round()}%',
+              color: student.risk.tier >= 3
+                  ? AppTheme.danger
+                  : student.risk.tier == 2
+                      ? AppTheme.warning
+                      : AppTheme.accentGreen,
+              icon: Icons.warning_amber_outlined,
+            ),
+            const SizedBox(width: 8),
+            _HealthMetric(
+              label: 'Đã nộp',
+              value: '$submittedRatio%',
+              color: AppTheme.accentGreen,
+              icon: Icons.assignment_turned_in_outlined,
+            ),
+            const SizedBox(width: 8),
+            _HealthMetric(
+              label: 'Cần ôn',
+              value: '${student.prerequisiteGaps.length}',
+              color: AppTheme.primaryBlue,
+              icon: Icons.psychology_outlined,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _HealthMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _HealthMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.cardBorder, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
