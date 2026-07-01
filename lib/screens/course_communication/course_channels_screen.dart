@@ -97,7 +97,8 @@ class _CourseCard extends ConsumerWidget {
                       onTap: () {
                         context.go(
                           '/course/${course.courseCode}/channels/${channel.id}/messages'
-                          '?name=${Uri.encodeComponent(channel.name)}',
+                          '?name=${Uri.encodeComponent(channel.name)}'
+                          '&type=${Uri.encodeComponent(channel.type)}',
                         );
                       },
                     );

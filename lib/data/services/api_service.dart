@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:student_agent/core/config/env_config.dart';
 import 'package:student_agent/data/mock/mock_data.dart';
 import 'package:student_agent/models/assignment_milestone_model.dart';
+import 'package:student_agent/models/assignment_submission_model.dart';
 import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/models/student_model.dart';
 
@@ -369,6 +370,68 @@ class ApiService {
         'status': status,
       });
     } catch (_) {}
+  }
+
+  // ── Assignment submission ─────────────────────────────────────
+  Future<AssignmentSubmission?> getSubmission(
+      int idAssessment, int studentId) async {
+    if (_useMock) {
+      return _mockSubmission(idAssessment, studentId);
+    }
+    try {
+      final res = await _dio.get(
+        '/assignments/$idAssessment/submission',
+        queryParameters: {'student_id': studentId},
+      );
+      final data = Map<String, dynamic>.from(res.data);
+      final sub = data['submission'];
+      if (sub == null) return null;
+      return AssignmentSubmission.fromJson(Map<String, dynamic>.from(sub));
+    } catch (_) {
+      return _mockSubmission(idAssessment, studentId);
+    }
+  }
+
+  Future<AssignmentSubmission> submitAssignment({
+    required int idAssessment,
+    required int studentId,
+    required String content,
+  }) async {
+    if (_useMock) {
+      return _mockSubmit(idAssessment, studentId, content);
+    }
+    try {
+      final res = await _dio.post(
+        '/assignments/$idAssessment/submit',
+        data: {'student_id': studentId, 'content': content.trim()},
+      );
+      final sub = Map<String, dynamic>.from(res.data['submission']);
+      return AssignmentSubmission.fromJson(sub);
+    } catch (e) {
+      _useMock = true;
+      return _mockSubmit(idAssessment, studentId, content);
+    }
+  }
+
+  static final Map<String, AssignmentSubmission> _mockSubmissions = {};
+
+  AssignmentSubmission? _mockSubmission(int idAssessment, int studentId) {
+    return _mockSubmissions['$studentId-$idAssessment'];
+  }
+
+  AssignmentSubmission _mockSubmit(
+      int idAssessment, int studentId, String content) {
+    final sub = AssignmentSubmission(
+      studentId: studentId,
+      idAssessment: idAssessment,
+      courseCode: '',
+      content: content.trim(),
+      submittedAt: DateTime.now(),
+      submittedDay: 46,
+      status: 'submitted',
+    );
+    _mockSubmissions['$studentId-$idAssessment'] = sub;
+    return sub;
   }
 
   // ── Knowledge State ──────────────────────────────────────────

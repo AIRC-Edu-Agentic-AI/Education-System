@@ -7,16 +7,23 @@ import 'package:student_agent/data/mock/mock_message_store.dart';
 import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/providers/providers.dart';
 
+import 'dart:async';
+import 'package:student_agent/core/config/env_config.dart';
+
 class CourseChannelMessagesScreen extends ConsumerStatefulWidget {
   final String courseCode;
   final String channelId;
   final String? channelName;
+  final String? channelType;
+  final String? returnTo;
 
   const CourseChannelMessagesScreen({
     super.key,
     required this.courseCode,
     required this.channelId,
     this.channelName,
+    this.channelType,
+    this.returnTo,
   });
 
   @override
@@ -25,22 +32,62 @@ class CourseChannelMessagesScreen extends ConsumerStatefulWidget {
 }
 
 class _CourseChannelMessagesScreenState
-    extends ConsumerState<CourseChannelMessagesScreen> {
+extends ConsumerState<CourseChannelMessagesScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   final _expandedThreads = <String>{};
   String? _replyToMessageId;
   bool _sending = false;
+  Timer? _messageRefreshTimer;
 
   @override
   void dispose() {
+    _messageRefreshTimer?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _startMessagePolling();
+  }
+
+  void _startMessagePolling() {
+    final seconds = EnvConfig.pollingIntervalSeconds < 3
+      ? 3
+      : EnvConfig.pollingIntervalSeconds;
+
+    _messageRefreshTimer = Timer.periodic(
+      Duration(seconds: seconds),
+      (_) {
+        if (!mounted) return;
+    
+        ref.invalidate(
+          channelThreadMessagesProvider(
+            ChannelMessagesArgs(channelId: widget.channelId),
+          ),
+        );
+
+        for (final parentId in _expandedThreads) {
+          ref.invalidate(
+            channelThreadMessagesProvider(
+              ChannelMessagesArgs(
+                channelId: widget.channelId,
+                parentId: parentId,
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
   bool get _isAnnouncement =>
-      widget.channelId.contains('announcement');
+    widget.channelType == 'announcement' ||
+    widget.channelId.contains('announcement') ||
+    (widget.channelName?.toLowerCase().contains('thông báo') ?? false);
 
   bool get _canPostRoot {
     if (!_isAnnouncement) return true;
@@ -65,12 +112,23 @@ class _CourseChannelMessagesScreenState
     final api = ref.read(apiServiceProvider);
     final studentId = ref.read(activeStudentIdProvider);
 
-    await api.postChannelMessage(
+    final message = await api.postChannelMessage(
       channelId: widget.channelId,
       senderId: studentId,
       content: text,
       parentId: _replyToMessageId,
     );
+
+    if (message == null) {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không gửi được tin nhắn. Vui lòng kiểm tra kết nối backend.'),
+        ),
+      );
+      return;
+    }
 
     _controller.clear();
     setState(() {
@@ -85,6 +143,9 @@ class _CourseChannelMessagesScreenState
         ChannelMessagesArgs(channelId: widget.channelId),
       ),
     );
+    
+    _scrollToBottom();
+
     if (_replyToMessageId != null) {
       ref.invalidate(
         channelThreadMessagesProvider(
@@ -111,6 +172,17 @@ class _CourseChannelMessagesScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(
+      channelThreadMessagesProvider(
+        ChannelMessagesArgs(channelId: widget.channelId),
+      ),
+      (_, next) {
+        next.whenData((_) {
+          _scrollToBottom();
+        });
+      },
+    );
+
     final rootsAsync = ref.watch(
       channelThreadMessagesProvider(
         ChannelMessagesArgs(channelId: widget.channelId),
@@ -122,7 +194,13 @@ class _CourseChannelMessagesScreenState
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (widget.returnTo != null && widget.returnTo!.isNotEmpty) {
+              context.go(widget.returnTo!);
+              return;
+            }
+            context.pop();
+          },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,6 +298,26 @@ class _CourseChannelMessagesScreenState
         ],
       ),
     );
+  }
+
+  void _scrollToBottom({bool animated = true}) {
+    if (!_scrollController.hasClients) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+
+      final offset = _scrollController.position.maxScrollExtent;
+
+      if (animated) {
+        _scrollController.animateTo(
+          offset,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _scrollController.jumpTo(offset);
+      }
+    });
   }
 }
 

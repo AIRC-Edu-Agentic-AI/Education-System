@@ -17,6 +17,8 @@ import 'package:student_agent/widgets/app_shell.dart';
 
 import 'package:student_agent/screens/course_communication/course_channels_screen.dart';
 import 'package:student_agent/screens/course_communication/course_channel_messages_screen.dart';
+import 'package:student_agent/screens/my_class/course_detail_screen.dart';
+import 'package:student_agent/screens/my_class/assignment_detail_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.read(authNotifierProvider);
@@ -53,7 +55,55 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/study-plan', builder: (ctx, state) => const StudyPlanScreen()),
           GoRoute(path: '/analytics', builder: (ctx, state) => const AnalyticsScreen()),
           GoRoute(path: '/more', builder: (ctx, state) => const MoreScreen()),
-          GoRoute(path: '/my-class', builder: (ctx, state) => const MyClassScreen()),
+          GoRoute(
+            path: '/my-class',
+            builder: (ctx, state) => const MyClassScreen(),
+            routes: [
+              GoRoute(
+                path: ':courseCode',
+                builder: (ctx, state) => CourseDetailScreen(
+                  courseCode: state.pathParameters['courseCode']!,
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'assignments',
+                    builder: (ctx, state) => CourseAssignmentsScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: ':assessmentId',
+                        builder: (ctx, state) => AssignmentDetailScreen(
+                          courseCode: state.pathParameters['courseCode']!,
+                          assessmentId: int.parse(
+                            state.pathParameters['assessmentId']!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'grades',
+                    builder: (ctx, state) => CourseGradesScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'progress',
+                    builder: (ctx, state) => CourseProgressScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'exams',
+                    builder: (ctx, state) => CourseExamsScreen(
+                      courseCode: state.pathParameters['courseCode']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
           GoRoute(path: '/my-enrollment', builder: (ctx, state) => const MyEnrollmentScreen()),
           GoRoute(path: '/resources', builder: (ctx, state) => const ResourceCenterScreen()),
           GoRoute(
@@ -63,9 +113,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':channelId/messages', // Đuôi path nối tiếp, không cần lặp lại đoạn của cha
                 builder: (ctx, state) => CourseChannelMessagesScreen(
-                  courseCode: state.pathParameters['courseCode']!, // Vẫn lấy được tham số của cha
+                  courseCode: state.pathParameters['courseCode']!,
                   channelId: state.pathParameters['channelId']!,
                   channelName: state.uri.queryParameters['name'],
+                  channelType: state.uri.queryParameters['type'],
+                  returnTo: state.uri.queryParameters['returnTo'],
                 ),
               ),
             ],
