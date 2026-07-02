@@ -14,7 +14,7 @@ export interface DataService {
     studentId: number
   ): Promise<StudentProfile | null>
 
-  /** Scheduling APIs: get and save teaching schedules for a course. */
-  getSchedules(module: string, presentation: string): Promise<ScheduleItem[]>
-  saveSchedules(module: string, presentation: string, schedules: ScheduleItem[]): Promise<void>
+  /** Scheduling APIs: get and save teaching schedules for a course or for all teacher schedules. */
+  getSchedules(module?: string, presentation?: string): Promise<ScheduleItem[]>
+  saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void>
 }
