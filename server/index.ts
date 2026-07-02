@@ -84,6 +84,36 @@ app.post('/api/schedules/:module/:presentation', async (req, res) => {
   res.json({ ok: true })
 })
 
+app.get('/api/schedules', async (_req, res) => {
+  const allDoc = await db.collection('schedules_all').findOne({ _id: { $eq: 'all' } as any }, { projection: { _id: 0 } })
+  if (allDoc && Array.isArray(allDoc.schedules)) {
+    return res.json({ schedules: allDoc.schedules })
+  }
+
+  const docs = await db.collection('schedules').find({}, { projection: { _id: 0 } }).toArray()
+  const schedules = docs.flatMap((doc) =>
+    (doc.schedules ?? []).map((item: any) => ({
+      ...item,
+      module: doc.module,
+      presentation: doc.presentation,
+    }))
+  )
+  res.json({ schedules })
+})
+
+app.post('/api/schedules', async (req, res) => {
+  const { schedules } = req.body
+  if (!Array.isArray(schedules)) return res.status(400).json({ error: 'Invalid schedules payload' })
+
+  await db.collection('schedules_all').updateOne(
+    { _id: { $eq: 'all' } as any },
+    { $set: { schedules } },
+    { upsert: true }
+  )
+
+  res.json({ ok: true })
+})
+
 async function start() {
   await client.connect()
   console.log("Connected to MongoDB Atlas!")
