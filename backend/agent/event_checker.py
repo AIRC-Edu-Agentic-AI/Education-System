@@ -1,8 +1,8 @@
 import asyncio
-from datetime import datetime, timedelta, timezone
 
 from db.mock_data import MOCK_STUDENT, MOCK_SCHEDULE, MOCK_MILESTONES
 from db.mongodb import get_db
+from db.notifications import push_notification, recently_fired
 
 DEADLINE_WARN_DAYS = 3
 VLE_INACTIVITY_DAYS = 3
@@ -292,21 +292,8 @@ def _current_day(schedule_doc: dict | None) -> int:
 
 
 async def _recently_fired(db, student_id: int, notif_type: str, hours: int = 24) -> bool:
-    """True if a notification of this type was created within the window.
-
-    Used to gate expensive agent runs (O1, Wellbeing) that produce a
-    notification of `notif_type` — prevents re-running them every tick
-    when the underlying state (e.g. risk_score) is unchanged.
-    """
-    if db is None:
-        return False
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-    existing = await db.notifications.find_one({
-        "student_id": student_id,
-        "type": notif_type,
-        "created_at": {"$gt": cutoff},
-    })
-    return existing is not None
+    """Gate for expensive agent runs (O1, Wellbeing) keyed on their notif type."""
+    return await recently_fired(db, student_id, notif_type, hours)
 
 
 async def _push(
@@ -317,35 +304,8 @@ async def _push(
     body: str,
     action_options: list,
 ) -> bool:
-    """Insert a notification, deduped within a 24h window per type.
-
-    Returns True if a new notification was inserted, False if it was
-    suppressed as a duplicate. Callers use this to gate expensive
-    follow-up agent runs so they only fire when something is genuinely new.
-    """
-    from notify_schedule import compute_send_at
-    notif = {
-        "student_id": student_id,
-        "type": notif_type,
-        "payload": {"title": title, "body": body},
-        "action_options": action_options,
-        "read": False,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    send_at = compute_send_at(notif_type)
-    if send_at:
-        notif["send_at"] = send_at
-    if db is not None:
-        cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-        existing = await db.notifications.find_one({
-            "student_id": student_id,
-            "type": notif_type,
-            "created_at": {"$gt": cutoff},
-        })
-        if existing:
-            return False
-        await db.notifications.insert_one(notif)
-        return True
-    else:
-        print(f"[event_checker] {notif_type} — {title}")
-        return True
+    """Insert a deterministic notification, deduped 24h per type. Returns True
+    if inserted, False if suppressed — callers gate follow-ups on the result."""
+    return await push_notification(
+        db, student_id, notif_type, title, body,
+        action_options=action_options, dedup_hours=24)

@@ -266,21 +266,9 @@ def make_tools(student_id: int) -> list:
     async def create_reminder(title: str, body: str, type: str = "reminder") -> str:
         """Create a notification/reminder for the student. type can be: reminder, alert, intervention."""
         db = get_db()
-        from notify_schedule import compute_send_at
-        notif = {
-            "student_id": student_id,
-            "type": type,
-            "payload": {"title": title, "body": body},
-            "read": False,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        send_at = compute_send_at(type)
-        if send_at:
-            notif["send_at"] = send_at
-        if db is not None:
-            await db.notifications.insert_one(notif)
-            return json.dumps({"status": "ok"})
-        return json.dumps({"status": "mock_mode"})
+        from db.notifications import push_notification
+        await push_notification(db, student_id, type, title, body)
+        return json.dumps({"status": "ok" if db is not None else "mock_mode"})
 
     @tool
     async def mark_assignment_complete(module_code: str, assessment_type: str) -> str:

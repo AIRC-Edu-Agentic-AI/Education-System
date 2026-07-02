@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/models/chat_message_model.dart';
 import 'package:student_agent/providers/providers.dart';
+import 'package:student_agent/widgets/formatted_text.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -352,9 +353,9 @@ class _ChatBubbleState extends State<_ChatBubble> {
                     ),
                     child: showLoadingDots
                         ? const _LoadingDots()
-                        : Text(
+                        : FormattedText(
                             msg.content,
-                            style: const TextStyle(
+                            baseStyle: const TextStyle(
                               fontSize: 14,
                               height: 1.5,
                               color: AppTheme.textPrimary,
