@@ -1,4 +1,4 @@
-import type { DataService } from '../ports/DataService'
+﻿import type { DataService } from '../ports/DataService'
 import type { OuladIndex, ProcessedCourse, ScheduleItem, StudentProfile } from '../types/domain'
 
 // In-memory cache so we only fetch each file once per session
@@ -10,11 +10,9 @@ export class ProcessedDataAdapter implements DataService {
     if (indexCache) return indexCache
     const res = await fetch('/processed/index.json')
     if (!res.ok) {
-      throw new Error(
-        'Preprocessed data not found. Run `npm run preprocess` first.'
-      )
+      throw new Error('Preprocessed data not found. Run `npm run preprocess` first.')
     }
-    indexCache = await res.json() as OuladIndex
+    indexCache = (await res.json()) as OuladIndex
     return indexCache
   }
 
@@ -23,7 +21,7 @@ export class ProcessedDataAdapter implements DataService {
     if (cache.has(key)) return cache.get(key)!
     const res = await fetch(`/processed/${key}.json`)
     if (!res.ok) throw new Error(`No preprocessed data for ${module} ${presentation}`)
-    const data = await res.json() as ProcessedCourse
+    const data = (await res.json()) as ProcessedCourse
     cache.set(key, data)
     return data
   }
@@ -37,34 +35,49 @@ export class ProcessedDataAdapter implements DataService {
     return course.students.find((s) => s.id_student === studentId) ?? null
   }
 
-<<<<<<< HEAD
-  async getSchedules(module: string, presentation: string) {
-=======
-  async getSchedules(module: string, presentation: string): Promise<ScheduleItem[]> {
->>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
-    const key = `schedules_${module}_${presentation}`
+  async getSchedules(module?: string, presentation?: string): Promise<ScheduleItem[]> {
     try {
-      const raw = localStorage.getItem(key)
-      if (!raw) return []
-<<<<<<< HEAD
-      return JSON.parse(raw) as import('../types/domain').ScheduleItem[]
+      if (module && presentation) {
+        const data = localStorage.getItem(`schedules_${module}_${presentation}`)
+        return data ? (JSON.parse(data) as ScheduleItem[]) : []
+      }
+
+      const schedules: ScheduleItem[] = []
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i)
+        if (!key || !key.startsWith('schedules_')) continue
+        const data = localStorage.getItem(key)
+        if (!data) continue
+        try {
+          const parsed = JSON.parse(data) as ScheduleItem[]
+          schedules.push(
+            ...parsed.map((item) => ({
+              ...item,
+              module: (item as ScheduleItem & { module?: string }).module || key.split('_')[1],
+              presentation: (item as ScheduleItem & { presentation?: string }).presentation || key.split('_')[2],
+            }))
+          )
+        } catch {
+          continue
+        }
+      }
+      return schedules
     } catch (e) {
-      console.warn('Failed to load schedules from localStorage', e)
-=======
-      return JSON.parse(raw) as ScheduleItem[]
-    } catch (error) {
-      console.warn('Failed to load schedules from localStorage', error)
->>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
+      console.error('Error loading schedules from localStorage', e)
       return []
     }
   }
 
-<<<<<<< HEAD
-  async saveSchedules(module: string, presentation: string, schedules: import('../types/domain').ScheduleItem[]) {
-=======
-  async saveSchedules(module: string, presentation: string, schedules: ScheduleItem[]): Promise<void> {
->>>>>>> f2e6904 (Feature Update: Implement schedule persistence adapters.)
-    const key = `schedules_${module}_${presentation}`
-    localStorage.setItem(key, JSON.stringify(schedules))
+  async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void> {
+    try {
+      if (module && presentation) {
+        localStorage.setItem(`schedules_${module}_${presentation}`, JSON.stringify(schedules))
+        return
+      }
+      localStorage.setItem('schedules_all', JSON.stringify(schedules))
+    } catch (e) {
+      console.error('Error saving schedules to localStorage', e)
+      throw new Error('Failed to save schedules')
+    }
   }
 }
