@@ -1,4 +1,4 @@
-// ─── OULAD raw shapes (mirrors CSV columns) ──────────────────────────────────
+﻿// ─── OULAD raw shapes (mirrors CSV columns) ──────────────────────────────────
 
 export interface RawStudentInfo {
   code_module: string
@@ -140,15 +140,15 @@ export interface AgentContext {
 export interface ConceptNode {
   id: string
   label: string
-  mastery: number       // [0, 1]
-  confidence: number    // [0, 1]
+  mastery: number
+  confidence: number
   evidence_count: number
   topic_group: number
 }
 
 export interface ConceptEdge {
-  source: string        // concept_id
-  target: string        // concept_id (target depends on source)
+  source: string
+  target: string
 }
 
 export interface ConceptGraph {
@@ -187,6 +187,10 @@ export interface ScheduleItem {
   status?: ScheduleStatus
   is_makeup?: boolean
   note?: string | null
+  teacherId?: string
+  deliveryMode?: 'online' | 'offline' | 'hybrid'
+  module?: string
+  presentation?: string
   createdBy?: string
   updatedBy?: string
   createdAt?: string
