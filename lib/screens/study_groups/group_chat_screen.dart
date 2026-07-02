@@ -102,9 +102,13 @@ Future<void> _sendMessageWithFile() async {
         fileName: _selectedFileName!,
       );
       
-      fileUrl = result['url']?.toString();
-      fileName = result['name']?.toString() ?? _selectedFileName;
-      fileSize = result['size'] is int ? result['size'] as int : _selectedFileSize;
+      if (result is Map<String, dynamic>) {
+        fileUrl = result['url']?.toString();
+        fileName = result['name']?.toString() ?? _selectedFileName;
+        fileSize = result['size'] is int ? result['size'] as int : _selectedFileSize;
+      } else {
+        throw Exception('Upload response không đúng định dạng: ${result.runtimeType}');
+      }
       fileType = _selectedFile?.path.split('.').last;
     }
 
