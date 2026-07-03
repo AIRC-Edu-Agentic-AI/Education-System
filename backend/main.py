@@ -12,9 +12,24 @@ from routers.course_communication import router as course_communication_router
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
+from fastapi import FastAI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    alow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+os.makedirs("uploads/submissions", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.include_router(assignments_router, prefix="/assignments", tags=["assignments"])
 
 class NoCacheStaticFiles(StaticFiles):
     """Serve the dashboard with no-cache headers so edits/polling always get
