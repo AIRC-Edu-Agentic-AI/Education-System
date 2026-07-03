@@ -57,7 +57,7 @@ class CourseDetailScreen extends ConsumerWidget {
             children: [
               _Header(enrollment: enrollment, student: student),
               const SizedBox(height: 16),
-              _SectionTitle(title: 'Không gian lớp học'),
+              const _SectionTitle(title: 'Không gian lớp học'),
               const SizedBox(height: 10),
               channelsAsync.when(
                 loading: () => const LinearProgressIndicator(minHeight: 2),
@@ -71,7 +71,7 @@ class CourseDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              _SectionTitle(title: 'Bài tập gần đây'),
+              const _SectionTitle(title: 'Bài tập gần đây'),
               const SizedBox(height: 10),
               ..._pendingAssessments(enrollment)
                   .take(3)
@@ -82,7 +82,7 @@ class CourseDetailScreen extends ConsumerWidget {
               if (_pendingAssessments(enrollment).isEmpty)
                 const _EmptyPanel(text: 'Không có bài tập đang chờ nộp'),
               const SizedBox(height: 18),
-              _SectionTitle(title: 'Điểm môn học'),
+              const _SectionTitle(title: 'Điểm môn học'),
               const SizedBox(height: 10),
               _GradesPreview(enrollment: enrollment),
             ],
