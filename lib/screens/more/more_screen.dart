@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
-import 'package:student_agent/providers/auth_provider.dart';
 import 'package:student_agent/providers/providers.dart';
 import 'package:student_agent/widgets/glass_card.dart';
+
+import 'package:student_agent/providers/auth_provider.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
-
+  // ✅ ĐẢM BẢO DANH SÁCH NÀY CÓ ĐỦ 5 ITEMS
   static const _items = [
     _MoreItem(
       icon: Icons.school_outlined,
@@ -29,7 +30,7 @@ class MoreScreen extends ConsumerWidget {
       route: '/resources',
       color: AppTheme.primaryBlue,
     ),
-
+    // ⭐ THÊM ITEM NHÓM HỌC TẬP VÀO ĐÂY
     _MoreItem(
       icon: Icons.group_outlined,
       label: 'Nhóm học tập',
