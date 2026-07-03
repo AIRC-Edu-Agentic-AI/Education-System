@@ -1,65 +1,138 @@
 export interface CourseInfo {
   code: string;
   name: string;
+  semester?: string;
 }
 
-const buildClasses = (prefix: string, code: string, name: string, count: number): Record<string, CourseInfo> => {
+const ACTIVE_SEMESTERS = ['2023-1', '2023-2', '2024-1', '2024-2', '2025-1', '2025-2'];
+
+const buildCourseSemesters = (
+  code: string, 
+  name: string, 
+  semesters: string[] = ACTIVE_SEMESTERS
+): Record<string, CourseInfo> => {
   const result: Record<string, CourseInfo> = {};
-  for (let i = 1; i <= count; i++) {
-    result[`${prefix}_${i}`] = { code, name: `${name} (Class ${i})` };
+  for (const sem of semesters) {
+    result[`${code}_${sem}`] = { code, name, semester: sem };
   }
   return result;
 };
 
 export const COURSE_MAPPING: Record<string, CourseInfo> = {
-  ...buildClasses('AAA', 'PHI1006', 'Marxist-Leninist Philosophy', 8),
-  ...buildClasses('BBB', 'PEC1008', 'Marxist-Leninist Political Economy', 10),
-  ...buildClasses('CCC', 'HIS1001', 'History of the Communist Party of Vietnam', 8),
-  ...buildClasses('DDD', 'POL1001', "Ho Chi Minh's Ideology", 8),
-  ...buildClasses('EEE', 'PHI1002', 'Scientific Socialism', 8),
-  ...buildClasses('FFF', 'FLF1107', 'English B1', 12),
-  ...buildClasses('GGG', 'VNU1001', 'Introduction to Digital Technology and AI', 6),
-  ...buildClasses('HHH', 'THL1057', 'State and Law', 6),
-  ...buildClasses('III', 'UET.MAT1053', 'Linear Algebra for Engineers', 10),
-  ...buildClasses('JJJ', 'UET.MAT1050', 'Calculus 1 for Engineers', 10),
-  ...buildClasses('KKK', 'UET.MAT1051', 'Calculus 2 for Engineers', 10),
-  ...buildClasses('LLL', 'UET.PHY1095', 'General Physics 1', 8),
-  ...buildClasses('MMM', 'UET.PHY1096', 'General Physics 2', 8),
-  ...buildClasses('NNN', 'UET.COM1050', 'Computational Thinking', 10),
-  ...buildClasses('OOO', 'UET.MAT1052', 'Probability and Statistics', 8),
-  ...buildClasses('PPP', 'UET.CS1058', 'Data Structures and Algorithms', 8),
-  ...buildClasses('QQQ', 'UET.MAT1057', 'Discrete Mathematics', 8),
-  ...buildClasses('RRR', 'UET.CS2043', 'Advanced Programming', 8),
-  ...buildClasses('SSS', 'UET.IS2099', 'Database', 8),
-  ...buildClasses('TTT', 'UET.CN2042', 'Computer Network', 8),
-  ...buildClasses('UUU', 'UET.CS2045', 'Software Engineering', 8),
-  ...buildClasses('VVV', 'UET.CS2046', 'Artificial Intelligence', 6),
-  ...buildClasses('WWW', 'UET.IS2100', 'Fundamentals of Operating Systems', 6),
-  ...buildClasses('XXX', 'UET.CE2021', 'Computer Architecture', 6),
-  ...buildClasses('YYY', 'UET.CS3136', 'Machine Learning', 6),
-  ...buildClasses('ZZZ', 'UET.IT3291', 'System Analysis and Design', 6),
-  ...buildClasses('A01', 'UET.IT3294', 'Program Analysis and Testing', 6),
-  ...buildClasses('A02', 'UET.IT3296', 'Advanced Topics in Information Technology', 6),
-  ...buildClasses('A03', 'UET.CE2020', 'Systems Programming', 4),
-  ...buildClasses('A04', 'UET.IT3289', 'Cross-platform Application Development', 4),
-  ...buildClasses('A05', 'UET.IT3290', 'IT Project Management', 4),
-  ...buildClasses('A06', 'UET.IT3292', 'Designing Large-scale Software Systems', 4),
-  ...buildClasses('A07', 'UET.IT3297', 'AI Engineering', 4),
-  ...buildClasses('A08', 'UET.IT3298', 'API Design and Implementation', 4),
-  ...buildClasses('A09', 'UET.CS3152', 'User Interface and User Experience Design', 4),
-  ...buildClasses('A10', 'UET.CS3144', 'Scientific Computing for Machine Learning', 4),
-  ...buildClasses('A11', 'UET.CS3142', 'Natural Language Processing', 4),
-  ...buildClasses('A12', 'UET.AI3056', 'Deep Learning', 4),
-  ...buildClasses('A13', 'UET.CS3150', 'Image Processing and Computer Vision', 4),
-  ...buildClasses('A14', 'UET.IS3278', 'Data Mining', 4),
-  ...buildClasses('A15', 'UET.IS3276', 'Big Data Analytics', 4),
-  ...buildClasses('A16', 'UET.IS3283', 'Business Intelligence', 4),
-  ...buildClasses('A17', 'UET.IS3286', 'Business Analytics', 4),
-  ...buildClasses('A18', 'UET.CN3124', 'Network Security', 4),
-  ...buildClasses('A19', 'UET.CN3125', 'System Administration', 4),
-  ...buildClasses('A20', 'UET.CN3134', 'Cloud Computing', 4),
+  ...buildCourseSemesters('PHI1006', 'Marxist-Leninist Philosophy'),
+  ...buildCourseSemesters('PEC1008', 'Marxist-Leninist Political Economy'),
+  ...buildCourseSemesters('HIS1001', 'History of the Communist Party of Vietnam'),
+  ...buildCourseSemesters('POL1001', "Ho Chi Minh's Ideology"),
+  ...buildCourseSemesters('PHI1002', 'Scientific Socialism'),
+  ...buildCourseSemesters('FLF1107', 'English B1'),
+  ...buildCourseSemesters('VNU1001', 'Introduction to Digital Technology and AI'),
+  ...buildCourseSemesters('THL1057', 'State and Law'),
+  ...buildCourseSemesters('UET.MAT1053', 'Linear Algebra for Engineers'),
+  ...buildCourseSemesters('UET.MAT1050', 'Calculus 1 for Engineers'),
+  ...buildCourseSemesters('UET.MAT1051', 'Calculus 2 for Engineers'),
+  ...buildCourseSemesters('UET.PHY1095', 'General Physics 1'),
+  ...buildCourseSemesters('UET.PHY1096', 'General Physics 2'),
+  ...buildCourseSemesters('UET.COM1050', 'Computational Thinking'),
+  ...buildCourseSemesters('UET.MAT1052', 'Probability and Statistics'),
+  ...buildCourseSemesters('UET.CS1058', 'Data Structures and Algorithms'),
+  ...buildCourseSemesters('UET.MAT1057', 'Discrete Mathematics'),
+  ...buildCourseSemesters('UET.CS2043', 'Advanced Programming'),
+  ...buildCourseSemesters('UET.IS2099', 'Database'),
+  ...buildCourseSemesters('UET.CN2042', 'Computer Network'),
+  ...buildCourseSemesters('UET.CS2045', 'Software Engineering'),
+  ...buildCourseSemesters('UET.CS2046', 'Artificial Intelligence'),
+  ...buildCourseSemesters('UET.IS2100', 'Fundamentals of Operating Systems'),
+  ...buildCourseSemesters('UET.CE2021', 'Computer Architecture'),
+  ...buildCourseSemesters('UET.CS3136', 'Machine Learning'),
+  ...buildCourseSemesters('UET.IT3291', 'System Analysis and Design'),
+  ...buildCourseSemesters('UET.IT3294', 'Program Analysis and Testing'),
+  ...buildCourseSemesters('UET.IT3296', 'Advanced Topics in Information Technology'),
+  ...buildCourseSemesters('UET.CE2020', 'Systems Programming'),
+  ...buildCourseSemesters('UET.IT3289', 'Cross-platform Application Development'),
+  ...buildCourseSemesters('UET.IT3290', 'IT Project Management'),
+  ...buildCourseSemesters('UET.IT3292', 'Designing Large-scale Software Systems'),
+  ...buildCourseSemesters('UET.IT3297', 'AI Engineering'),
+  ...buildCourseSemesters('UET.IT3298', 'API Design and Implementation'),
+  ...buildCourseSemesters('UET.CS3152', 'User Interface and User Experience Design'),
+  ...buildCourseSemesters('UET.CS3144', 'Scientific Computing for Machine Learning'),
+  ...buildCourseSemesters('UET.CS3142', 'Natural Language Processing'),
+  ...buildCourseSemesters('UET.AI3056', 'Deep Learning'),
+  ...buildCourseSemesters('UET.CS3150', 'Image Processing and Computer Vision'),
+  ...buildCourseSemesters('UET.IS3278', 'Data Mining'),
+  ...buildCourseSemesters('UET.IS3276', 'Big Data Analytics'),
+  ...buildCourseSemesters('UET.IS3283', 'Business Intelligence'),
+  ...buildCourseSemesters('UET.IS3286', 'Business Analytics'),
+  ...buildCourseSemesters('UET.CN3124', 'Network Security'),
+  ...buildCourseSemesters('UET.CN3125', 'System Administration'),
+  ...buildCourseSemesters('UET.CN3134', 'Cloud Computing'),
+  ...buildCourseSemesters('FLF1108', 'English B2'),
+  ...buildCourseSemesters('UET.CS2020', 'Object-Oriented Programming'),
+  ...buildCourseSemesters('UET.IS2001', 'E-Commerce'),
+  ...buildCourseSemesters('UET.CS3111', 'Web Application Development'),
+  ...buildCourseSemesters('UET.CS3112', 'Mobile Application Development'),
+  ...buildCourseSemesters('UET.CE3012', 'Embedded Systems'),
+  ...buildCourseSemesters('UET.CE3015', 'Internet of Things'),
+  ...buildCourseSemesters('UET.CN3001', 'Cryptography and Network Security'),
+  ...buildCourseSemesters('UET.CN3005', 'Ethical Hacking'),
+  ...buildCourseSemesters('UET.CS3001', 'Computer Graphics'),
+  ...buildCourseSemesters('UET.CS3005', 'Game Development'),
+  ...buildCourseSemesters('UET.IT3001', 'Information Retrieval'),
+  ...buildCourseSemesters('UET.IT3002', 'Semantic Web'),
+  ...buildCourseSemesters('UET.CS3515', 'Software Testing & Quality Assurance'),
+  ...buildCourseSemesters('PE1001', 'Physical Education'),
+  ...buildCourseSemesters('DEF1001', 'National Defense Education'),
+  ...buildCourseSemesters('UET.IT4001', 'Enterprise Internship'),
+  ...buildCourseSemesters('UET.IT4002', 'Graduation Thesis')
+};
+
+export const MODULE_TRANSLATOR: Record<string, string> = {
+  'AAA': 'PHI1006',
+  'BBB': 'PEC1008',
+  'CCC': 'HIS1001',
+  'DDD': 'POL1001',
+  'EEE': 'PHI1002',
+  'FFF': 'FLF1107',
+  'GGG': 'VNU1001',
+  'HHH': 'THL1057',
+  'III': 'UET.MAT1053',
+  'JJJ': 'UET.MAT1050',
+  'KKK': 'UET.MAT1051',
+  'LLL': 'UET.PHY1095',
+  'MMM': 'UET.PHY1096',
+  'NNN': 'UET.COM1050',
+  'OOO': 'UET.MAT1052',
+  'PPP': 'UET.CS1058',
+  'QQQ': 'UET.MAT1057',
+  'RRR': 'UET.CS2043',
+  'SSS': 'UET.IS2099',
+  'TTT': 'UET.CN2042',
+  'UUU': 'UET.CS2045',
+  'VVV': 'UET.CS2046',
+  'WWW': 'UET.IS2100',
+  'XXX': 'UET.CE2021',
+  'YYY': 'UET.CS3136',
+  'ZZZ': 'UET.IT3291'
 };
 
 export const getUetCourseInfo = (ouladModule: string): CourseInfo => {
-  return COURSE_MAPPING[ouladModule] || { code: ouladModule, name: `Module ${ouladModule}` };
+  
+  const uetCode = MODULE_TRANSLATOR[ouladModule] || ouladModule;
+
+  const matchedKey = Object.keys(COURSE_MAPPING).find(key => key.startsWith(`${uetCode}_`));
+
+  if (matchedKey) {
+    return COURSE_MAPPING[matchedKey];
+  }
+
+
+  return { 
+    code: uetCode, 
+    name: `Course ${uetCode}` 
+  };
+};
+export const TERM_TRANSLATOR: Record<string, string> = {
+  '2013B': '2023-1',
+  '2013J': '2023-2',
+  '2014B': '2024-1',
+  '2014J': '2024-2',
 };
