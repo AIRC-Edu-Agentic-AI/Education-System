@@ -1,4 +1,4 @@
-﻿import type { DataService } from '../ports/DataService'
+import type { DataService } from '../ports/DataService'
 import type { OuladIndex, ProcessedCourse, ScheduleItem, StudentProfile } from '../types/domain'
 
 // In-memory cache so we only fetch each file once per session
@@ -10,9 +10,11 @@ export class ProcessedDataAdapter implements DataService {
     if (indexCache) return indexCache
     const res = await fetch('/processed/index.json')
     if (!res.ok) {
-      throw new Error('Preprocessed data not found. Run `npm run preprocess` first.')
+      throw new Error(
+        'Preprocessed data not found. Run `npm run preprocess` first.'
+      )
     }
-    indexCache = (await res.json()) as OuladIndex
+    indexCache = await res.json() as OuladIndex
     return indexCache
   }
 
@@ -21,7 +23,7 @@ export class ProcessedDataAdapter implements DataService {
     if (cache.has(key)) return cache.get(key)!
     const res = await fetch(`/processed/${key}.json`)
     if (!res.ok) throw new Error(`No preprocessed data for ${module} ${presentation}`)
-    const data = (await res.json()) as ProcessedCourse
+    const data = await res.json() as ProcessedCourse
     cache.set(key, data)
     return data
   }
@@ -35,11 +37,12 @@ export class ProcessedDataAdapter implements DataService {
     return course.students.find((s) => s.id_student === studentId) ?? null
   }
 
+  
   async getSchedules(module?: string, presentation?: string): Promise<ScheduleItem[]> {
     try {
       if (module && presentation) {
         const data = localStorage.getItem(`schedules_${module}_${presentation}`)
-        return data ? (JSON.parse(data) as ScheduleItem[]) : []
+        return data ? JSON.parse(data) : []
       }
 
       const schedules: ScheduleItem[] = []
@@ -50,13 +53,11 @@ export class ProcessedDataAdapter implements DataService {
         if (!data) continue
         try {
           const parsed = JSON.parse(data) as ScheduleItem[]
-          schedules.push(
-            ...parsed.map((item) => ({
-              ...item,
-              module: (item as ScheduleItem & { module?: string }).module || key.split('_')[1],
-              presentation: (item as ScheduleItem & { presentation?: string }).presentation || key.split('_')[2],
-            }))
-          )
+          schedules.push(...parsed.map((item) => ({
+            ...item,
+            module: (item as ScheduleItem & { module?: string }).module || key.split('_')[1],
+            presentation: (item as ScheduleItem & { presentation?: string }).presentation || key.split('_')[2],
+          })))
         } catch {
           continue
         }
