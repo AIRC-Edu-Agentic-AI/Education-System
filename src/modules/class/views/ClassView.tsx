@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Box, Button, Typography, Divider } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBackRounded';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonthRounded';
 import ScheduleCrud from '../components/ScheduleCrud';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
@@ -12,72 +15,74 @@ export const ClassView = () => {
 
   if (isScheduleOpen) {
     return (
-      <div style={{ backgroundColor: '#f4f6f8', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '12px 24px', backgroundColor: '#fff', borderBottom: '1px solid #e0e0e0' }}>
-          <button
+      <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ px: 3, py: 1.5, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
             onClick={() => setIsScheduleOpen(false)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f1f3f4',
-              color: '#3c4043',
-              border: '1px solid #dadce0',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
+            size="small"
+            variant="outlined"
+            sx={{ textTransform: 'none', borderRadius: 2 }}
           >
-            &larr; Back to Dashboard
-          </button>
-        </div>
-        <div style={{ flexGrow: 1, overflow: 'auto' }}>
+            Back to Dashboard
+          </Button>
+          <Divider orientation="vertical" flexItem />
+          <Typography variant="body2" color="text.secondary">
+            {uetCourse.code} — {uetCourse.name}
+          </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
           <ScheduleCrud module={selectedModule} presentation={selectedPresentation} />
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
-      <h1 style={{ marginBottom: '8px', color: '#2c3e50', fontSize: '28px' }}>
-        {uetCourse.code} - {uetCourse.name}
-      </h1>
-      <p style={{ marginBottom: '24px', color: '#666', fontSize: '16px' }}>
-        Class semester: {selectedPresentation}
-      </p>
+    <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh' }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" fontWeight={700} color="text.primary">
+          {uetCourse.code} — {uetCourse.name}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Semester: {selectedPresentation}
+        </Typography>
+      </Box>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div style={{
-          padding: '24px',
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          border: '1px solid #ddd',
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{
+          px: 3, py: 2,
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: 2,
         }}>
-          <div>
-            <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: '20px' }}>Schedule Management</h3>
-            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Manage teaching sessions and make-up classes.</p>
-          </div>
-          <button
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 1.5, display: 'flex', alignItems: 'center' }}>
+              <CalendarMonthIcon sx={{ fontSize: 20, color: '#fff' }} />
+            </Box>
+            <Box>
+              <Typography variant="body1" fontWeight={600} color="text.primary">Schedule Management</Typography>
+              <Typography variant="caption" color="text.secondary">Manage teaching sessions and make-up classes</Typography>
+            </Box>
+          </Box>
+          <Button
+            variant="contained"
             onClick={() => setIsScheduleOpen(true)}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: '#00796b',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
+            startIcon={<CalendarMonthIcon />}
+            sx={{ textTransform: 'none', borderRadius: 2, whiteSpace: 'nowrap' }}
           >
             Open Schedule
-          </button>
-        </div>
+          </Button>
+        </Box>
 
         <AttendanceDashboard module={selectedModule} presentation={selectedPresentation} />
         <NotificationManager />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
