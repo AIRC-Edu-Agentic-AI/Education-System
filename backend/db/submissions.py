@@ -111,3 +111,39 @@ async def submit_assignment(
     }
     _MOCK_SUBMISSIONS[(student_id, id_assessment)] = submission
     return submission
+async def get_submission(db, student_id: int, id_assessment: int):
+    """Get a single submission."""
+    if db is None:
+        return None
+    
+    doc = await db.submissions.find_one({
+        "student_id": student_id,
+        "id_assessment": id_assessment
+    })
+    
+    if doc:
+        doc["_id"] = str(doc["_id"])
+    
+    return doc
+
+async def submit_assignment(db, student_id: int, id_assessment: int, content: str):
+    """Submit assignment with text content (legacy)."""
+    if db is None:
+        raise LookupError("Database not available")
+    
+    # Check if assignment exists (mock check)
+    # In production, verify from real data
+    
+    submission = {
+        "student_id": student_id,
+        "id_assessment": id_assessment,
+        "content": content,
+        "submitted_at": datetime.now().isoformat(),
+        "submitted_day": datetime.now().day,
+        "status": "submitted"
+    }
+    
+    await db.submissions.insert_one(submission)
+    submission["_id"] = str(submission["_id"])
+    
+    return submission
