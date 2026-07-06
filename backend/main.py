@@ -13,6 +13,9 @@ from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
 
+from routers.course_communication import router as course_communication_router
+
+
 load_dotenv()
 
 
@@ -70,6 +73,7 @@ app.add_middleware(
 
 # backend/main.py
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(course_communication_router, prefix="/course")
 app.include_router(student.router, prefix="/student", tags=["student"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
