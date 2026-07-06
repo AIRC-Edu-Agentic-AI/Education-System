@@ -3,6 +3,8 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
+  DialogContent,
   Grid,
   Paper,
   Stack,
@@ -10,8 +12,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import AddIcon from '@mui/icons-material/AddRounded'
-import SaveIcon from '@mui/icons-material/SaveRounded'
+
 import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useAuthStore } from '../../../shared/stores/authStore'
@@ -89,6 +90,10 @@ function hasCoreChanges(a?: ScheduleItem, b?: ScheduleItem) {
     'deliveryMode',
   ]
   return fields.some((field) => a[field] !== b[field])
+}
+
+function isPlaceholderSchedule(item: ScheduleItem) {
+  return item.subject === 'New teaching session' && item.activity === 'New teaching session'
 }
 
 function makeLog(
@@ -169,8 +174,9 @@ export function TeachingScheduleView() {
   const canEdit = editableRoles.has(user?.role ?? '')
 
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
-  const [savedSnapshot, setSavedSnapshot] = useState<ScheduleItem[]>([])
-  const [selectedId, setSelectedId] = useState<string>('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [draftSchedule, setDraftSchedule] = useState<Partial<ScheduleItem> | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [anchorDate, setAnchorDate] = useState(todayIso())
@@ -186,10 +192,10 @@ export function TeachingScheduleView() {
     container.dataService.getSchedules()
       .then((items) => {
         if (!mounted) return
-        const normalized = items.map((item, index) => normalizeSchedule(item, index, actor))
+        const normalized = items
+          .map((item, index) => normalizeSchedule(item, index, actor))
+          .filter((item) => !isPlaceholderSchedule(item))
         setSchedules(normalized)
-        setSavedSnapshot(normalized)
-        setSelectedId(normalized[0]?.id ?? '')
       })
       .catch(() => setMessage('Could not load schedules.'))
       .finally(() => setLoading(false))
@@ -229,22 +235,6 @@ export function TeachingScheduleView() {
       .sort((a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`))
   }, [schedules, teacherFilter, statusFilter, deliveryFilter, viewMode, anchorDate, weekDates])
 
-  const selected = schedules.find((item) => item.id === selectedId) ?? visibleSchedules[0] ?? schedules[0]
-
-  const updateSelected = (patch: Partial<ScheduleItem>) => {
-    if (!selected) return
-    setSchedules((items) => items.map((item) => item.id === selected.id ? {
-      ...item,
-      ...patch,
-      activity: patch.subject ?? item.activity,
-      time: (patch.startTime ?? item.startTime) && (patch.endTime ?? item.endTime)
-        ? `${patch.startTime ?? item.startTime}-${patch.endTime ?? item.endTime}`
-        : item.time,
-      updatedBy: actor,
-      updatedAt: new Date().toISOString(),
-    } : item))
-  }
-
   const changeAnchor = (amount: number) => {
     if (viewMode === 'day') {
       return setAnchorDate(addDays(anchorDate, amount))
@@ -257,73 +247,115 @@ export function TeachingScheduleView() {
     setAnchorDate(date.toISOString().slice(0, 10))
   }
 
-  const addSchedule = () => {
+  const openAddDialog = (dateIso: string) => {
+    setEditingId(null)
+    setDraftSchedule({
+      date: dateIso,
+      startTime: '09:00',
+      endTime: '10:30',
+      status: 'scheduled',
+      deliveryMode: 'offline',
+      teacher: actor,
+      teacherId: user?.email,
+      className: '',
+      subject: '',
+      room: '',
+      locationUrl: '',
+      note: '',
+      is_makeup: false,
+    })
+    setDialogOpen(true)
+  }
+
+  const openEditDialog = (scheduleId: string) => {
+    const item = schedules.find((s) => s.id === scheduleId)
+    if (!item) return
+    setEditingId(scheduleId)
+    setDraftSchedule(item)
+    setDialogOpen(true)
+  }
+
+  const autoSaveSchedule = async (items: ScheduleItem[]) => {
+    try {
+      await container.dataService.saveSchedules(items)
+      setMessage('Schedule saved.')
+    } catch {
+      setMessage('Could not save schedule.')
+    }
+  }
+
+  const addScheduleForDate = () => {
+    if (!draftSchedule || !draftSchedule.date) return
     const now = new Date().toISOString()
     const id = `schedule_${Date.now()}`
     const item: ScheduleItem = {
       id,
       week: 1,
-      activity: 'New teaching session',
-      subject: 'New teaching session',
-      teacher: actor,
-      teacherId: user?.email,
-      className: '',
-      room: '',
-      date: anchorDate,
-      startTime: '09:00',
-      endTime: '10:30',
-      time: '09:00-10:30',
-      status: 'scheduled',
-      deliveryMode: 'offline',
-      is_makeup: false,
-      note: '',
+      activity: draftSchedule.subject || draftSchedule.activity || 'Teaching session',
+      subject: draftSchedule.subject || draftSchedule.activity || 'Teaching session',
+      teacher: draftSchedule.teacher || actor,
+      teacherId: draftSchedule.teacherId || user?.email,
+      className: draftSchedule.className || '',
+      room: draftSchedule.room || '',
+      date: draftSchedule.date,
+      startTime: draftSchedule.startTime || '09:00',
+      endTime: draftSchedule.endTime || '10:30',
+      time: `${draftSchedule.startTime || '09:00'}-${draftSchedule.endTime || '10:30'}`,
+      status: draftSchedule.status || 'scheduled',
+      deliveryMode: draftSchedule.deliveryMode || 'offline',
+      is_makeup: draftSchedule.is_makeup ?? false,
+      note: draftSchedule.note || '',
+      locationUrl: draftSchedule.locationUrl || '',
       createdBy: actor,
       updatedBy: actor,
       createdAt: now,
       updatedAt: now,
       changeLog: [makeLog(id, 'created', actor, changeReason || 'Created schedule')],
     }
-    setSchedules((items) => [...items, item])
-    setSelectedId(id)
+    const updated = [...schedules, item]
+    setSchedules(updated)
+    autoSaveSchedule(updated)
+    setDialogOpen(false)
+    setDraftSchedule(null)
+  }
+
+  const updateScheduleForDate = () => {
+    if (!draftSchedule || !editingId) return
+    const updated = schedules.map((item) => item.id === editingId ? {
+      ...item,
+      subject: draftSchedule.subject || item.subject,
+      className: draftSchedule.className || item.className,
+      teacher: draftSchedule.teacher || item.teacher,
+      date: draftSchedule.date || item.date,
+      startTime: draftSchedule.startTime || item.startTime,
+      endTime: draftSchedule.endTime || item.endTime,
+      time: `${draftSchedule.startTime || item.startTime}-${draftSchedule.endTime || item.endTime}`,
+      room: draftSchedule.room || item.room,
+      locationUrl: draftSchedule.locationUrl || item.locationUrl,
+      note: draftSchedule.note || item.note,
+      status: draftSchedule.status || item.status,
+      updatedBy: actor,
+      updatedAt: new Date().toISOString(),
+    } : item)
+    setSchedules(updated)
+    autoSaveSchedule(updated)
+    setDialogOpen(false)
+    setDraftSchedule(null)
+    setEditingId(null)
+  }
+
+  const handleSaveDialog = () => {
+    if (editingId) {
+      updateScheduleForDate()
+    } else {
+      addScheduleForDate()
+    }
   }
 
   const removeSchedule = (id: string) => {
-    setSchedules((items) => items.filter((item) => item.id !== id))
-    if (selectedId === id) setSelectedId('')
-  }
-
-  const saveSchedules = async () => {
-    if (validationErrors.length > 0) {
-      setMessage('Please fix schedule conflicts before saving.')
-      return
-    }
-
-    const snapshotById = new Map(savedSnapshot.map((item) => [item.id, item]))
-    const now = new Date().toISOString()
-    const schedulesWithLogs = schedules.map((item) => {
-      const before = snapshotById.get(item.id)
-      if (!hasCoreChanges(before, item)) return item
-      const action: ScheduleChangeLog['action'] = before ? 'updated' : 'created'
-      return {
-        ...item,
-        updatedAt: now,
-        updatedBy: actor,
-        changeLog: [...(item.changeLog ?? []), makeLog(item.id, action, actor, changeReason, before, item)],
-      }
-    })
-
-    setLoading(true)
-    try {
-      await container.dataService.saveSchedules(schedulesWithLogs)
-      setSchedules(schedulesWithLogs)
-      setSavedSnapshot(schedulesWithLogs)
-      setChangeReason('')
-      setMessage('Schedule saved successfully.')
-    } catch {
-      setMessage('Could not save schedules.')
-    } finally {
-      setLoading(false)
-    }
+    const updated = schedules.filter((item) => item.id !== id)
+    setSchedules(updated)
+    autoSaveSchedule(updated)
   }
 
   const stats = {
@@ -342,12 +374,7 @@ export function TeachingScheduleView() {
           <Typography sx={{ fontWeight: 700, color: tokens.text.primary }}>Teaching Calendar</Typography>
           <Typography sx={{ fontSize: 12, color: tokens.text.secondary }}>View your schedule by day, week, or month.</Typography>
         </Box>
-        <Button startIcon={<AddIcon />} variant="contained" onClick={addSchedule} disabled={!canEdit}>
-          Add session
-        </Button>
-        <Button startIcon={<SaveIcon />} sx={{ ml: 1 }} variant="outlined" onClick={saveSchedules} disabled={!canEdit || loading}>
-          Save changes
-        </Button>
+
       </Toolbar>
 
       <Box sx={{ p: 3 }}>
@@ -394,25 +421,116 @@ export function TeachingScheduleView() {
             <Typography>Loading schedule...</Typography>
           </Box>
         ) : (
-          <Grid container spacing={2}>
-            <Grid item xs={12} lg={8}>
-              {viewMode === 'day' && <DayView date={anchorDate} events={visibleSchedules} onSelect={(event) => setSelectedId(event.id)} />}
-              {viewMode === 'week' && <WeekView dates={weekDates} events={visibleSchedules} onSelect={(event) => setSelectedId(event.id)} />}
-              {viewMode === 'month' && <MonthView events={visibleSchedules} onSelect={(event) => setSelectedId(event.id)} />}
-            </Grid>
-            <Grid item xs={12} lg={4}>
-              <ScheduleDetailsPanel
-                schedule={selected}
-                canEdit={canEdit}
-                onChange={updateSelected}
-                onClose={() => setSelectedId('')}
-                onDelete={() => selected && removeSchedule(selected.id)}
-                onSave={saveSchedules}
-              />
-            </Grid>
-          </Grid>
+          <Box>
+            {viewMode === 'day' && <DayView date={anchorDate} events={visibleSchedules} onSelect={(event) => openEditDialog(event.id)} />}
+            {viewMode === 'week' && <WeekView dates={weekDates} events={visibleSchedules} onSelect={(event) => openEditDialog(event.id)} onAddForDate={openAddDialog} />}
+            {viewMode === 'month' && <MonthView anchorDate={anchorDate} events={visibleSchedules} onSelect={(event) => openEditDialog(event.id)} onAddForDate={openAddDialog} />}
+          </Box>
         )}
       </Box>
+
+      <Dialog open={dialogOpen} onClose={() => { setDialogOpen(false); setDraftSchedule(null); setEditingId(null) }} maxWidth="sm" fullWidth>
+        <DialogContent>
+          <Typography sx={{ fontWeight: 700, mb: 2 }}>{editingId ? 'Edit teaching session' : 'Add teaching session'}</Typography>
+          <Stack spacing={2}>
+            <TextField
+              size="small"
+              label="Subject"
+              value={draftSchedule?.subject ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, subject: e.target.value } : prev)}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <TextField
+              size="small"
+              label="Class"
+              value={draftSchedule?.className ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, className: e.target.value } : prev)}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <TextField
+              size="small"
+              label="Teacher"
+              value={draftSchedule?.teacher ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, teacher: e.target.value } : prev)}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <TextField
+              size="small"
+              type="date"
+              label="Date"
+              value={draftSchedule?.date ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, date: e.target.value } : prev)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <Stack direction="row" spacing={1}>
+              <TextField
+                size="small"
+                type="time"
+                label="Start"
+                value={draftSchedule?.startTime ?? ''}
+                onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, startTime: e.target.value } : prev)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                disabled={!canEdit}
+              />
+              <TextField
+                size="small"
+                type="time"
+                label="End"
+                value={draftSchedule?.endTime ?? ''}
+                onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, endTime: e.target.value } : prev)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                disabled={!canEdit}
+              />
+            </Stack>
+            <TextField
+              size="small"
+              label="Room"
+              value={draftSchedule?.room ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, room: e.target.value } : prev)}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <TextField
+              size="small"
+              label="Meeting link"
+              value={draftSchedule?.locationUrl ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, locationUrl: e.target.value } : prev)}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <TextField
+              size="small"
+              label="Note"
+              value={draftSchedule?.note ?? ''}
+              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, note: e.target.value } : prev)}
+              multiline
+              minRows={2}
+              fullWidth
+              disabled={!canEdit}
+            />
+            <Stack direction="row" spacing={1}>
+              <Button variant="contained" onClick={handleSaveDialog} disabled={!canEdit || !draftSchedule?.date}>
+                {editingId ? 'Update' : 'Create'}
+              </Button>
+              {editingId && (
+                <Button variant="outlined" color="error" onClick={() => { removeSchedule(editingId); setDialogOpen(false); setDraftSchedule(null); setEditingId(null) }} disabled={!canEdit}>
+                  Delete
+                </Button>
+              )}
+              <Button variant="outlined" onClick={() => { setDialogOpen(false); setDraftSchedule(null); setEditingId(null) }}>
+                Cancel
+              </Button>
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 }
