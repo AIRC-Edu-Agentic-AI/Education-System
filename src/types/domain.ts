@@ -1,4 +1,4 @@
-﻿// ─── OULAD raw shapes (mirrors CSV columns) ──────────────────────────────────
+// ─── OULAD raw shapes (mirrors CSV columns) ──────────────────────────────────
 
 export interface RawStudentInfo {
   code_module: string
@@ -140,15 +140,15 @@ export interface AgentContext {
 export interface ConceptNode {
   id: string
   label: string
-  mastery: number
-  confidence: number
+  mastery: number       // [0, 1]
+  confidence: number    // [0, 1]
   evidence_count: number
   topic_group: number
 }
 
 export interface ConceptEdge {
-  source: string
-  target: string
+  source: string        // concept_id
+  target: string        // concept_id (target depends on source)
 }
 
 export interface ConceptGraph {
