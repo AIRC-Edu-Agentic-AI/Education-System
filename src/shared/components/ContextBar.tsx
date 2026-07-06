@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Box, FormControl, InputLabel, Select, MenuItem, Slider, Typography } from '@mui/material'
+import { useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { tokens } from '../../theme'
 import { container } from '../../di/container'
@@ -36,6 +37,10 @@ export function ContextBar() {
   const numWeeks = course?.num_weeks ?? 39
   const moduleOptions = [...new Set(index?.courses.map((c) => c.module) ?? [])]
   const presentationOptions = index?.courses.filter((c) => c.module === selectedModule).map((c) => c.presentation) ?? []
+
+  if (location.pathname === '/schedule') {
+    return null
+  }
 
   return (
     <Box sx={{

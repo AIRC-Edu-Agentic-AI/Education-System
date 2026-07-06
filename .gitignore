@@ -10,7 +10,3 @@ public/processed/*.json
 
 # Vite
 *.local
-node_modules/
-public/data/
-dist/
-venv/

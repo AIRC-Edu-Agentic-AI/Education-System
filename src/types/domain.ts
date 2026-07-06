@@ -156,3 +156,50 @@ export interface ConceptGraph {
   edges: ConceptEdge[]
   subject_domain: string
 }
+
+// Scheduling items (UI + persistence)
+export type ScheduleStatus = 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
+
+export interface ScheduleChangeLog {
+  id: string
+  scheduleId: string
+  changedAt: string
+  changedBy: string
+  action: 'created' | 'updated' | 'cancelled' | 'restored'
+  reason: string
+  before?: Partial<ScheduleItem>
+  after?: Partial<ScheduleItem>
+}
+
+export interface ScheduleItem {
+  id: string
+  week: number
+  activity: string
+  time: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  teacher?: string
+  className?: string
+  subject?: string
+  room?: string
+  locationUrl?: string
+  status?: ScheduleStatus
+  is_makeup?: boolean
+  note?: string | null
+  teacherId?: string
+  deliveryMode?: 'online' | 'offline' | 'hybrid'
+  module?: string
+  presentation?: string
+  createdBy?: string
+  updatedBy?: string
+  createdAt?: string
+  updatedAt?: string
+  changeLog?: ScheduleChangeLog[]
+}
+
+export interface CourseSchedules {
+  module: string
+  presentation: string
+  schedules: ScheduleItem[]
+}

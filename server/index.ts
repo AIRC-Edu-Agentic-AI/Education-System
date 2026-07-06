@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { MongoClient, ObjectId } from 'mongodb'
+import { MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -62,108 +62,6 @@ app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
   res.json(student)
 })
 
-app.post('/api/students/import', async (req, res) => {
-  try {
-    const { students } = req.body
-    if (!Array.isArray(students)) {
-      return res.status(400).json({ error: "Invalid data format" })
-    }
-    const result = await db.collection("students").insertMany(students)
-    res.status(200).json({ message: "Imported successfully", count: result.insertedCount })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.get('/api/schedules', async (req, res) => {
-  try {
-    const schedules = await db.collection("schedules").find({}).toArray()
-    res.status(200).json(schedules)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.post('/api/schedules', async (req, res) => {
-  try {
-    const schedule = req.body
-    const result = await db.collection("schedules").insertOne(schedule)
-    res.status(201).json({ _id: result.insertedId, ...schedule })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.put('/api/schedules/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const updateData = req.body
-    delete updateData._id
-    const result = await db.collection("schedules").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    )
-    res.status(200).json({ updated: result.modifiedCount })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.delete('/api/schedules/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const result = await db.collection("schedules").deleteOne({ _id: new ObjectId(id) })
-    res.status(200).json({ deleted: result.deletedCount })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.get('/api/notifications', async (_req, res) => {
-  try {
-    const notifications = await db.collection("notifications")
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray()
-    res.status(200).json(notifications)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.post('/api/notifications', async (req, res) => {
-  try {
-    const { senderRole, receiverRole, type, title, content } = req.body
-    const newNotification = {
-      senderRole,
-      receiverRole,
-      type,
-      title,
-      content,
-      createdAt: new Date().toISOString()
-    }
-    const result = await db.collection("notifications").insertOne(newNotification)
-    res.status(201).json({ _id: result.insertedId, ...newNotification })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.get('/api/attendance-stats', async (_req, res) => {
-  try {
-    // Đã chuyển dữ liệu sang tiếng Anh
-    const stats = [
-      { name: 'Present', value: 78, color: '#4CAF50' },
-      { name: 'Late', value: 12, color: '#FFC107' },
-      { name: 'Excused', value: 6, color: '#2196F3' },
-      { name: 'Unexcused', value: 4, color: '#F44336' }
-    ]
-    res.status(200).json(stats)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
 // Schedules: store per-course schedules in collection `schedules`
 app.get('/api/schedules/:module/:presentation', async (req, res) => {
   const { module, presentation } = req.params
@@ -179,6 +77,36 @@ app.post('/api/schedules/:module/:presentation', async (req, res) => {
 
   await db.collection('schedules').updateOne(
     { module, presentation },
+    { $set: { schedules } },
+    { upsert: true }
+  )
+
+  res.json({ ok: true })
+})
+
+app.get('/api/schedules', async (_req, res) => {
+  const allDoc = await db.collection('schedules_all').findOne({ _id: { $eq: 'all' } as any }, { projection: { _id: 0 } })
+  if (allDoc && Array.isArray(allDoc.schedules)) {
+    return res.json({ schedules: allDoc.schedules })
+  }
+
+  const docs = await db.collection('schedules').find({}, { projection: { _id: 0 } }).toArray()
+  const schedules = docs.flatMap((doc) =>
+    (doc.schedules ?? []).map((item: any) => ({
+      ...item,
+      module: doc.module,
+      presentation: doc.presentation,
+    }))
+  )
+  res.json({ schedules })
+})
+
+app.post('/api/schedules', async (req, res) => {
+  const { schedules } = req.body
+  if (!Array.isArray(schedules)) return res.status(400).json({ error: 'Invalid schedules payload' })
+
+  await db.collection('schedules_all').updateOne(
+    { _id: { $eq: 'all' } as any },
     { $set: { schedules } },
     { upsert: true }
   )
