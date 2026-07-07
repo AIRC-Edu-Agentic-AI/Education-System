@@ -19,32 +19,6 @@ interface Props {
   selectedId: number | null
 }
 
-const LAST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý', 'Đinh', 'Trịnh', 'Tô', 'Đoàn']
-
-const MIDDLE_NAMES_MALE = ['Văn', 'Hữu', 'Đức', 'Minh', 'Quốc', 'Trung', 'Anh', 'Thanh', 'Quang', 'Tuấn']
-const MIDDLE_NAMES_FEMALE = ['Thị', 'Ngọc', 'Thu', 'Phương', 'Lan', 'Mai', 'Hương', 'Bích', 'Kim', 'Thùy']
-
-const FIRST_NAMES_MALE = ['An', 'Bình', 'Cường', 'Dũng', 'Hùng', 'Khoa', 'Long', 'Mạnh', 'Nam', 'Phúc', 'Quân', 'Sơn', 'Tài', 'Thắng', 'Tiến', 'Toàn', 'Trí', 'Tuấn', 'Việt', 'Vũ']
-const FIRST_NAMES_FEMALE = ['An', 'Ánh', 'Chi', 'Dung', 'Hà', 'Hoa', 'Hồng', 'Hương', 'Lan', 'Linh', 'Mai', 'My', 'Nga', 'Ngọc', 'Nhung', 'Phương', 'Trang', 'Trinh', 'Uyên', 'Vân']
-
-function hashId(id: number): number {
-  let h = id ^ 0xdeadbeef
-  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
-  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
-  return Math.abs(h ^ (h >>> 16))
-}
-
-function generateName(id: number, gender: string): string {
-  const h = hashId(id)
-  const isMale = gender === 'M'
-  const lastName = LAST_NAMES[h % LAST_NAMES.length]
-  const midNames = isMale ? MIDDLE_NAMES_MALE : MIDDLE_NAMES_FEMALE
-  const firstNames = isMale ? FIRST_NAMES_MALE : FIRST_NAMES_FEMALE
-  const middleName = midNames[(h >> 4) % midNames.length]
-  const firstName = firstNames[(h >> 8) % firstNames.length]
-  return `${lastName} ${middleName} ${firstName}`
-}
-
 function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
   const wi = week - 1
   if (wi < 2) return 'flat'
@@ -55,27 +29,47 @@ function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
 }
 
 export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }: Props) {
-  const [sortField, setSortField] = useState<'risk' | 'id' | 'imd'>('risk')
+  // Thêm 'name' vào sortField để có thể click sắp xếp theo tên
+  const [sortField, setSortField] = useState<'risk' | 'id' | 'imd' | 'name'>('risk')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
+  
+  // Pagination State
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   const weekIdx = Math.max(0, currentWeek - 1)
 
   const sorted = useMemo(() => {
-    const filtered = students.filter((s) =>
-      search ? String(s.id_student).includes(search) || s.imd_band.toLowerCase().includes(search.toLowerCase()) : true
-    )
+    const filtered = students.filter((s) => {
+      if (!search) return true
+      const searchLower = search.toLowerCase()
+      // Cho phép tìm kiếm theo ID, IMD, HOẶC Tên sinh viên
+      return (
+        String(s.id_student).includes(searchLower) || 
+        s.imd_band.toLowerCase().includes(searchLower) ||
+        (s.name && s.name.toLowerCase().includes(searchLower))
+      )
+    })
+
     return [...filtered].sort((a, b) => {
+      // Xử lý sort riêng cho trường name (dạng chuỗi)
+      if (sortField === 'name') {
+        const nameA = a.name || ''
+        const nameB = b.name || ''
+        return sortDir === 'desc' ? nameB.localeCompare(nameA) : nameA.localeCompare(nameB)
+      }
+
       let va = 0, vb = 0
       if (sortField === 'risk') { va = a.risk_by_week[weekIdx] ?? 0; vb = b.risk_by_week[weekIdx] ?? 0 }
       else if (sortField === 'id') { va = a.id_student; vb = b.id_student }
       else if (sortField === 'imd') { va = a.imd_band.charCodeAt(0); vb = b.imd_band.charCodeAt(0) }
+      
       return sortDir === 'desc' ? vb - va : va - vb
     })
   }, [students, sortField, sortDir, weekIdx, search])
 
+  // Get current page of students
   const visibleStudents = useMemo(() => {
     return sorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
   }, [sorted, page, rowsPerPage])
@@ -85,7 +79,9 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     else { setSortField(field); setSortDir('desc') }
   }
 
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage)
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10))
@@ -107,14 +103,14 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
         </Typography>
         <TextField
           size="small"
-          placeholder="Search by ID or IMD..."
+          placeholder="Search by ID, Name or IMD..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0) }}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: 'text.muted' }} /></InputAdornment>,
             sx: { fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 1.5 },
           }}
-          sx={{ width: 240 }}
+          sx={{ width: 260 }} // Nới rộng input ra một chút vì text placeholder dài hơn
         />
       </Box>
 
@@ -124,7 +120,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
             <TableRow>
               {[
                 { id: 'id', label: 'Student ID' },
-                { id: null, label: 'Student Name' },
+                { id: 'name', label: 'Student Name' }, // Thêm cột Name vào đây
                 { id: 'imd', label: 'IMD band' },
                 { id: null, label: 'Age' },
                 { id: null, label: 'Att.' },
@@ -157,7 +153,9 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
               const tc = TIER_COLORS[tier]
               const selected = s.id_student === selectedId
               const withdrawn = s.final_result === 'Withdrawn'
-              const studentName = generateName(s.id_student, s.gender ?? 'M')
+
+              // Lấy tên thật từ DB, nếu lỗi lấy không được thì fallback lại ID
+              const studentName = s.name || `Student #${s.id_student}`
 
               return (
                 <TableRow
@@ -177,7 +175,10 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                       {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: tokens.surface.neutral }} />}
                     </Box>
                   </TableCell>
-                  <TableCell sx={{ fontSize: 12, color: tokens.text.primary, whiteSpace: 'nowrap' }}>{studentName}</TableCell>
+                  {/* Render cột tên sinh viên */}
+                  <TableCell sx={{ fontSize: 12, color: tokens.text.primary, whiteSpace: 'nowrap' }}>
+                    {studentName}
+                  </TableCell>
                   <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.imd_band}</TableCell>
                   <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary }}>{s.age_band}</TableCell>
                   <TableCell sx={{ fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, textAlign: 'center' }}>{s.num_of_prev_attempts}</TableCell>
@@ -207,7 +208,8 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           </TableBody>
         </Table>
       </TableContainer>
-
+      
+      {/* Dynamic pagination controls */}
       <TablePagination
         rowsPerPageOptions={[10, 25, 50]}
         component="div"
