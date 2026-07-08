@@ -8,6 +8,7 @@ import { Shell } from './shared/components/Shell'
 import { DashboardView } from './modules/dashboard/views/DashboardView'
 import { StudentDetailView } from './modules/student/views/StudentDetailView'
 import { TeachingScheduleView } from './modules/schedule/views/TeachingScheduleView'
+import { ClassView } from './modules/class/views/ClassView'
 import { LoginView } from './modules/auth/views/LoginView'
 import { useAuthStore } from './shared/stores/authStore'
 
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="/student/:id" element={<StudentDetailView />} />
         <Route path="/student" element={<StudentDetailView />} />
         <Route path="/schedule" element={<TeachingScheduleView />} />
+        <Route path="/class" element={<ClassView />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>
