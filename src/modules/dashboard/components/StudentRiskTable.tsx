@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react'
 import {
   Typography, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TableSortLabel, Chip, Box, TextField, InputAdornment,
-  LinearProgress, TablePagination
+  LinearProgress, TablePagination, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions, CircularProgress
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/SearchRounded'
 import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded'
@@ -12,14 +13,16 @@ import { TIER_COLORS, type TierNumber } from '../../../shared/constants/tiers'
 import { tokens } from '../../../theme'
 import type { StudentProfile } from '../../../types/domain'
 
+type LocalStudentProfile = StudentProfile & { name?: string }
+
 interface Props {
-  students: StudentProfile[]
+  students: LocalStudentProfile[]
   currentWeek: number
-  onSelect: (s: StudentProfile) => void
+  onSelect: (s: LocalStudentProfile) => void
   selectedId: number | null
 }
 
-function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
+function riskTrend(s: LocalStudentProfile, week: number): 'up' | 'down' | 'flat' {
   const wi = week - 1
   if (wi < 2) return 'flat'
   const delta = (s.risk_by_week[wi] ?? 0) - (s.risk_by_week[wi - 2] ?? 0)
@@ -29,14 +32,17 @@ function riskTrend(s: StudentProfile, week: number): 'up' | 'down' | 'flat' {
 }
 
 export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }: Props) {
-  // Thêm 'name' vào sortField để có thể click sắp xếp theo tên
   const [sortField, setSortField] = useState<'risk' | 'id' | 'imd' | 'name'>('risk')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
   
-  // Pagination State
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+
+  // --- Dialog & API States ---
+  const [warningStudent, setWarningStudent] = useState<LocalStudentProfile | null>(null)
+  const [warningMessage, setWarningMessage] = useState('')
+  const [isSending, setIsSending] = useState(false)
 
   const weekIdx = Math.max(0, currentWeek - 1)
 
@@ -44,7 +50,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     const filtered = students.filter((s) => {
       if (!search) return true
       const searchLower = search.toLowerCase()
-      // Cho phép tìm kiếm theo ID, IMD, HOẶC Tên sinh viên
       return (
         String(s.id_student).includes(searchLower) || 
         s.imd_band.toLowerCase().includes(searchLower) ||
@@ -53,7 +58,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     })
 
     return [...filtered].sort((a, b) => {
-      // Xử lý sort riêng cho trường name (dạng chuỗi)
       if (sortField === 'name') {
         const nameA = a.name || ''
         const nameB = b.name || ''
@@ -69,7 +73,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     })
   }, [students, sortField, sortDir, weekIdx, search])
 
-  // Get current page of students
   const visibleStudents = useMemo(() => {
     return sorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
   }, [sorted, page, rowsPerPage])
@@ -88,7 +91,62 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     setPage(0)
   }
 
-  const TrendIcon = ({ s }: { s: StudentProfile }) => {
+  // --- Handlers for Warning Action ---
+  const handleOpenWarning = (e: React.MouseEvent, student: LocalStudentProfile) => {
+    e.stopPropagation() // Prevent triggering the row's onSelect
+    setWarningStudent(student)
+    
+    const studentName = student.name || `Student #${student.id_student}`
+    setWarningMessage(
+      `Dear ${studentName},\n\n` +
+      `Our records show a recent drop in your academic engagement. ` +
+      `We want to ensure you have the support you need to succeed. ` +
+      `Please reach out to your academic advisor as soon as possible to discuss how we can help you stay on track.\n\n` +
+      `Best regards,\nAcademic Support Team`
+    )
+  }
+
+  const handleCloseWarning = () => {
+    setWarningStudent(null)
+    setWarningMessage('')
+  }
+
+  const handleSendWarning = async () => {
+    if (!warningStudent) return
+    setIsSending(true)
+    
+    try {
+      const studentName = warningStudent.name || `Student #${warningStudent.id_student}`
+      
+      // Sửa URL trỏ đến backend port 8000 và thay đổi payload cho khớp định dạng DB
+      const res = await fetch('http://localhost:8000/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderRole: 'Instructor',
+          receiverRole: 'Student',
+          type: 'Academic Warning',
+          title: `Academic Warning for ${studentName}`,
+          content: warningMessage,
+          student_id: warningStudent.id_student // Vẫn gửi kèm id sinh viên nếu backend cần xử lý riêng
+        })
+      })
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(`Failed to send: ${res.status} - ${errorText}`)
+      }
+      
+      handleCloseWarning()
+    } catch (error) {
+      console.error(error)
+      alert("There was an error sending the warning. Please try again.")
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const TrendIcon = ({ s }: { s: LocalStudentProfile }) => {
     const t = riskTrend(s, currentWeek)
     if (t === 'up') return <TrendingUpIcon sx={{ fontSize: 14, color: tokens.brand.danger }} />
     if (t === 'down') return <TrendingDownIcon sx={{ fontSize: 14, color: tokens.brand.primaryLight }} />
@@ -110,7 +168,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
             startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 16, color: 'text.muted' }} /></InputAdornment>,
             sx: { fontSize: 12, fontFamily: tokens.font.mono, borderRadius: 1.5 },
           }}
-          sx={{ width: 260 }} // Nới rộng input ra một chút vì text placeholder dài hơn
+          sx={{ width: 260 }}
         />
       </Box>
 
@@ -120,16 +178,17 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
             <TableRow>
               {[
                 { id: 'id', label: 'Student ID' },
-                { id: 'name', label: 'Student Name' }, // Thêm cột Name vào đây
+                { id: 'name', label: 'Student Name' },
                 { id: 'imd', label: 'IMD band' },
                 { id: null, label: 'Age' },
                 { id: null, label: 'Att.' },
                 { id: 'risk', label: 'Risk score' },
                 { id: null, label: 'Tier' },
                 { id: null, label: 'Trend' },
-              ].map((col) => (
+                { id: null, label: 'Actions' }, // <--- Cột mới
+              ].map((col, idx) => (
                 <TableCell
-                  key={col.label}
+                  key={col.label + idx}
                   sx={{ bgcolor: tokens.surface.raised, fontFamily: tokens.font.mono, fontSize: 11, color: tokens.text.secondary, fontWeight: 600, py: 1.5 }}
                 >
                   {col.id ? (
@@ -153,8 +212,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
               const tc = TIER_COLORS[tier]
               const selected = s.id_student === selectedId
               const withdrawn = s.final_result === 'Withdrawn'
-
-              // Lấy tên thật từ DB, nếu lỗi lấy không được thì fallback lại ID
               const studentName = s.name || `Student #${s.id_student}`
 
               return (
@@ -175,7 +232,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                       {withdrawn && <Chip label="W" size="small" sx={{ fontSize: 9, height: 16, bgcolor: tokens.surface.neutral }} />}
                     </Box>
                   </TableCell>
-                  {/* Render cột tên sinh viên */}
                   <TableCell sx={{ fontSize: 12, color: tokens.text.primary, whiteSpace: 'nowrap' }}>
                     {studentName}
                   </TableCell>
@@ -202,6 +258,21 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
                     <Chip label={tc.label} size="small" sx={{ bgcolor: tc.subtle, color: tc.text, fontSize: 10, height: 18 }} />
                   </TableCell>
                   <TableCell><TrendIcon s={s} /></TableCell>
+                  
+                  {/* --- Ô chứa nút Action --- */}
+                  <TableCell>
+                    {tier === 3 && !withdrawn && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={(e) => handleOpenWarning(e, s)}
+                        sx={{ fontSize: 10, textTransform: 'none', py: 0.25 }}
+                      >
+                        Send Warning
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               )
             })}
@@ -209,7 +280,6 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
         </Table>
       </TableContainer>
       
-      {/* Dynamic pagination controls */}
       <TablePagination
         rowsPerPageOptions={[10, 25, 50]}
         component="div"
@@ -219,6 +289,54 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
+
+      {/* --- Dialog Soạn Tin Nhắn Cảnh Báo --- */}
+      <Dialog 
+        open={Boolean(warningStudent)} 
+        onClose={handleCloseWarning}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 700 }}>
+          Send Academic Warning
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography sx={{ fontSize: 13, mb: 2, color: 'text.secondary' }}>
+            Sending to: <strong>{warningStudent?.name || `Student #${warningStudent?.id_student}`}</strong>
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            rows={8}
+            variant="outlined"
+            value={warningMessage}
+            onChange={(e) => setWarningMessage(e.target.value)}
+            sx={{
+              '& .MuiInputBase-root': { fontSize: 13, fontFamily: 'sans-serif' }
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={handleCloseWarning} 
+            color="inherit" 
+            disabled={isSending}
+            sx={{ textTransform: 'none', fontSize: 13 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendWarning} 
+            color="error" 
+            variant="contained"
+            disabled={isSending || !warningMessage.trim()}
+            startIcon={isSending ? <CircularProgress size={16} color="inherit" /> : null}
+            sx={{ textTransform: 'none', fontSize: 13, boxShadow: 'none' }}
+          >
+            {isSending ? 'Sending...' : 'Send Warning'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
