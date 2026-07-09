@@ -17,6 +17,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final studentAsync = ref.watch(studentProvider);
     final scheduleAsync = ref.watch(weeklyScheduleProvider);
+    final planAsync = ref.watch(studyPlanProvider);
     final notifAsync = ref.watch(notificationProvider);
     final unreadCount = ref.watch(unreadCountProvider);
     final isMock = ref.watch(isMockModeProvider);
@@ -168,14 +169,22 @@ class DashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // ── 2. Risk + Academic progress ─────────────────────
-                  _RiskCard(student: student),
-                  const SizedBox(height: 10),
+                  scheduleAsync.when(
+                    loading: () => const _PriorityCard.loading(),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (schedule) =>
+                        _PriorityCard(schedule: schedule, student: student),
+                  ),
+                  const SizedBox(height: 16),
+
                   scheduleAsync.when(
                     loading: () => const AcademicProgressCard.loading(),
                     error: (_, __) => const SizedBox.shrink(),
                     data: (schedule) =>
                         AcademicProgressCard(schedule: schedule),
                   ),
+                  const SizedBox(height: 10),
+                  _LearningHealthSection(student: student),
                   const SizedBox(height: 16),
 
                   // ── 3. Notifications ────────────────────────────────
@@ -210,7 +219,12 @@ class DashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // ── 7. Enrollments ──────────────────────────────────
-                  _EnrollmentsSection(enrollments: student.enrollments),
+                  planAsync.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                    data: (sessions) =>
+                        _ContinueLearningSection(sessions: sessions),
+                  ),
                 ]),
               ),
             ),
@@ -372,6 +386,362 @@ class _RiskCard extends StatelessWidget {
 }
 
 // ── Notifications (compact dashboard preview) ─────────────────────────────────
+class _PriorityCard extends StatelessWidget {
+  final WeeklySchedule? schedule;
+  final StudentModel? student;
+  final bool _isLoading;
+
+  const _PriorityCard({
+    required this.schedule,
+    required this.student,
+  }) : _isLoading = false;
+
+  const _PriorityCard.loading()
+      : schedule = null,
+        student = null,
+        _isLoading = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Container(
+        height: 116,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.cardBorder, width: 1),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppTheme.primaryBlue,
+          ),
+        ),
+      );
+    }
+
+    final urgent = _pickPriority(schedule!);
+    final risk = student!.risk;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.warning.withValues(alpha: 0.20),
+            AppTheme.primaryBlue.withValues(alpha: 0.10),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.warning.withValues(alpha: 0.32)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppTheme.warningGlow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.priority_high_rounded,
+              color: AppTheme.warning,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Uu tien hom nay',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  urgent?.title ?? risk.tierLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  urgent?.subtitle ??
+                      'Diem rui ro: ${(risk.score * 100).round()}%',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => context.go('/study-plan'),
+            child: const Text('Mở kế hoạch'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  WeekItem? _pickPriority(WeeklySchedule schedule) {
+    final items = [
+      ...schedule.assignments,
+      ...schedule.exams,
+      ...schedule.lectures,
+      ...schedule.classes,
+    ]..sort((a, b) {
+        if (a.isUrgent != b.isUrgent) return a.isUrgent ? -1 : 1;
+        return a.dateTime.compareTo(b.dateTime);
+      });
+    return items.isEmpty ? null : items.first;
+  }
+}
+
+class _LearningHealthSection extends StatelessWidget {
+  final StudentModel student;
+
+  const _LearningHealthSection({required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    final assessments = student.enrollments.expand((e) => e.assessments);
+    final total = assessments.length;
+    final submitted = assessments.where((a) => a.isSubmitted).length;
+    final submittedRatio = total == 0 ? 0 : ((submitted / total) * 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sức khỏe học tập',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _HealthMetric(
+              label: 'Rui ro',
+              value: '${(student.risk.score * 100).round()}%',
+              color: student.risk.tier >= 3
+                  ? AppTheme.danger
+                  : student.risk.tier == 2
+                      ? AppTheme.warning
+                      : AppTheme.accentGreen,
+              icon: Icons.warning_amber_outlined,
+            ),
+            const SizedBox(width: 8),
+            _HealthMetric(
+              label: 'Đã nộp',
+              value: '$submittedRatio%',
+              color: AppTheme.accentGreen,
+              icon: Icons.assignment_turned_in_outlined,
+            ),
+            const SizedBox(width: 8),
+            _HealthMetric(
+              label: 'Cần ôn',
+              value: '${student.prerequisiteGaps.length}',
+              color: AppTheme.primaryBlue,
+              icon: Icons.psychology_outlined,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _HealthMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _HealthMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.cardBorder, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContinueLearningSection extends StatelessWidget {
+  final List<Map<String, dynamic>> sessions;
+
+  const _ContinueLearningSection({required this.sessions});
+
+  @override
+  Widget build(BuildContext context) {
+    if (sessions.isEmpty) return const SizedBox.shrink();
+    final preview = sessions.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tiếp tục học',
+              style: TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.go('/study-plan'),
+              child: const Text(
+                'Xem kế hoạch',
+                style: TextStyle(
+                  color: AppTheme.primaryBlue,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceCard,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppTheme.cardBorder, width: 1),
+          ),
+          child: Column(
+            children: preview.asMap().entries.map((entry) {
+              final session = entry.value;
+              return Column(
+                children: [
+                  if (entry.key > 0)
+                    const Divider(height: 0, indent: 14, endIndent: 14),
+                  _StudySessionTile(session: session),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StudySessionTile extends StatelessWidget {
+  final Map<String, dynamic> session;
+
+  const _StudySessionTile({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    final type = (session['type'] ?? '').toString();
+    final color = switch (type) {
+      'assignment' => AppTheme.danger,
+      'practice' => AppTheme.warning,
+      'spaced_rep' => AppTheme.accentGreen,
+      _ => AppTheme.primaryBlue,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.menu_book_rounded, size: 17, color: color),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  (session['subject'] ?? '').toString(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '${session['day']} - ${session['time']} - ${session['duration']} phut',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NotificationsSection extends ConsumerWidget {
   final List<NotificationModel> notifications;
   const _NotificationsSection({required this.notifications});

@@ -11,7 +11,7 @@ class AppShell extends StatelessWidget {
   static const _tabs = [
     _Tab(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home', route: '/'),
     _Tab(icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month_rounded, label: 'Timetable', route: '/timetable'),
-    _Tab(icon: Icons.map_outlined, activeIcon: Icons.map_rounded, label: 'Study Plan', route: '/study-plan'),
+_Tab(icon: Icons.class_outlined, activeIcon: Icons.class_rounded, label: 'MyClass', route: '/my-class'),
     _Tab(icon: Icons.insights_outlined, activeIcon: Icons.insights_rounded, label: 'Analytics', route: '/analytics'),
     _Tab(icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view_rounded, label: 'More', route: '/more'),
   ];

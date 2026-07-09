@@ -12,11 +12,11 @@ class MoreScreen extends ConsumerWidget {
 
   // ✅ ĐẢM BẢO DANH SÁCH NÀY CÓ ĐỦ 5 ITEMS
   static const _items = [
-    _MoreItem(
-      icon: Icons.school_outlined,
-      label: 'MyClass',
-      route: '/my-class',
-      color: AppTheme.primaryBlue,
+     _MoreItem(
+    icon: Icons.map_outlined,
+    label: 'Study Plan',
+    route: '/study-plan',
+    color: AppTheme.accentGreen,
     ),
     _MoreItem(
       icon: Icons.book_outlined,
