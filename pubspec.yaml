@@ -20,8 +20,9 @@ dependencies:
   shared_preferences: ^2.2.3
   cupertino_icons: ^1.0.6
   google_fonts: ^8.1.0
-  file_picker: ^8.0.0      # ⭐ THÊM DÒNG NÀY
-  path_provider: ^2.0.0    # ⭐ THÊM DÒNG NÀY
+  file_picker: ^8.0.0
+  pdfx: ^2.5.0 
+  path_provider: ^2.1.0  # để lưu file tạm
 
 dev_dependencies:
   flutter_test:
@@ -33,4 +34,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - .env
+    - .env

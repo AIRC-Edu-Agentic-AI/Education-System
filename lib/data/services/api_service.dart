@@ -6,12 +6,17 @@ import 'package:student_agent/models/assignment_milestone_model.dart';
 import 'package:student_agent/models/assignment_submission_model.dart';
 import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/models/student_model.dart';
-
 import 'package:student_agent/data/mock/mock_message_store.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:student_agent/models/instructor_feedback_model.dart';
+import 'package:student_agent/models/class_comment_model.dart';
+
 class ApiService {
   
   late final Dio _dio;
   bool _useMock = false;
+  static final Map<String, AssignmentSubmission> _mockSubmissions = {};
 
   ApiService({String? token}) {
     print('API_BASE_URL = ${EnvConfig.apiBaseUrl}');
@@ -97,7 +102,7 @@ class ApiService {
       print('GET COURSES ERROR = $e');
       print(s);
       _useMock = true;
-      return MockData.courses;  // fallback mock thay vì []
+      return MockData.courses;
     }
   }
 
@@ -308,7 +313,7 @@ class ApiService {
           } catch (_) {}
         }
       }
-      // Process any remaining buffered data
+
       if (leftover.startsWith('data: ')) {
         final raw = leftover.substring(6).trim();
         if (raw.isNotEmpty) {
@@ -372,7 +377,42 @@ class ApiService {
     } catch (_) {}
   }
 
-  // ── Assignment submission ─────────────────────────────────────
+  // ── Assignment Submission ─────────────────────────────────────
+  
+  // Lấy danh sách submissions
+  Future<List<AssignmentSubmission>> getSubmissions(
+    int assessmentId,
+    int studentId,
+  ) async {
+    if (_useMock) {
+      return _mockGetSubmissions(assessmentId, studentId);
+    }
+    try {
+      final response = await _dio.get(
+        '/assignments/$assessmentId/submissions',
+        queryParameters: {'student_id': studentId},
+      );
+      if (response.data['submissions'] != null) {
+        return (response.data['submissions'] as List)
+            .map((s) => AssignmentSubmission.fromJson(s))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      _useMock = true;
+      return _mockGetSubmissions(assessmentId, studentId);
+    }
+  }
+
+  List<AssignmentSubmission> _mockGetSubmissions(int assessmentId, int studentId) {
+    final key = '$studentId-$assessmentId';
+    if (_mockSubmissions.containsKey(key)) {
+      return [_mockSubmissions[key]!];
+    }
+    return [];
+  }
+
+  // Lấy 1 submission (cũ)
   Future<AssignmentSubmission?> getSubmission(
       int idAssessment, int studentId) async {
     if (_useMock) {
@@ -392,46 +432,200 @@ class ApiService {
     }
   }
 
+  // Submit assignment với file
   Future<AssignmentSubmission> submitAssignment({
     required int idAssessment,
     required int studentId,
-    required String content,
+    required File file,
   }) async {
     if (_useMock) {
-      return _mockSubmit(idAssessment, studentId, content);
+      return _mockSubmit(idAssessment, studentId, file);
     }
     try {
-      final res = await _dio.post(
-        '/assignments/$idAssessment/submit',
-        data: {'student_id': studentId, 'content': content.trim()},
+      final formData = FormData.fromMap({
+        'student_id': studentId.toString(),
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        ),
+      });
+      
+      final response = await _dio.post(
+        '/assignments/$idAssessment/submit-file',
+        data: formData,
       );
-      final sub = Map<String, dynamic>.from(res.data['submission']);
+      
+      final sub = Map<String, dynamic>.from(response.data['submission']);
       return AssignmentSubmission.fromJson(sub);
     } catch (e) {
       _useMock = true;
-      return _mockSubmit(idAssessment, studentId, content);
+      return _mockSubmit(idAssessment, studentId, file);
     }
   }
 
-  static final Map<String, AssignmentSubmission> _mockSubmissions = {};
+  // Hủy nộp bài
+  Future<void> unsumbitAssignment(int assessmentId, int submissionId) async {
+    if (_useMock) {
+      return _mockUnsubmit(assessmentId, submissionId);
+    }
+    try {
+      await _dio.delete(
+        '/assignments/$assessmentId/submissions/$submissionId',
+      );
+    } catch (e) {
+      _useMock = true;
+      _mockUnsubmit(assessmentId, submissionId);
+    }
+  }
 
+  void _mockUnsubmit(int assessmentId, int submissionId) {
+    // Xóa khỏi mock storage
+    _mockSubmissions.removeWhere((key, sub) => sub.id == submissionId);
+  }
+
+  // Mock methods
   AssignmentSubmission? _mockSubmission(int idAssessment, int studentId) {
-    return _mockSubmissions['$studentId-$idAssessment'];
+    final key = '$studentId-$idAssessment';
+    return _mockSubmissions[key];
   }
 
   AssignmentSubmission _mockSubmit(
-      int idAssessment, int studentId, String content) {
+    int idAssessment,
+    int studentId,
+    File file,
+  ) {
     final sub = AssignmentSubmission(
+      id: DateTime.now().millisecondsSinceEpoch,
       studentId: studentId,
       idAssessment: idAssessment,
-      courseCode: '',
-      content: content.trim(),
+      courseCode: 'MOCK_COURSE',
+      fileName: file.path.split('/').last,
+      fileUrl: 'mock_url/${file.path.split('/').last}',
+      fileType: 'pdf',
       submittedAt: DateTime.now(),
-      submittedDay: 46,
+      submittedDay: DateTime.now().day,
       status: 'submitted',
     );
     _mockSubmissions['$studentId-$idAssessment'] = sub;
     return sub;
+  }
+
+  // ── Instructor Feedbacks ─────────────────────────────────────
+  Future<List<InstructorFeedback>> getFeedbacks(int assessmentId) async {
+    if (_useMock) {
+      return _mockGetFeedbacks(assessmentId);
+    }
+    try {
+      final response = await _dio.get(
+        '/assignments/$assessmentId/feedbacks',
+      );
+      if (response.data['feedbacks'] != null) {
+        return (response.data['feedbacks'] as List)
+            .map((f) => InstructorFeedback.fromJson(f))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      _useMock = true;
+      return _mockGetFeedbacks(assessmentId);
+    }
+  }
+
+  List<InstructorFeedback> _mockGetFeedbacks(int assessmentId) {
+    return [
+      InstructorFeedback(
+        id: 1,
+        assessmentId: assessmentId,
+        content: 'Bài làm tốt, cần cải thiện phần lập luận và trình bày rõ ràng hơn.',
+        score: 7.5,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        instructorName: 'TS. Nguyễn Văn A',
+      ),
+    ];
+  }
+
+  // ── Class Comments ────────────────────────────────────────────
+  Future<List<ClassComment>> getClassComments(int assessmentId) async {
+    if (_useMock) {
+      return _mockGetClassComments(assessmentId);
+    }
+    try {
+      final response = await _dio.get(
+        '/assignments/$assessmentId/comments',
+      );
+      if (response.data['comments'] != null) {
+        return (response.data['comments'] as List)
+            .map((c) => ClassComment.fromJson(c))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      _useMock = true;
+      return _mockGetClassComments(assessmentId);
+    }
+  }
+
+  List<ClassComment> _mockGetClassComments(int assessmentId) {
+    return [
+      ClassComment(
+        id: 1,
+        assessmentId: assessmentId,
+        studentId: 101,
+        studentName: 'Trần Thị B',
+        content: 'Mọi người làm bài đến đâu rồi ạ?',
+        isInstructor: false,
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      ClassComment(
+        id: 2,
+        assessmentId: assessmentId,
+        studentId: 0,
+        studentName: 'Giảng viên',
+        content: 'Các em lưu ý deadline là 23:59 ngày mai nhé.',
+        isInstructor: true,
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+    ];
+  }
+
+  // Thêm comment lớp học
+  Future<ClassComment> addClassComment({
+    required int assessmentId,
+    required int studentId,
+    required String content,
+  }) async {
+    if (_useMock) {
+      return _mockAddClassComment(assessmentId, studentId, content);
+    }
+    try {
+      final response = await _dio.post(
+        '/assignments/$assessmentId/comments',
+        data: {
+          'student_id': studentId,
+          'content': content,
+        },
+      );
+      return ClassComment.fromJson(response.data);
+    } catch (e) {
+      _useMock = true;
+      return _mockAddClassComment(assessmentId, studentId, content);
+    }
+  }
+
+  ClassComment _mockAddClassComment(
+    int assessmentId,
+    int studentId,
+    String content,
+  ) {
+    return ClassComment(
+      id: DateTime.now().millisecondsSinceEpoch,
+      assessmentId: assessmentId,
+      studentId: studentId,
+      studentName: 'Học sinh $studentId',
+      content: content,
+      isInstructor: false,
+      createdAt: DateTime.now(),
+    );
   }
 
   // ── Knowledge State ──────────────────────────────────────────
