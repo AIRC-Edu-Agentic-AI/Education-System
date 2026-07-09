@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -62,56 +62,150 @@ app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
   res.json(student)
 })
 
-// Schedules: store per-course schedules in collection `schedules`
-app.get('/api/schedules/:module/:presentation', async (req, res) => {
-  const { module, presentation } = req.params
-  const doc = await db.collection('schedules').findOne({ module, presentation }, { projection: { _id: 0 } })
-  if (!doc) return res.json({ schedules: [] })
-  res.json({ schedules: doc.schedules ?? [] })
+app.post('/api/students/import', async (req, res) => {
+  try {
+    const { students } = req.body
+    if (!Array.isArray(students)) {
+      return res.status(400).json({ error: "Invalid data format" })
+    }
+    const result = await db.collection("students").insertMany(students)
+    res.status(200).json({ message: "Imported successfully", count: result.insertedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
 })
 
-app.post('/api/schedules/:module/:presentation', async (req, res) => {
-  const { module, presentation } = req.params
-  const { schedules } = req.body
-  if (!Array.isArray(schedules)) return res.status(400).json({ error: 'Invalid schedules payload' })
+app.get('/api/notifications', async (_req, res) => {
+  try {
+    const notifications = await db.collection("notifications")
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray()
+    res.status(200).json(notifications)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
 
-  await db.collection('schedules').updateOne(
-    { module, presentation },
-    { $set: { schedules } },
-    { upsert: true }
-  )
+app.post('/api/notifications', async (req, res) => {
+  try {
+    const { senderRole, receiverRole, type, title, content } = req.body
+    const newNotification = {
+      senderRole,
+      receiverRole,
+      type,
+      title,
+      content,
+      createdAt: new Date().toISOString()
+    }
+    const result = await db.collection("notifications").insertOne(newNotification)
+    res.status(201).json({ _id: result.insertedId, ...newNotification })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
 
-  res.json({ ok: true })
+app.get('/api/attendance-stats/:module/:presentation', async (req, res) => {
+  try {
+    const { module, presentation } = req.params
+
+    const rawData = await db.collection("processed_students").aggregate([
+      {
+        $match: {
+          code_module: module,
+          code_presentation: presentation
+        }
+      },
+      {
+        $group: {
+          _id: "$final_result",
+          count: { $sum: 1 }
+        }
+      }
+    ]).toArray()
+
+    const colorMap: Record<string, string> = {
+      'Pass': '#4CAF50',
+      'Fail': '#F44336',
+      'Withdrawn': '#FFC107',
+      'Distinction': '#2196F3'
+    }
+
+    const stats = rawData.map(item => ({
+      name: item._id || 'Unknown',
+      value: item.count,
+      color: colorMap[item._id] || '#9E9E9E'
+    }))
+
+    res.status(200).json(stats)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
 })
 
 app.get('/api/schedules', async (_req, res) => {
-  const allDoc = await db.collection('schedules_all').findOne({ _id: { $eq: 'all' } as any }, { projection: { _id: 0 } })
-  if (allDoc && Array.isArray(allDoc.schedules)) {
-    return res.json({ schedules: allDoc.schedules })
+  try {
+    const schedules = await db.collection("schedules").find({}).toArray()
+    res.status(200).json(schedules)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
   }
-
-  const docs = await db.collection('schedules').find({}, { projection: { _id: 0 } }).toArray()
-  const schedules = docs.flatMap((doc) =>
-    (doc.schedules ?? []).map((item: any) => ({
-      ...item,
-      module: doc.module,
-      presentation: doc.presentation,
-    }))
-  )
-  res.json({ schedules })
 })
 
 app.post('/api/schedules', async (req, res) => {
-  const { schedules } = req.body
-  if (!Array.isArray(schedules)) return res.status(400).json({ error: 'Invalid schedules payload' })
+  try {
+    const schedule = req.body
+    const result = await db.collection("schedules").insertOne(schedule)
+    res.status(201).json({ _id: result.insertedId, ...schedule })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
 
-  await db.collection('schedules_all').updateOne(
-    { _id: { $eq: 'all' } as any },
-    { $set: { schedules } },
-    { upsert: true }
-  )
+app.put('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const updateData = req.body
+    delete updateData._id
+    const result = await db.collection("schedules").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    )
+    res.status(200).json({ updated: result.modifiedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
 
-  res.json({ ok: true })
+app.delete('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await db.collection("schedules").deleteOne({ _id: new ObjectId(id) })
+    res.status(200).json({ deleted: result.deletedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/classes', async (_req, res) => {
+  try {
+    const courses = await db.collection('processed_courses')
+      .find({}, { projection: { module: 1, presentation: 1, _id: 0 } })
+      .toArray()
+    const classes = [...new Set(courses.map(c => `${c.module}-${c.presentation}`))]
+    res.json(classes)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/rooms', async (_req, res) => {
+  res.json([
+    'G2-101', 'G2-102', 'G2-103', 'G2-201', 'G2-202', 'G2-203',
+    'E3-101', 'E3-102', 'E3-201', 'E3-202', 'E3-301', 'E3-302',
+    'B1-101', 'B1-102', 'B1-201', 'B1-202',
+    'Online - Zoom', 'Online - Teams',
+  ])
 })
 
 async function start() {

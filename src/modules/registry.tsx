@@ -2,6 +2,7 @@ import React from 'react'
 import DashboardIcon from '@mui/icons-material/GridViewRounded'
 import PersonIcon from '@mui/icons-material/PersonRounded'
 import ScheduleIcon from '@mui/icons-material/EventNoteRounded'
+import ClassIcon from '@mui/icons-material/SchoolRounded'
 
 export interface ModuleConfig {
   id: string
@@ -22,6 +23,12 @@ export const moduleRegistry: ModuleConfig[] = [
     label: 'Student detail',
     path: '/student',
     icon: <PersonIcon fontSize="small" />,
+  },
+  {
+    id: 'class',
+    label: 'Class Management',
+    path: '/class',
+    icon: <ClassIcon fontSize="small" />,
   },
   {
     id: 'schedule',
