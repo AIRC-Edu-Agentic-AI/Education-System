@@ -53,7 +53,7 @@ export default function NotificationManager({ module, presentation }: Notificati
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('http://localhost:8000/api/notifications');
+      const res = await fetch('http://localhost:8000/notify/teacher');
       const data = await res.json();
       setNotifications(data);
     } catch (error) {
@@ -67,7 +67,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!module || !presentation) return;
     setStudentsLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/course/${module}/${presentation}`);
+      const res = await fetch(`http://localhost:8000/notify/teacher/course/${module}/${presentation}`);
       const data = await res.json();
       const list: StudentOption[] = (data.students ?? []).map((s: { id_student: number; name?: string }) => ({
         id: s.id_student,
@@ -97,7 +97,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!title.trim() || !content.trim() || isSending) return;
     setIsSending(true);
     try {
-      await fetch('http://localhost:8000/api/notifications', {
+      await fetch('http://localhost:8000/notify/teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ senderRole: 'Instructor', receiverRole: 'Student', type, title, content }),
@@ -121,7 +121,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
     setIsDmSending(true);
     try {
-      await fetch('http://localhost:8000/api/notifications', {
+      await fetch('http://localhost:8000/notify/teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

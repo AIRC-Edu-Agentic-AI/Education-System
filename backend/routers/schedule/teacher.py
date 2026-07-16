@@ -135,7 +135,7 @@ async def delete_schedule(schedule_id: str):
 @router.get("/classes")
 async def get_classes():
     db = get_db()
-    cursor = db.courses.find({}, {"module": 1, "presentation": 1, "_id": 0})
+    cursor = db.processed_courses.find({}, {"module": 1, "presentation": 1, "_id": 0})
     docs = await cursor.to_list(length=500)
     classes = list(set(f"{d['module']}-{d['presentation']}" for d in docs if "module" in d and "presentation" in d))
     return classes

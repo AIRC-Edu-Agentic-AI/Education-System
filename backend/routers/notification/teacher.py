@@ -62,7 +62,7 @@ async def get_attendance_stats(module: str, presentation: str):
         {"$match": {"code_module": module, "code_presentation": presentation}},
         {"$group": {"_id": "$final_result", "count": {"$sum": 1}}}
     ]
-    raw = await db.students.aggregate(pipeline).to_list(length=20)
+    raw = await db.processed_students.aggregate(pipeline).to_list(length=20)
     color_map = {
         "Pass": "#4CAF50",
         "Fail": "#F44336",
@@ -77,9 +77,26 @@ async def get_attendance_stats(module: str, presentation: str):
 @router.get("/course/{module}/{presentation}")
 async def get_course(module: str, presentation: str):
     db = get_db()
-    course = await db.courses.find_one({"module": module, "presentation": presentation}, {"_id": 0})
+    course = await db.processed_courses.find_one({"module": module, "presentation": presentation}, {"_id": 0})
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    cursor = db.students.find({"code_module": module, "code_presentation": presentation}, {"_id": 0})
+    cursor = db.processed_students.find({"code_module": module, "code_presentation": presentation}, {"_id": 0})
     students = await cursor.to_list(length=5000)
     return {**course, "students": students}
+@router.get("/index")
+async def get_index():
+    db = get_db()
+    cursor = db.processed_courses.find({}, {"students": 0, "_id": 0})
+    courses = await cursor.to_list(length=500)
+    result = []
+    for c in courses:
+        result.append({
+            "module": c.get("module"),
+            "module_name": c.get("module_name", c.get("name", "")),
+            "presentation": c.get("presentation"),
+            "presentation_name": c.get("presentation_name", ""),
+            "num_weeks": c.get("num_weeks", 39),
+            "course_length_days": c.get("num_weeks", 39) * 7,
+            "student_count": c.get("student_count", 0)
+        })
+    return {"courses": result}

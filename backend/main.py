@@ -96,3 +96,5 @@ async def debug_trigger(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
     job.modify(next_run_time=__import__("datetime").datetime.now())
     return {"triggered": job_id}
+from routers.notification.teacher import router as _teacher_api_router
+app.include_router(_teacher_api_router, prefix="/api", tags=["teacher-api-compat"])

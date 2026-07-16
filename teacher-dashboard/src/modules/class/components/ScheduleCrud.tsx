@@ -70,9 +70,9 @@ interface ScheduleCrudProps {
   presentation: string
 }
 
-const API_BASE = 'http://localhost:8000/api/schedules'
-const CLASSES_API = 'http://localhost:8000/api/classes'
-const ROOMS_API = 'http://localhost:8000/api/rooms'
+const API_BASE = 'http://localhost:8000/schedule/teacher'
+const CLASSES_API = 'http://localhost:8000/schedule/teacher/classes'
+const ROOMS_API = 'http://localhost:8000/schedule/teacher/rooms'
 
 const statusLabels: Record<ScheduleStatus, string> = {
   scheduled: 'Scheduled',
