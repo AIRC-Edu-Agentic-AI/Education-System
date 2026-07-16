@@ -1,1 +1,1 @@
-from . import admin, assignments, auth, chat, notifications, schedule, student, study_groups
+from . import admin, assignments, auth, chat, notification, schedule, student, study_groups
