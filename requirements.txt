@@ -1,0 +1,46 @@
+# Node.js requirements — Teacher Dashboard
+# Runtime: Node.js >= 20.x  (https://nodejs.org)
+# Package manager: npm >= 10.x (bundled with Node 20)
+#
+# Install all at once:
+#   npm install
+#
+# Or install individually (versions below are pinned minimums):
+
+# ── Python requirements (preprocessing only) ──────────────────────────────────
+# Python >= 3.10  (https://python.org)
+# Install: pip install -r scripts/python/requirements.txt
+#
+# pandas>=2.2.0      DataFrame operations + chunked CSV streaming
+# numpy>=1.26.0      Percentile computation (P75 cohort clicks)
+# tqdm>=4.66.0       Progress bars for large file streaming
+
+
+# ── Runtime dependencies ──────────────────────────────────────────────────────
+
+@emotion/react@11.11.4          # MUI peer dependency
+@emotion/styled@11.11.5         # MUI peer dependency
+@mui/icons-material@5.15.20     # Material icon set
+@mui/material@5.15.20           # Component library
+@tanstack/react-query@5.40.0    # Server-state cache (replaces Zustand for API data)
+d3@7.9.0                        # Force-directed concept mastery graph
+papaparse@5.4.1                 # CSV parsing in preprocess script
+react@18.3.1                    # UI framework
+react-dom@18.3.1                # DOM renderer
+react-router-dom@6.23.1         # Client-side routing
+recharts@2.12.7                 # Risk timeline + tier distribution charts
+zustand@4.5.2                   # Client UI state (active student, week, chat buffer)
+
+# ── Dev dependencies (build + type-checking only) ─────────────────────────────
+
+@types/d3@7.4.3                 # D3 TypeScript types
+@types/node@20.14.2             # Node built-ins for preprocess script
+@types/papaparse@5.3.14         # PapaParse TypeScript types
+@types/react@18.3.3             # React TypeScript types
+@types/react-dom@18.3.0         # ReactDOM TypeScript types
+@vitejs/plugin-react@4.3.0      # Vite React plugin (Fast Refresh)
+autoprefixer@10.4.19            # PostCSS autoprefixer for Tailwind
+postcss@8.4.38                  # CSS transform pipeline
+tailwindcss@3.4.4               # Utility CSS (used sparingly alongside MUI)
+typescript@5.4.5                # Type checker
+vite@5.3.1                      # Dev server + bundler

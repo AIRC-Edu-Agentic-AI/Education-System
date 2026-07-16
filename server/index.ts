@@ -1,0 +1,217 @@
+import express from 'express'
+import cors from 'cors'
+import { MongoClient, ObjectId } from 'mongodb'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const app = express()
+const PORT = 8000
+
+const MONGO_URI = process.env.MONGODB_URI
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
+
+if (!MONGO_URI) {
+  console.error('Missing required env var: MONGODB_URI')
+  process.exit(1)
+}
+
+const client = new MongoClient(MONGO_URI)
+const db = client.db(process.env.MONGODB_DB ?? 'oulad_db')
+
+app.use(cors({ origin: CORS_ORIGIN }))
+app.use(express.json())
+
+app.get('/api/index', async (_req, res) => {
+  const courses = await db.collection("processed_courses").find({}, { projection: { students: 0 } }).toArray()
+  const result = courses.map(c => ({
+    module: c.module,
+    module_name: c.module_name,
+    presentation: c.presentation,
+    presentation_name: c.presentation_name,
+    course_length_days: c.num_weeks * 7,
+    num_weeks: c.num_weeks,
+    student_count: c.student_count
+  }))
+  res.json({ courses: result })
+})
+
+app.get('/api/course/:module/:presentation', async (req, res) => {
+  const { module, presentation } = req.params
+  const course = await db.collection("processed_courses").findOne(
+    { module, presentation },
+    { projection: { _id: 0 } }
+  )
+  if (!course) return res.status(404).json({ error: "Course not found" })
+
+  const students = await db.collection("processed_students").find(
+    { code_module: module, code_presentation: presentation },
+    { projection: { _id: 0 } }
+  ).toArray()
+
+  res.json({ ...course, students })
+})
+
+app.get('/api/student/:module/:presentation/:student_id', async (req, res) => {
+  const { module, presentation, student_id } = req.params
+  const student = await db.collection("processed_students").findOne(
+    { code_module: module, code_presentation: presentation, id_student: parseInt(student_id) },
+    { projection: { _id: 0 } }
+  )
+  if (!student) return res.status(404).json({ error: "Student not found" })
+  res.json(student)
+})
+
+app.post('/api/students/import', async (req, res) => {
+  try {
+    const { students } = req.body
+    if (!Array.isArray(students)) {
+      return res.status(400).json({ error: "Invalid data format" })
+    }
+    const result = await db.collection("students").insertMany(students)
+    res.status(200).json({ message: "Imported successfully", count: result.insertedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/notifications', async (_req, res) => {
+  try {
+    const notifications = await db.collection("notifications")
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray()
+    res.status(200).json(notifications)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/notifications', async (req, res) => {
+  try {
+    const { senderRole, receiverRole, type, title, content } = req.body
+    const newNotification = {
+      senderRole,
+      receiverRole,
+      type,
+      title,
+      content,
+      createdAt: new Date().toISOString()
+    }
+    const result = await db.collection("notifications").insertOne(newNotification)
+    res.status(201).json({ _id: result.insertedId, ...newNotification })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/attendance-stats/:module/:presentation', async (req, res) => {
+  try {
+    const { module, presentation } = req.params
+
+    const rawData = await db.collection("processed_students").aggregate([
+      {
+        $match: {
+          code_module: module,
+          code_presentation: presentation
+        }
+      },
+      {
+        $group: {
+          _id: "$final_result",
+          count: { $sum: 1 }
+        }
+      }
+    ]).toArray()
+
+    const colorMap: Record<string, string> = {
+      'Pass': '#4CAF50',
+      'Fail': '#F44336',
+      'Withdrawn': '#FFC107',
+      'Distinction': '#2196F3'
+    }
+
+    const stats = rawData.map(item => ({
+      name: item._id || 'Unknown',
+      value: item.count,
+      color: colorMap[item._id] || '#9E9E9E'
+    }))
+
+    res.status(200).json(stats)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/schedules', async (_req, res) => {
+  try {
+    const schedules = await db.collection("schedules").find({}).toArray()
+    res.status(200).json(schedules)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/schedules', async (req, res) => {
+  try {
+    const schedule = req.body
+    const result = await db.collection("schedules").insertOne(schedule)
+    res.status(201).json({ _id: result.insertedId, ...schedule })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.put('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const updateData = req.body
+    delete updateData._id
+    const result = await db.collection("schedules").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    )
+    res.status(200).json({ updated: result.modifiedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.delete('/api/schedules/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await db.collection("schedules").deleteOne({ _id: new ObjectId(id) })
+    res.status(200).json({ deleted: result.deletedCount })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/classes', async (_req, res) => {
+  try {
+    const courses = await db.collection('processed_courses')
+      .find({}, { projection: { module: 1, presentation: 1, _id: 0 } })
+      .toArray()
+    const classes = [...new Set(courses.map(c => `${c.module}-${c.presentation}`))]
+    res.json(classes)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/rooms', async (_req, res) => {
+  res.json([
+    'G2-101', 'G2-102', 'G2-103', 'G2-201', 'G2-202', 'G2-203',
+    'E3-101', 'E3-102', 'E3-201', 'E3-202', 'E3-301', 'E3-302',
+    'B1-101', 'B1-102', 'B1-201', 'B1-202',
+    'Online - Zoom', 'Online - Teams',
+  ])
+})
+
+async function start() {
+  await client.connect()
+  console.log("Connected to MongoDB Atlas!")
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
+}
+
+start()
