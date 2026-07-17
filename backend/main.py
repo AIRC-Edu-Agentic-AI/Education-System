@@ -14,9 +14,13 @@ from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
 from routers.course_communication import router as course_communication_router
 
+
 load_dotenv()
 
+app = FastAPI()
+
 os.makedirs("uploads/submissions", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 class NoCacheStaticFiles(StaticFiles):
     async def get_response(self, path, scope):
@@ -26,8 +30,10 @@ class NoCacheStaticFiles(StaticFiles):
         resp.headers["Expires"] = "0"
         return resp
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup
     await connect_db()
     import notify_schedule
     await notify_schedule.load_settings()
@@ -35,6 +41,7 @@ async def lifespan(app: FastAPI):
     await get_pool().healthcheck()
     setup_scheduler()
     
+    # ⭐ THÊM DEBUG VÀO ĐÂY
     print("\n" + "="*60)
     print("REGISTERED ROUTES:")
     print("="*60)
@@ -49,16 +56,16 @@ async def lifespan(app: FastAPI):
     
     yield
     
+    # Shutdown
     teardown_scheduler()
     await close_db()
 
+
 app = FastAPI(
-    title="Education System API",
-    version="1.0.0",
+    title="Student Agent API",
+    version="1.0.0-demo",
     lifespan=lifespan,
 )
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,22 +74,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# backend/main.py
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(course_communication_router, prefix="/course")
 app.include_router(student.router, prefix="/student", tags=["student"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
-app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
 app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
 app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
-app.include_router(study_groups.router, tags=["study-groups"]) 
+app.include_router(study_groups.router, tags=["study-groups"])  # ✅ Bỏ prefix
 
+# Teacher Dashboard APIs (trước đây nằm trong dashboard.py)
 app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
 app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
+app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
+
 
 @app.on_event("startup")
 async def show_routes():
@@ -98,39 +108,20 @@ async def show_routes():
                     print(f"  {r.path}")
     print("="*60 + "\n")
 
+
 @app.get("/")
 async def root():
     return RedirectResponse(url="/dashboard/")
+
 
 @app.get("/health")
 async def health():
     return {
         "status": "ok",
-        "db": "connected" if db_state.get("connected") else "mock",
+        "db": "connected" if db_state["connected"] else "mock",
         "environment": os.getenv("ENVIRONMENT", "demo"),
     }
 
-@app.get("/api/debug/mongo")
-async def debug_mongo():
-    if not db_state.get("db"):
-        return {"connected": False, "collections": [], "samples": {}}
-
-    db = db_state["db"]
-    collections = await db.list_collection_names()
-    samples = {}
-    for name in collections[:5]:
-        try:
-            docs = await db[name].find({}, {"_id": 0}).limit(3).to_list(None)
-            samples[name] = docs
-        except Exception as exc:
-            samples[name] = [{"error": str(exc)}]
-
-    return {
-        "connected": True,
-        "database": os.getenv("MONGODB_DB", "education_system"),
-        "collections": collections,
-        "samples": samples,
-    }
 
 @app.post("/debug/trigger/{job_id}")
 async def debug_trigger(job_id: str):

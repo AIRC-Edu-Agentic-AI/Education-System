@@ -12,32 +12,9 @@ router = APIRouter()
 
 
 def get_db():
-    db = db_state.get("db")
-    if db is None or not db_state.get("connected", False):
+    if not db_state.get("db"):
         raise HTTPException(status_code=503, detail="Database not connected")
-    return db
-
-
-def _normalize_notification(item: Dict[str, Any]) -> Dict[str, Any]:
-    payload = dict(item)
-    payload["_id"] = str(payload.get("_id", "")) if payload.get("_id") is not None else None
-
-    if payload.get("student_id") is not None:
-        payload["senderRole"] = payload.get("sender_role") or "Instructor"
-        payload["receiverRole"] = "Student"
-        payload["title"] = payload.get("payload", {}).get("title") or payload.get("title") or "New message"
-        payload["content"] = payload.get("payload", {}).get("body") or payload.get("content") or ""
-        payload["createdAt"] = payload.get("created_at") or payload.get("createdAt") or datetime.now(timezone.utc).isoformat()
-        payload["type"] = payload.get("type") or "General Notice"
-        return payload
-
-    payload["senderRole"] = payload.get("senderRole") or payload.get("sender_role") or "Instructor"
-    payload["receiverRole"] = payload.get("receiverRole") or payload.get("receiver_role") or "Student"
-    payload["title"] = payload.get("title") or payload.get("payload", {}).get("title") or "New message"
-    payload["content"] = payload.get("content") or payload.get("payload", {}).get("body") or ""
-    payload["createdAt"] = payload.get("createdAt") or payload.get("created_at") or datetime.now(timezone.utc).isoformat()
-    payload["type"] = payload.get("type") or "General Notice"
-    return payload
+    return db_state["db"]
 
 
 # ── Models ───────────────────────────────────────────────────────────────────
@@ -66,8 +43,7 @@ async def list_notifications() -> List[Dict[str, Any]]:
     """Teacher xem danh sách thông báo đã gửi."""
     try:
         db = get_db()
-        items = await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
-        return [_normalize_notification(item) for item in items]
+        return await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
     except HTTPException:
         raise
     except Exception as exc:

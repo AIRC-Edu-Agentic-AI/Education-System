@@ -30,7 +30,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 # ── Config ─────────────────────────────────────────────────────────────────────
 load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI", "")
-MONGODB_DB  = os.getenv("MONGODB_DB", "education-system")
+MONGODB_DB  = os.getenv("MONGODB_DB", "student_agent_db")
 STUDENT_ID  = 28400
 
 # Current module day approximation: week 7, mid-week → day 46

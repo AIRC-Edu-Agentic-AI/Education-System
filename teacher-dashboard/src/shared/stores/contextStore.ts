@@ -18,10 +18,10 @@ interface ContextState {
 }
 
 export const useContextStore = create<ContextState>((set) => ({
-  selectedModule: 'COMP101',
-  selectedPresentation: '2024A',
+  selectedModule: '',
+  selectedPresentation: '',
   currentWeek: 15,
-  numWeeks: 15,
+  numWeeks: 39,
   activeStudent: null,
   chatPanelOpen: false,
 

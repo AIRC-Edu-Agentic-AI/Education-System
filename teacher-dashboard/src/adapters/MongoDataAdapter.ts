@@ -29,20 +29,7 @@ export class MongoDataAdapter implements DataService {
     const res = await fetch(endpoint)
     if (!res.ok) throw new Error('Cannot reach schedules API')
     const body = await res.json()
-
-    if (Array.isArray(body)) {
-      return body as ScheduleItem[]
-    }
-
-    if (Array.isArray(body?.schedules)) {
-      return body.schedules as ScheduleItem[]
-    }
-
-    if (Array.isArray(body?.data)) {
-      return body.data as ScheduleItem[]
-    }
-
-    return [] as ScheduleItem[]
+    return (body.schedules ?? []) as ScheduleItem[]
   }
 
   async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void> {

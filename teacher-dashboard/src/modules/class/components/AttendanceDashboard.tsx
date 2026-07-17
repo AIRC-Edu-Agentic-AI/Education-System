@@ -32,13 +32,7 @@ export default function AttendanceDashboard({ module, presentation }: Attendance
         if (!res.ok) throw new Error('Network response was not ok');
         const stats = await res.json();
 
-        const fallbackStats = [
-          { name: 'Pass', value: 16, color: '#4CAF50' },
-          { name: 'Fail', value: 4, color: '#F44336' },
-          { name: 'Withdrawn', value: 2, color: '#FFC107' },
-        ];
-
-        const groupedStats = (Array.isArray(stats) && stats.length > 0 ? stats : fallbackStats).reduce((acc: AttendanceStat[], item: AttendanceStat) => {
+        const groupedStats = stats.reduce((acc: AttendanceStat[], item: AttendanceStat) => {
           const nameMap: Record<string, string> = {
             Pass: 'On Time',
             Distinction: 'On Time',
@@ -135,7 +129,7 @@ export default function AttendanceDashboard({ module, presentation }: Attendance
         </Stack>
       ) : (
         <Typography variant="body2" color="text.disabled" textAlign="center" sx={{ py: 4 }}>
-          Showing demo attendance data while the backend is unavailable.
+          Select a module and presentation to view attendance data.
         </Typography>
       )}
     </Box>

@@ -13,7 +13,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI", "")
-MONGODB_DB = os.getenv("MONGODB_DB", "education-system")
+MONGODB_DB = os.getenv("MONGODB_DB", "student_agent_db")
 
 if not MONGODB_URI or "placeholder" in MONGODB_URI:
     print("MONGODB_URI not set or is placeholder. Set .env and try again.")

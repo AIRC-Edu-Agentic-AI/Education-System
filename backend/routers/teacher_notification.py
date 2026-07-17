@@ -9,60 +9,31 @@ from db.mongodb import db_state
 
 router = APIRouter()
 
-
 class NotificationPayload(BaseModel):
     senderRole: str
     receiverRole: str
     type: str
     title: str
     content: str
-    student_ids: Optional[List[int]] = None
-
+    student_ids: Optional[List[int]] = None  # nếu có → ghi schema student app
 
 class BroadcastPayload(BaseModel):
-    student_ids: List[int]
-    type: str
+    student_ids: List[int]          # danh sách student_id nhận thông báo
+    type: str                       # "academic_warning" | "general" | "assignment" | ...
     title: str
     content: str
     sender_role: str = "instructor"
 
-
 def get_db() -> AsyncIOMotorDatabase:
-    db = db_state.get("db")
-    if db is None or not db_state.get("connected", False):
+    if not db_state.get("db"):
         raise HTTPException(status_code=503, detail="Database not connected")
-    return db
-
-
-def _normalize_notification(item: Dict[str, Any]) -> Dict[str, Any]:
-    payload = dict(item)
-    payload["_id"] = str(payload.get("_id", "")) if payload.get("_id") is not None else None
-
-    if payload.get("student_id") is not None:
-        payload["senderRole"] = payload.get("sender_role") or "Instructor"
-        payload["receiverRole"] = "Student"
-        payload["title"] = payload.get("payload", {}).get("title") or payload.get("title") or "New message"
-        payload["content"] = payload.get("payload", {}).get("body") or payload.get("content") or ""
-        payload["createdAt"] = payload.get("created_at") or payload.get("createdAt") or datetime.now(timezone.utc).isoformat()
-        payload["type"] = payload.get("type") or "General Notice"
-        return payload
-
-    payload["senderRole"] = payload.get("senderRole") or payload.get("sender_role") or "Instructor"
-    payload["receiverRole"] = payload.get("receiverRole") or payload.get("receiver_role") or "Student"
-    payload["title"] = payload.get("title") or payload.get("payload", {}).get("title") or "New message"
-    payload["content"] = payload.get("content") or payload.get("payload", {}).get("body") or ""
-    payload["createdAt"] = payload.get("createdAt") or payload.get("created_at") or datetime.now(timezone.utc).isoformat()
-    payload["type"] = payload.get("type") or "General Notice"
-    return payload
+    return db_state["db"]
 
 @router.get("/notifications")
 async def list_notifications() -> List[Dict[str, Any]]:
     try:
         db = get_db()
-        items = await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
-        return [_normalize_notification(item) for item in items]
-    except HTTPException:
-        raise
+        return await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
     except Exception as exc:
         raise HTTPException(status_code=503, detail="Database unavailable") from exc
 
@@ -98,43 +69,37 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
             "content": payload.content,
             "createdAt": now_iso,
         }
-        
         result = await db["notifications"].insert_one(new_notification)
         new_notification["_id"] = str(result.inserted_id)
-        
         return new_notification
-    except HTTPException:
-        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail="Database unavailable") from exc
 
 @router.post("/broadcast", status_code=201)
 async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
-    try:
-        db = get_db()
-        now_iso = datetime.now(timezone.utc).isoformat()
+    db = get_db()
+    now_iso = datetime.now(timezone.utc).isoformat()
 
-        docs = [
-            {
-                "student_id": sid,
-                "type": payload.type,
-                "read": False,
-                "sender_role": payload.sender_role,
-                "payload": {
-                    "title": payload.title,
-                    "body": payload.content,
-                },
-                "created_at": now_iso,
-            }
-            for sid in payload.student_ids
-        ]
+    docs = [
+        {
+            "student_id": sid,
+            "type": payload.type,
+            "read": False,
+            "sender_role": payload.sender_role,
+            "payload": {
+                "title": payload.title,
+                "body": payload.content,
+            },
+            "created_at": now_iso,
+        }
+        for sid in payload.student_ids
+    ]
 
-        if docs:
-            result = await db["notifications"].insert_many(docs)
-            return {"ok": True, "count": len(result.inserted_ids)}
+    if db is None:
+        return {"ok": True, "count": len(docs), "mock": True}
 
-        return {"ok": True, "count": 0}
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(status_code=503, detail="Database unavailable") from exc
+    if docs:
+        result = await db["notifications"].insert_many(docs)
+        return {"ok": True, "count": len(result.inserted_ids)}
+
+    return {"ok": True, "count": 0}

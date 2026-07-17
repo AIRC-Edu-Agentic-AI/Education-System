@@ -16,7 +16,7 @@ export const AIAdvisorView = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/api/ai/chat`, {
+      const res = await fetch(`${API_BASE}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })

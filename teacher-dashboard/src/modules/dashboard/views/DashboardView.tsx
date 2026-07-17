@@ -33,31 +33,25 @@ export function DashboardView() {
     retry: false,
   })
 
-  const fallbackCourses = useMemo(() => [
-    { module: 'COMP101', presentation: '2024A', num_weeks: 15, student_count: 24 },
-    { module: 'MATH102', presentation: '2024A', num_weeks: 15, student_count: 19 },
-    { module: 'DATA201', presentation: '2024A', num_weeks: 15, student_count: 21 },
-  ], [])
-
   const allowedCourses = useMemo(() => {
-    const source = index?.courses ?? fallbackCourses
-    if (isAdmin) return source
-    if (isAdvisor) return source.filter((c) =>
+    if (!index) return []
+    if (isAdmin) return index.courses
+    if (isAdvisor) return index.courses.filter((c) =>
       user?.years?.some((y) => c.presentation.startsWith(y))
     )
-    return source.filter(
+    return index.courses.filter(
       (c) => user?.modules?.includes(c.module) && user?.presentations?.includes(c.presentation)
     )
   }, [index, user, isAdmin, isAdvisor])
 
   useEffect(() => {
-    if (allowedCourses.length > 0 && (!selectedModule || !selectedPresentation)) {
+    if (allowedCourses.length > 0 && !selectedModule) {
       const first = allowedCourses[0]
       setModule(first.module)
       setPresentation(first.presentation)
       setNumWeeks(first.num_weeks)
     }
-  }, [allowedCourses, selectedModule, selectedPresentation])
+  }, [allowedCourses, selectedModule])
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', selectedModule, selectedPresentation],
@@ -69,7 +63,7 @@ export function DashboardView() {
     if (course) setNumWeeks(course.num_weeks)
   }, [course, setNumWeeks])
 
-  const numWeeks = course?.num_weeks ?? 15
+  const numWeeks = course?.num_weeks ?? 39
   const students = course?.students ?? []
 
   const moduleOptions = [...new Set(allowedCourses.map((c) => c.module))]
@@ -82,9 +76,7 @@ export function DashboardView() {
     navigate(`/student/${s.id_student}`)
   }
 
-  if (indexError && allowedCourses.length === 0) {
-    return <Box sx={{ p: 4 }}><Alert severity="warning">Using demo data because the backend index endpoint is unavailable.</Alert></Box>
-  }
+  if (indexError) return <Box sx={{ p: 4 }}><Alert severity="warning">Data not found.</Alert></Box>
 
   return (
     <Box className="dashboard-container">

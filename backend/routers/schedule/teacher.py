@@ -11,10 +11,9 @@ router = APIRouter()
 
 
 def get_db():
-    db = db_state.get("db")
-    if db is None or not db_state.get("connected", False):
+    if not db_state.get("db"):
         raise HTTPException(status_code=503, detail="Database not connected")
-    return db
+    return db_state["db"]
 
 
 # ── Schedules ────────────────────────────────────────────────────────────────

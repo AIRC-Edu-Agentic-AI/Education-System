@@ -200,23 +200,10 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
       const normalized = (data as Partial<Schedule>[])
         .map(normalizeSchedule)
         .filter((item) => item.module === module && item.presentation === presentation)
-      if (normalized.length > 0) {
-        setSchedules(normalized)
-        setSelectedId(normalized[0]?._id ?? '')
-      } else {
-        setSchedules([
-          normalizeSchedule({ module, presentation, week: 1, date: '2026-09-01', startTime: '09:00', endTime: '10:30', subject: 'Programming Fundamentals', className: 'Lab Session', teacher: 'Dr. Nguyen', room: 'B204', status: 'scheduled' }),
-          normalizeSchedule({ module, presentation, week: 2, date: '2026-09-03', startTime: '13:00', endTime: '14:30', subject: 'Mathematics Review', className: 'Tutorial', teacher: 'Prof. Tran', room: 'A101', status: 'scheduled' }),
-        ])
-        setSelectedId('')
-      }
+      setSchedules(normalized)
+      setSelectedId(normalized[0]?._id ?? '')
     } catch {
-      setSchedules([
-        normalizeSchedule({ module, presentation, week: 1, date: '2026-09-01', startTime: '09:00', endTime: '10:30', subject: 'Programming Fundamentals', className: 'Lab Session', teacher: 'Dr. Nguyen', room: 'B204', status: 'scheduled' }),
-        normalizeSchedule({ module, presentation, week: 2, date: '2026-09-03', startTime: '13:00', endTime: '14:30', subject: 'Mathematics Review', className: 'Tutorial', teacher: 'Prof. Tran', room: 'A101', status: 'scheduled' }),
-      ])
-      setSelectedId('')
-      setMessage('Showing demo schedule data because the backend is unavailable.')
+      setMessage('Could not load schedules.')
     } finally {
       setLoading(false)
     }
