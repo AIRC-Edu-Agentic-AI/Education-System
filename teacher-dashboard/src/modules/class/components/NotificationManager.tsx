@@ -18,13 +18,18 @@ import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
 interface NotificationItem {
   _id?: string;
   senderRole: 'Admin' | 'Instructor';
-  receiverRole: 'Instructor' | 'Student';
+  receiverRole?: 'Instructor' | 'Student';
   receiverId?: number;
   receiverName?: string;
   type: 'General Notice' | 'Exam Schedule' | 'Makeup Class' | 'Academic Warning' | 'Direct Message';
   title: string;
   content: string;
   createdAt: string;
+  payload?: { title?: string; body?: string };
+  created_at?: string;
+  sender_role?: string;
+  student_id?: number;
+  read?: boolean;
 }
 
 interface StudentOption {
@@ -52,15 +57,44 @@ export default function NotificationManager({ module, presentation }: Notificati
   const [dmContent, setDmContent] = useState('');
   const [isDmSending, setIsDmSending] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const normalizeNotification = (item: any, fallbackIndex: number): NotificationItem => {
+    const rawType = item?.type ?? item?.payload?.type ?? 'general_notice';
+    const normalizedType = rawType === 'direct_message' || rawType === 'Direct Message'
+      ? 'Direct Message'
+      : rawType === 'academic_warning' || rawType === 'Academic Warning'
+        ? 'Academic Warning'
+        : rawType === 'exam_schedule' || rawType === 'Exam Schedule'
+          ? 'Exam Schedule'
+          : rawType === 'makeup_class' || rawType === 'Makeup Class'
+            ? 'Makeup Class'
+            : 'General Notice';
+
+    return {
+      _id: item?._id ?? item?.id ?? `${fallbackIndex}`,
+      senderRole: (item?.senderRole ?? item?.sender_role ?? 'Instructor') as 'Admin' | 'Instructor',
+      receiverName: item?.receiverName ?? item?.receiver_name,
+      type: normalizedType,
+      title: item?.title ?? item?.payload?.title ?? 'New message',
+      content: item?.content ?? item?.payload?.body ?? item?.body ?? '',
+      createdAt: item?.createdAt ?? item?.created_at ?? new Date().toISOString(),
+    };
+  };
 
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/notifications`);
+      const res = await fetch(`${BASE_URL}/notify/notifications`);
+      if (!res.ok) {
+        throw new Error(`Failed to load notifications: ${res.status}`);
+      }
       const data = await res.json();
-      setNotifications(data);
+      const source = Array.isArray(data) ? data : (data?.notifications ?? []);
+      setNotifications(source.map((item: any, index: number) => normalizeNotification(item, index)));
     } catch (error) {
       console.error(error);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
@@ -98,10 +132,14 @@ export default function NotificationManager({ module, presentation }: Notificati
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || isSending) return;
+    const studentIds = students.map(s => s.id);
+    if (!studentIds.length) {
+      setFeedback('Chưa có danh sách học sinh từ lớp này để gửi thông báo.');
+      return;
+    }
     setIsSending(true);
+    setFeedback(null);
     try {
-      // Gửi tới /notify/broadcast với đúng schema để student app đọc được
-      const studentIds = students.map(s => s.id);
       await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,6 +157,7 @@ export default function NotificationManager({ module, presentation }: Notificati
       setTitle('');
       setContent('');
       setType('General Notice');
+      setFeedback(`Đã gửi thông báo đến ${studentIds.length} học sinh.`);
       await fetchNotifications();
     } catch (error) {
       console.error(error);
@@ -131,8 +170,8 @@ export default function NotificationManager({ module, presentation }: Notificati
     e.preventDefault();
     if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
     setIsDmSending(true);
+    setFeedback(null);
     try {
-      // Gửi trực tiếp tới student_id cụ thể — student app sẽ nhận được
       await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -147,6 +186,7 @@ export default function NotificationManager({ module, presentation }: Notificati
       setDmTitle('');
       setDmContent('');
       setSelectedStudent(null);
+      setFeedback(`Đã gửi tin nhắn tới ${selectedStudent.name}.`);
       await fetchNotifications();
     } catch (error) {
       console.error(error);
@@ -191,6 +231,7 @@ export default function NotificationManager({ module, presentation }: Notificati
 
       {activeTab === 0 && (
         <Box component="form" onSubmit={handleSendBroadcast} sx={{ p: 2 }}>
+          {feedback && <Typography variant="caption" color="success.main" sx={{ display: 'block', mb: 1 }}>{feedback}</Typography>}
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
             {(['General Notice', 'Exam Schedule', 'Makeup Class', 'Academic Warning'] as const).map((t) => (
               <Chip
@@ -220,6 +261,7 @@ export default function NotificationManager({ module, presentation }: Notificati
 
       {activeTab === 1 && (
         <Box component="form" onSubmit={handleSendDirect} sx={{ p: 2 }}>
+          {feedback && <Typography variant="caption" color="success.main" sx={{ display: 'block', mb: 1 }}>{feedback}</Typography>}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Autocomplete
               size="small"

@@ -121,7 +121,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     try {
       const studentName = warningStudent.name || `Student #${warningStudent.id_student}`
 
-      // Gửi tới /notify/broadcast — student app sẽ nhận được qua GET /notify/{student_id}
+      // Gửi thông báo cảnh báo từ giảng viên tới học sinh
       const res = await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

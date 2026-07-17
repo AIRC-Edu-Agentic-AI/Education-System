@@ -9,15 +9,24 @@ from db.mongodb import db_state
 router = APIRouter()
 
 def get_db() -> AsyncIOMotorDatabase:
-    if not db_state.get("db"):
+    db = db_state.get("db")
+    if db is None:
+        print("CRITICAL ERROR: Database connection not found!")
         raise HTTPException(status_code=503, detail="Database not connected")
-    return db_state["db"]
+    return db
+
+def _serialize_schedule(item: Dict[str, Any]) -> Dict[str, Any]:
+    payload = dict(item)
+    if "_id" in payload and payload["_id"] is not None:
+        payload["_id"] = str(payload["_id"])
+    return payload
 
 @router.get("/schedules")
-async def list_schedules() -> List[Dict[str, Any]]:
+async def list_schedules() -> Dict[str, Any]:
     try:
         db = get_db()
-        return await db["schedules"].find({}).to_list(None)
+        schedules = await db["schedules"].find({}).to_list(None)
+        return {"schedules": [_serialize_schedule(item) for item in schedules]}
     except Exception as exc:
         raise HTTPException(status_code=503, detail="Database unavailable") from exc
 
@@ -25,6 +34,13 @@ async def list_schedules() -> List[Dict[str, Any]]:
 async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         db = get_db()
+        if isinstance(payload.get("schedules"), list):
+            items = [item for item in payload["schedules"] if isinstance(item, dict)]
+            if items:
+                result = await db["schedules"].insert_many(items)
+                return {"saved": len(result.inserted_ids), "schedules": items}
+            return {"saved": 0, "schedules": []}
+
         result = await db["schedules"].insert_one(payload)
         payload["_id"] = str(result.inserted_id)
         return payload
