@@ -1,0 +1,10 @@
+{
+  "name": "education-system",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix teacher-dashboard run dev",
+    "build": "npm --prefix teacher-dashboard run build",
+    "preview": "npm --prefix teacher-dashboard run preview",
+    "server": "npm --prefix teacher-dashboard run server"
+  }
+}

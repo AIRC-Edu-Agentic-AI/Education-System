@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 from db.mongodb import get_db
 from db.mock_data import MOCK_NOTIFICATIONS
 
@@ -48,3 +50,49 @@ async def mark_read(notif_id: str):
         {"_id": oid}, {"$set": {"read": True}}
     )
     return {"ok": True}
+
+
+# ── Broadcast (Teacher → Students) ───────────────────────────────────────────
+
+class BroadcastPayload(BaseModel):
+    student_ids: List[int]          # danh sách student_id nhận thông báo
+    type: str                       # "academic_warning" | "general" | "assignment" | ...
+    title: str
+    content: str
+    sender_role: str = "instructor"
+
+
+@router.post("/broadcast", status_code=201)
+async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
+    """
+    Teacher gửi thông báo tới một hoặc nhiều sinh viên.
+    Ghi đúng schema để student app (Flutter) đọc được qua GET /notify/{student_id}.
+    """
+    db = get_db()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    docs = [
+        {
+            "student_id": sid,
+            "type": payload.type,
+            "read": False,
+            "sender_role": payload.sender_role,
+            "payload": {
+                "title": payload.title,
+                "body": payload.content,
+            },
+            "created_at": now_iso,
+        }
+        for sid in payload.student_ids
+    ]
+
+    if db is None:
+        # Mock mode — không persist, trả về danh sách mock
+        return {"ok": True, "count": len(docs), "mock": True}
+
+    if docs:
+        result = await db.notifications.insert_many(docs)
+        return {"ok": True, "count": len(result.inserted_ids)}
+
+    return {"ok": True, "count": 0}
+

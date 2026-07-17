@@ -1,0 +1,7 @@
+.chat-bubble.ai-message p { margin: 1px 0; }
+.chat-bubble.ai-message ul { margin: 1px 0; padding-left: 16px; }
+.chat-bubble.ai-message ol { margin: 1px 0; padding-left: 16px; }
+.chat-bubble.ai-message li { margin: 1px 0; }
+.chat-bubble.ai-message h1 { margin: 2px 0; font-weight: 600; font-size: 15px; }
+.chat-bubble.ai-message h2 { margin: 2px 0; font-weight: 600; font-size: 14px; }
+.chat-bubble.ai-message h3 { margin: 2px 0; font-weight: 600; font-size: 13px; }
