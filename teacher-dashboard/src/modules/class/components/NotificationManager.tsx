@@ -56,9 +56,9 @@ export default function NotificationManager({ module, presentation }: Notificati
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/notifications`);
+      const res = await fetch(`${BASE_URL}/notify/notifications`);
       const data = await res.json();
-      setNotifications(data);
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -86,7 +86,7 @@ export default function NotificationManager({ module, presentation }: Notificati
 
   useEffect(() => {
     fetchNotifications();
-    if (Notification.permission !== 'granted') {
+    if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
   }, []);
@@ -113,7 +113,7 @@ export default function NotificationManager({ module, presentation }: Notificati
           sender_role: 'instructor',
         }),
       });
-      if (Notification.permission === 'granted') {
+      if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(`[${type}] ${title}`, { body: content });
       }
       setTitle('');
