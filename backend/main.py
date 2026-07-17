@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from routers import student, chat, schedule, notifications, auth, assignments, admin, dashboard
+from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification
 from routers import study_groups
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
@@ -84,7 +84,11 @@ app.include_router(notifications.router, prefix="/notify", tags=["notifications"
 app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(study_groups.router, tags=["study-groups"])  # ✅ Bỏ prefix
-app.include_router(dashboard.router, prefix="/api", tags=["dashboard"])  # Teacher Dashboard API
+
+# Teacher Dashboard APIs (trước đây nằm trong dashboard.py)
+app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
+app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
+app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
