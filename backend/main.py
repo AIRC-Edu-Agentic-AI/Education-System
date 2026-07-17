@@ -7,15 +7,11 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from routers import student, chat, schedule, notifications, auth, assignments, admin
+from routers import student, chat, schedule, notifications, auth, assignments, admin, dashboard
 from routers import study_groups
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
-from fastapi import FastAI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
 from routers.course_communication import router as course_communication_router
 
 
@@ -23,16 +19,8 @@ load_dotenv()
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    alow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 os.makedirs("uploads/submissions", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.include_router(assignments_router, prefix="/assignments", tags=["assignments"])
 
 class NoCacheStaticFiles(StaticFiles):
     async def get_response(self, path, scope):
@@ -96,6 +84,7 @@ app.include_router(notifications.router, prefix="/notify", tags=["notifications"
 app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(study_groups.router, tags=["study-groups"])  # ✅ Bỏ prefix
+app.include_router(dashboard.router, prefix="/api", tags=["dashboard"])  # Teacher Dashboard API
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
