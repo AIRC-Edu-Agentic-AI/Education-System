@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
   Box,
@@ -11,12 +11,16 @@ import {
   TextField,
   Toolbar,
   Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material'
 
 import { tokens } from '../../../theme'
 import { container } from '../../../di/container'
 import { useAuthStore } from '../../../shared/stores/authStore'
-import type { ScheduleChangeLog, ScheduleItem, ScheduleStatus } from '../../../types/domain'
+import type { OuladIndex, ScheduleChangeLog, ScheduleItem, ScheduleStatus } from '../../../types/domain'
 import { CalendarToolbar } from '../components/CalendarToolbar'
 import { DayView } from '../components/DayView'
 import { WeekView } from '../components/WeekView'
@@ -178,6 +182,7 @@ export function TeachingScheduleView() {
   const [draftSchedule, setDraftSchedule] = useState<Partial<ScheduleItem> | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [index, setIndex] = useState<OuladIndex | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [anchorDate, setAnchorDate] = useState(todayIso())
   const [teacherFilter, setTeacherFilter] = useState<string>(isAdmin ? 'all' : actor)
@@ -199,6 +204,12 @@ export function TeachingScheduleView() {
       })
       .catch(() => setMessage('Could not load schedules.'))
       .finally(() => setLoading(false))
+
+    container.dataService.getIndex()
+      .then((data) => {
+        if (mounted) setIndex(data)
+      })
+      .catch(console.error)
 
     return () => {
       mounted = false
@@ -257,6 +268,8 @@ export function TeachingScheduleView() {
       deliveryMode: 'offline',
       teacher: actor,
       teacherId: user?.email,
+      module: index?.courses[0]?.module ?? '',
+      presentation: index?.courses.find(c => c.module === index?.courses[0]?.module)?.presentation ?? '',
       className: '',
       subject: '',
       room: '',
@@ -284,7 +297,7 @@ export function TeachingScheduleView() {
     }
   }
 
-  const addScheduleForDate = () => {
+  const addScheduleForDate = async () => {
     if (!draftSchedule || !draftSchedule.date) return
     const now = new Date().toISOString()
     const id = `schedule_${Date.now()}`
@@ -295,6 +308,8 @@ export function TeachingScheduleView() {
       subject: draftSchedule.subject || draftSchedule.activity || 'Teaching session',
       teacher: draftSchedule.teacher || actor,
       teacherId: draftSchedule.teacherId || user?.email,
+      module: draftSchedule.module,
+      presentation: draftSchedule.presentation,
       className: draftSchedule.className || '',
       room: draftSchedule.room || '',
       date: draftSchedule.date,
@@ -314,7 +329,33 @@ export function TeachingScheduleView() {
     }
     const updated = [...schedules, item]
     setSchedules(updated)
-    autoSaveSchedule(updated)
+    await autoSaveSchedule(updated)
+
+    if (draftSchedule.module && draftSchedule.presentation) {
+      try {
+        const course = await container.dataService.getCourse(draftSchedule.module, draftSchedule.presentation)
+        const studentIds = (course.students ?? []).map(s => s.id_student)
+        
+        if (studentIds.length > 0) {
+          const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+          await fetch(`${BASE_URL}/notify/broadcast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              student_ids: studentIds,
+              type: 'general',
+              title: 'New Class Scheduled',
+              content: `A new class "${item.subject}" has been scheduled on ${item.date} at ${item.startTime}.`,
+              sender_role: 'instructor',
+              course_code: draftSchedule.module,
+            }),
+          })
+        }
+      } catch (e) {
+        console.error('Failed to notify students:', e)
+      }
+    }
+
     setDialogOpen(false)
     setDraftSchedule(null)
   }
@@ -433,6 +474,38 @@ export function TeachingScheduleView() {
         <DialogContent>
           <Typography sx={{ fontWeight: 700, mb: 2 }}>{editingId ? 'Edit teaching session' : 'Add teaching session'}</Typography>
           <Stack spacing={2}>
+            {index && (
+              <Stack direction="row" spacing={2}>
+                <FormControl size="small" fullWidth disabled={!canEdit}>
+                  <InputLabel sx={{ fontSize: 12 }}>Module</InputLabel>
+                  <Select
+                    value={draftSchedule?.module ?? ''}
+                    label="Module"
+                    onChange={(e) => {
+                      const mod = e.target.value
+                      const firstPres = index.courses.find((c) => c.module === mod)?.presentation ?? ''
+                      setDraftSchedule((prev) => prev ? { ...prev, module: mod, presentation: firstPres } : prev)
+                    }}
+                  >
+                    {[...new Set(index.courses.map((c) => c.module))].map((m) => (
+                      <MenuItem key={m} value={m} sx={{ fontSize: 13 }}>{m}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl size="small" fullWidth disabled={!canEdit}>
+                  <InputLabel sx={{ fontSize: 12 }}>Presentation</InputLabel>
+                  <Select
+                    value={draftSchedule?.presentation ?? ''}
+                    label="Presentation"
+                    onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, presentation: e.target.value } : prev)}
+                  >
+                    {index.courses.filter((c) => c.module === draftSchedule?.module).map((c) => (
+                      <MenuItem key={c.presentation} value={c.presentation} sx={{ fontSize: 13 }}>{c.presentation}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+            )}
             <TextField
               size="small"
               label="Subject"

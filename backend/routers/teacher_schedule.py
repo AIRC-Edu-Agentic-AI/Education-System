@@ -1,4 +1,4 @@
-﻿from typing import Any, Dict, List
+from typing import Any, Dict, List
 from bson import ObjectId
 
 from fastapi import APIRouter, HTTPException
@@ -33,6 +33,8 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         db = get_db()
         payload.pop("_id", None)
+        if "schedules" in payload:
+            await db["schedules"].delete_many({})
         result = await db["schedules"].insert_one(payload)
         payload["_id"] = str(result.inserted_id)
         return serialize_doc(payload)
