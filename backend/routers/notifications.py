@@ -60,6 +60,7 @@ class BroadcastPayload(BaseModel):
     title: str
     content: str
     sender_role: str = "instructor"
+    course_code: Optional[str] = None
 
 
 @router.post("/broadcast", status_code=201)
@@ -77,6 +78,7 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
             "type": payload.type,
             "read": False,
             "sender_role": payload.sender_role,
+            "course_code": payload.course_code,
             "payload": {
                 "title": payload.title,
                 "body": payload.content,
@@ -95,4 +97,35 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
         return {"ok": True, "count": len(result.inserted_ids)}
 
     return {"ok": True, "count": 0}
+
+
+@router.get("/course/{course_code}")
+async def get_course_notifications(course_code: str, student_id: int):
+    """
+    Get notifications for a specific student in a specific course.
+    """
+    db = get_db()
+    if db is None:
+        return []
+
+    # Get both notifications sent with this course_code,
+    # or notifications with titles/bodies that reference the course (fallback/just in case)
+    query = {
+        "student_id": student_id,
+        "course_code": course_code
+    }
+    
+    # Hide notifications scheduled for later (send_at in the future)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    query["$or"] = [
+        {"send_at": {"$exists": False}},
+        {"send_at": {"$lte": now_iso}},
+    ]
+    
+    cursor = db.notifications.find(query).sort("created_at", -1).limit(50)
+    docs = await cursor.to_list(length=50)
+    for d in docs:
+        d["_id"] = str(d["_id"])
+    return docs
+
 

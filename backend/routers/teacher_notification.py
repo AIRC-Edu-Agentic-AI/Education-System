@@ -15,15 +15,18 @@ router = APIRouter()
 class BroadcastPayload(BaseModel):
     title: str
     content: str
-    course_code: str
-    sender_role: str = "instructor"
-    
-class DirectMessagePayload(BaseModel):
-    student_id: int
+    student_ids: Optional[List[int]] = None
+    course_code: Optional[str] = None
+
+
+class BroadcastPayload(BaseModel):
+    student_ids: List[int]
+    type: str
     title: str
     content: str
     course_code: str
     sender_role: str = "instructor"
+    course_code: Optional[str] = None
 
 @router.get("/notifications")
 async def list_notifications(
@@ -38,100 +41,147 @@ async def list_notifications(
     db = db_state.get("db")
     if db is None:
         raise HTTPException(status_code=503, detail="Database not connected")
-        
-    query = {"$or": [{"recipient_id": recipient_id}, {"is_broadcast_log": True}]}
-    if module:
-        query["$or"].append({"course_code": module})
-        query["$or"].append({"module": module})
-        
-    docs = await db["notifications"].find(query).sort("created_at", -1).limit(limit).to_list(None)
-    return {"notifications": serialize_doc(docs)}
+    return db
 
-@router.post("/broadcast")
-async def send_broadcast(payload: BroadcastPayload, background_tasks: BackgroundTasks):
-    db = db_state.get("db")
-    if db is None:
-        raise HTTPException(status_code=503, detail="Database not connected")
-    
-    # 1. Ensure announcement channel exists for this course
-    await _ensure_course_channels(db, payload.course_code)
-    
-    channel = await db["channels"].find_one({
-        "course_code": payload.course_code,
-        "type": CHANNEL_TYPE_ANNOUNCEMENT
-    })
-    
-    if not channel:
-        raise HTTPException(status_code=404, detail="Announcement channel not found")
 
-    now = datetime.now(timezone.utc).isoformat()
-    
-    # 2. Insert into messages collection (for student chat UI)
-    msg_doc = {
-        "channel_id": channel["_id"],
-        "course_code": payload.course_code,
-        "sender_id": "teacher_admin",
-        "sender_role": payload.sender_role,
-        "content": f"**{payload.title}**\n\n{payload.content}",
-        "created_at": now,
-        "parent_id": None,
-        "reactions": []
-    }
-    await db["messages"].insert_one(msg_doc)
+@router.get("/notifications")
+async def list_notifications() -> List[Dict[str, Any]]:
+    try:
+        db = get_db()
+        docs = await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
+        return serialize_doc(docs)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
-    # 3. Save a log for the teacher's old NotificationManager UI
-    log_doc = {
-        "senderRole": "Instructor",
-        "receiverRole": "Student",
-        "type": "broadcast",
-        "title": payload.title,
-        "content": payload.content,
-        "createdAt": now,
-        "is_broadcast_log": True,
-        "target_count": 0,
-        "course_code": payload.course_code
-    }
-    result = await db["notifications"].insert_one(log_doc)
-    log_doc["_id"] = result.inserted_id
-    
-    return {"message": "Broadcast sent to channels and logged", "log": serialize_doc(log_doc)}
 
-@router.post("/direct-message")
-async def send_direct_message(payload: DirectMessagePayload, background_tasks: BackgroundTasks):
-    db = db_state.get("db")
-    if db is None:
-        raise HTTPException(status_code=503, detail="Database not connected")
-    
-    now = datetime.now(timezone.utc).isoformat()
-    
-    # Notify student
-    student_noti = {
-        "student_id": payload.student_id,
-        "type": "direct_message",
-        "read": False,
-        "sender_role": payload.sender_role,
-        "payload": {
+@router.post("/notifications", status_code=201)
+async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
+    try:
+        db = get_db()
+        now_iso = datetime.now(timezone.utc).isoformat()
+
+        if payload.student_ids:
+            docs = [
+                {
+                    "student_id": sid,
+                    "type": payload.type,
+                    "read": False,
+                    "sender_role": payload.senderRole,
+                    "course_code": payload.course_code,
+                    "payload": {"title": payload.title, "body": payload.content},
+                    "created_at": now_iso,
+                }
+                for sid in payload.student_ids
+            ]
+            result = await db["notifications"].insert_many(docs)
+            return {"ok": True, "count": len(result.inserted_ids)}
+
+        new_doc = {
+            "senderRole": payload.senderRole,
+            "receiverRole": payload.receiverRole,
+            "type": payload.type,
             "title": payload.title,
-            "body": payload.content
-        },
-        "created_at": now
-    }
-    await db["notifications"].insert_one(student_noti)
-    
-    # Log for teacher
-    log_doc = {
-        "senderRole": "Instructor",
-        "receiverRole": "Direct Student",
-        "receiverId": payload.student_id,
-        "type": "direct_message",
-        "title": payload.title,
-        "content": payload.content,
-        "createdAt": now,
-        "is_broadcast_log": True,
-        "target_count": 1,
-        "course_code": payload.course_code
-    }
-    result = await db["notifications"].insert_one(log_doc)
-    log_doc["_id"] = result.inserted_id
-    
-    return {"message": "Direct message sent", "log": serialize_doc(log_doc)}
+            "content": payload.content,
+            "course_code": payload.course_code,
+            "createdAt": now_iso,
+        }
+        result = await db["notifications"].insert_one(new_doc)
+        new_doc["_id"] = str(result.inserted_id)
+        return new_doc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+
+@router.put("/notifications/{notif_id}")
+async def update_notification(notif_id: str, payload: UpdateNotificationPayload) -> Dict[str, Any]:
+    """Update an existing notification's title and/or content."""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        from bson.errors import InvalidId
+
+        try:
+            oid = ObjectId(notif_id)
+        except (InvalidId, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid notification ID")
+
+        update_fields: Dict[str, Any] = {}
+        if payload.title is not None:
+            update_fields["title"] = payload.title
+            # Also update nested payload.title for student-facing notifications
+            update_fields["payload.title"] = payload.title
+        if payload.content is not None:
+            update_fields["content"] = payload.content
+            update_fields["payload.body"] = payload.content
+        update_fields["updatedAt"] = datetime.now(timezone.utc).isoformat()
+
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        result = await db["notifications"].update_one(
+            {"_id": oid}, {"$set": update_fields}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+
+        updated = await db["notifications"].find_one({"_id": oid})
+        return serialize_doc(updated)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+
+@router.delete("/notifications/{notif_id}")
+async def delete_notification(notif_id: str) -> Dict[str, Any]:
+    """Delete a notification by ID."""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        from bson.errors import InvalidId
+
+        try:
+            oid = ObjectId(notif_id)
+        except (InvalidId, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid notification ID")
+
+        result = await db["notifications"].delete_one({"_id": oid})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+
+        return {"ok": True, "deleted": notif_id}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+
+@router.post("/broadcast", status_code=201)
+async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
+    try:
+        db = get_db()
+        now_iso = datetime.now(timezone.utc).isoformat()
+        docs = [
+            {
+                "student_id": sid,
+                "type": payload.type,
+                "read": False,
+                "sender_role": payload.sender_role,
+                "course_code": payload.course_code,
+                "payload": {"title": payload.title, "body": payload.content},
+                "created_at": now_iso,
+            }
+            for sid in payload.student_ids
+        ]
+        if docs:
+            result = await db["notifications"].insert_many(docs)
+            return {"ok": True, "count": len(result.inserted_ids)}
+        return {"ok": True, "count": 0}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
