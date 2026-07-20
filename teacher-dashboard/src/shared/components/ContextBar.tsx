@@ -15,12 +15,6 @@ export function ContextBar() {
     retry: false,
   })
 
-  const { data: course } = useQuery({
-    queryKey: ['course', selectedModule, selectedPresentation],
-    queryFn: () => container.dataService.getCourse(selectedModule, selectedPresentation),
-    enabled: !!selectedModule && !!selectedPresentation,
-  })
-
   useEffect(() => {
     if (index && !selectedModule && index.courses.length > 0) {
       const first = index.courses[0]
@@ -31,12 +25,17 @@ export function ContextBar() {
   }, [index, selectedModule, setModule, setPresentation, setNumWeeks])
 
   useEffect(() => {
-    if (course) setNumWeeks(course.num_weeks)
-  }, [course, setNumWeeks])
+    if (index && selectedModule && selectedPresentation) {
+      const c = index.courses.find(x => x.module === selectedModule && x.presentation === selectedPresentation)
+      if (c) setNumWeeks(c.num_weeks)
+    }
+  }, [index, selectedModule, selectedPresentation, setNumWeeks])
 
-  const numWeeks = course?.num_weeks ?? 39
   const moduleOptions = [...new Set(index?.courses.map((c) => c.module) ?? [])]
   const presentationOptions = index?.courses.filter((c) => c.module === selectedModule).map((c) => c.presentation) ?? []
+  
+  const currentCourse = index?.courses.find(x => x.module === selectedModule && x.presentation === selectedPresentation)
+  const numWeeks = currentCourse?.num_weeks ?? 39
 
   if (location.pathname === '/schedule') {
     return null

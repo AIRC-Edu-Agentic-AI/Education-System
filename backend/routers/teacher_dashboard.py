@@ -1,4 +1,4 @@
-﻿from typing import Any, Dict, List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -46,6 +46,33 @@ async def list_courses() -> Dict[str, Any]:
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
+
+@router.get("/course/{module}/{presentation}/classes")
+async def get_course_classes(module: str, presentation: str) -> Dict[str, Any]:
+    try:
+        db = get_db()
+        course = await db["courses"].find_one(
+            {"course_code": module, "presentation": presentation},
+            {"_id": 0, "classes": 1}
+        )
+        if not course:
+            return {"classes": []}
+            
+        return {"classes": course.get("classes", [])}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+@router.get("/course/{module}/{presentation}/students-lite")
+async def get_course_students_lite(module: str, presentation: str) -> Dict[str, Any]:
+    try:
+        db = get_db()
+        students = await db["processed_students"].find(
+            {"code_module": module, "code_presentation": presentation},
+            {"_id": 0, "id_student": 1, "name": 1}
+        ).to_list(None)
+        return {"students": students}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
 @router.get("/course/{module}/{presentation}")
 async def get_course(module: str, presentation: str) -> Dict[str, Any]:
@@ -134,4 +161,4 @@ async def attendance_stats(module: str, presentation: str) -> List[Dict[str, Any
 
 @router.post("/ai/chat")
 async def ai_chat(payload: ChatRequest) -> Dict[str, str]:
-    return {"reply": f"Đã nhận câu hỏi: {payload.message}"}
+    return {"reply": f"ÄÃ£ nháº­n cÃ¢u há»i: {payload.message}"}
