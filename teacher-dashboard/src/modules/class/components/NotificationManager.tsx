@@ -157,7 +157,7 @@ export default function NotificationManager({ module, presentation }: Notificati
           title,
           content,
           sender_role: 'instructor',
-          course_code: module,
+          course_code: `${module} ${presentation}`,
         }),
       });
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -188,7 +188,7 @@ export default function NotificationManager({ module, presentation }: Notificati
           title: dmTitle,
           content: dmContent,
           sender_role: 'instructor',
-          course_code: module,
+          course_code: `${module} ${presentation}`,
         }),
       });
       setDmTitle('');
@@ -216,6 +216,7 @@ export default function NotificationManager({ module, presentation }: Notificati
           title: classTitle,
           content: classContent,
           sender_role: 'instructor',
+          course_code: `${module} ${presentation}`,
         }),
       });
       if ('Notification' in window && Notification.permission === 'granted') {
