@@ -35,6 +35,17 @@ async def post_channel_message(channel_id: str, body: MessageRequest):
         raise HTTPException(status_code=503, detail="Database required")
     try:
         msg = await add_channel_message(db, channel_id, body.sender_id, body.content, body.parent_id)
+        
+        try:
+            from routers.realtime_chat import manager
+            from db.course_communication.channel import get_channel
+            channel = await get_channel(db, channel_id)
+            if channel:
+                broadcast_data = {"type": "new_message", "message": msg}
+                await manager.broadcast_to_channel(channel, broadcast_data)
+        except Exception as e:
+            print(f"Error broadcasting: {e}")
+            
         return msg
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))

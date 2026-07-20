@@ -35,6 +35,17 @@ class ConnectionManager:
                 except Exception:
                     pass
 
+    async def broadcast_to_channel(self, channel: dict, message: dict):
+        if "members" in channel and channel["members"]:
+            for member in channel["members"]:
+                await self.send_to_user(str(member), message)
+            # Ensure teacher always receives messages in private groups too if they are monitoring
+            await self.send_to_user("teacher_admin", message)
+        else:
+            # Global channel: broadcast to all connected users
+            for user_id in list(self.active_connections.keys()):
+                await self.send_to_user(user_id, message)
+
 manager = ConnectionManager()
 
 def get_db():
@@ -77,6 +88,14 @@ async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
 @router.get("/channels")
 async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[Dict[str, Any]]:
     db = get_db()
+    
+    if course_code:
+        try:
+            from db.course_communication.channel import _ensure_course_channels
+            await _ensure_course_channels(db, course_code)
+        except Exception as e:
+            print(f"Error seeding channels for {course_code}: {e}")
+
     query = {"$or": [{"members": user_id}]}
     if course_code:
         query["$or"].append({"course_code": course_code})
@@ -169,11 +188,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                     
                     broadcast_data = {"type": "new_message", "message": serialized_msg}
                     
-                    if "members" in channel:
-                        for member in channel["members"]:
-                            await manager.send_to_user(str(member), broadcast_data)
-                    else:
-                        await manager.send_to_user(str(user_id), broadcast_data)
+                    await manager.broadcast_to_channel(channel, broadcast_data)
                         
             except json.JSONDecodeError:
                 pass

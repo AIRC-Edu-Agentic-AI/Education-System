@@ -34,7 +34,6 @@ import RestoreIcon from '@mui/icons-material/RestoreRounded'
 import SaveIcon from '@mui/icons-material/SaveRounded'
 import HistoryIcon from '@mui/icons-material/HistoryRounded'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMoreRounded'
-import { COURSE_MAPPING } from '../utils/courseMapping'
 
 type ScheduleStatus = 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
 
@@ -183,9 +182,8 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
   const [message, setMessage] = useState('')
 
   const subjectOptions = useMemo(() => {
-    const names = Object.values(COURSE_MAPPING).map(course => course.name)
-    return [...new Set(names)].sort()
-  }, [])
+    return module ? [module] : []
+  }, [module])
 
   const fetchSchedules = async () => {
     if (!module || !presentation) {

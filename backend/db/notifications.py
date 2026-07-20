@@ -62,4 +62,9 @@ async def push_notification(
         print(f"[notify] {notif_type} — {title}")
         return True
     await db.notifications.insert_one(notif)
+    try:
+        from db.utils import serialize_doc
+        await db["notification"].insert_one(serialize_doc(notif))
+    except Exception:
+        pass
     return True

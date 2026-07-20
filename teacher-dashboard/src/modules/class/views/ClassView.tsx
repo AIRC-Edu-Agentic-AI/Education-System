@@ -7,11 +7,10 @@ import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
 import ChatManager from '../components/ChatManager';
 import { useContextStore } from '../../../shared/stores/contextStore';
-import { getUetCourseInfo } from '../utils/courseMapping';
 
 export const ClassView = () => {
   const { selectedModule, selectedPresentation } = useContextStore();
-  const uetCourse = getUetCourseInfo(selectedModule);
+  const courseCode = `${selectedModule} ${selectedPresentation}`;
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -19,7 +18,7 @@ export const ClassView = () => {
       <Box sx={{ px: 3, pt: 3, pb: 0, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Typography variant="h6" fontWeight={700} color="text.primary" lineHeight={1.3}>
-            {uetCourse.code} â€” {uetCourse.name}
+            {selectedModule}
           </Typography>
           <Chip label={selectedPresentation} size="small" sx={{ height: 20, fontSize: 11, bgcolor: 'action.selected' }} />
         </Box>
@@ -34,18 +33,15 @@ export const ClassView = () => {
         >
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Overview" />
           <Tab icon={<CalendarMonthIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Schedule" />
-          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Messages" />
+          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Communication" />
         </Tabs>
       </Box>
 
       <Box sx={{ flex: 1, p: activeTab === 1 ? 0 : 3 }}>
         {activeTab === 0 && (
           <Grid container spacing={2}>
-            <Grid item xs={12} md={5}>
+            <Grid item xs={12} md={12}>
               <AttendanceDashboard module={selectedModule} presentation={selectedPresentation} />
-            </Grid>
-            <Grid item xs={12} md={7}>
-              <NotificationManager module={selectedModule} presentation={selectedPresentation} />
             </Grid>
           </Grid>
         )}
@@ -53,7 +49,14 @@ export const ClassView = () => {
           <ScheduleCrud module={selectedModule} presentation={selectedPresentation} />
         )}
         {activeTab === 2 && (
-          <ChatManager module={selectedModule} presentation={selectedPresentation} />
+          <Grid container spacing={2} sx={{ height: 'calc(100vh - 180px)' }}>
+             <Grid item xs={12} md={5} sx={{ height: '100%', overflowY: 'auto' }}>
+                <NotificationManager module={selectedModule} presentation={selectedPresentation} />
+             </Grid>
+             <Grid item xs={12} md={7} sx={{ height: '100%' }}>
+                <ChatManager module={selectedModule} presentation={selectedPresentation} />
+             </Grid>
+          </Grid>
         )}
       </Box>
     </Box>

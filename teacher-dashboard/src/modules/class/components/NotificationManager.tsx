@@ -59,21 +59,7 @@ export default function NotificationManager({ module, presentation }: Notificati
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [students, setStudents] = useState<StudentOption[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<StudentOption | null>(null);
-  const [dmTitle, setDmTitle] = useState('');
-  const [dmContent, setDmContent] = useState('');
-  const [isDmSending, setIsDmSending] = useState(false);
-  const [studentsLoading, setStudentsLoading] = useState(false);
 
-  // Class group state
-  const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
-  const [selectedClassGroup, setSelectedClassGroup] = useState<ClassGroup | null>(null);
-  const [classGroupsLoading, setClassGroupsLoading] = useState(false);
-  const [classTitle, setClassTitle] = useState('');
-  const [classContent, setClassContent] = useState('');
-  const [isClassSending, setIsClassSending] = useState(false);
-  const [classType, setClassType] = useState<Exclude<NotificationItem['type'], 'Direct Message'>>('General Notice');
 
   // Edit state
   const [editingNoti, setEditingNoti] = useState<NotificationItem | null>(null);
@@ -98,38 +84,6 @@ export default function NotificationManager({ module, presentation }: Notificati
     }
   };
 
-  const fetchStudents = async () => {
-    if (!module || !presentation) return;
-    setStudentsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/students-lite`);
-      const data = await res.json();
-      const list: StudentOption[] = (data.students ?? []).map((s: { id_student: number; name?: string }) => ({
-        id: s.id_student,
-        name: s.name || `Student #${s.id_student}`,
-      }));
-      setStudents(list);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setStudentsLoading(false);
-    }
-  };
-
-  const fetchClasses = async () => {
-    if (!module || !presentation) return;
-    setClassGroupsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/classes`);
-      const data = await res.json();
-      setClassGroups(data.classes ?? []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setClassGroupsLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchNotifications();
     if ('Notification' in window && Notification.permission !== 'granted') {
@@ -137,26 +91,20 @@ export default function NotificationManager({ module, presentation }: Notificati
     }
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 1) fetchStudents();
-    if (activeTab === 2) fetchClasses();
-  }, [activeTab, module, presentation]);
-
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || isSending) return;
     setIsSending(true);
     try {
-      const studentIds = students.map(s => s.id);
       await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_ids: studentIds,
           type: type.toLowerCase().replace(/ /g, '_'),
           title,
           content,
           sender_role: 'instructor',
+          course_code: `${module} ${presentation}`,
         }),
       });
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -173,63 +121,9 @@ export default function NotificationManager({ module, presentation }: Notificati
     }
   };
 
-  const handleSendDirect = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
-    setIsDmSending(true);
-    try {
-      await fetch(`${BASE_URL}/notify/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_ids: [selectedStudent.id],
-          type: 'direct_message',
-          title: dmTitle,
-          content: dmContent,
-          sender_role: 'instructor',
-        }),
-      });
-      setDmTitle('');
-      setDmContent('');
-      setSelectedStudent(null);
-      await fetchNotifications();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsDmSending(false);
-    }
-  };
 
-  const handleSendClassBroadcast = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClassGroup || !classTitle.trim() || !classContent.trim() || isClassSending) return;
-    setIsClassSending(true);
-    try {
-      await fetch(`${BASE_URL}/notify/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_ids: selectedClassGroup.members,
-          type: classType.toLowerCase().replace(/ /g, '_'),
-          title: classTitle,
-          content: classContent,
-          sender_role: 'instructor',
-        }),
-      });
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`[${classType}] ${classTitle}`, { body: classContent });
-      }
-      setClassTitle('');
-      setClassContent('');
-      setClassType('General Notice');
-      setSelectedClassGroup(null);
-      await fetchNotifications();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsClassSending(false);
-    }
-  };
+
+
 
   // --- Edit handlers ---
   const handleOpenEdit = (noti: NotificationItem) => {
@@ -317,8 +211,6 @@ export default function NotificationManager({ module, presentation }: Notificati
           sx={{ '& .MuiTab-root': { minHeight: 36, fontSize: 12, textTransform: 'none', fontWeight: 500 }, '& .Mui-selected': { fontWeight: 700 } }}
         >
           <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Broadcast" />
-          <Tab icon={<ChatRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Direct Message" />
-          <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Class Message" />
         </Tabs>
       </Box>
 
@@ -353,69 +245,7 @@ export default function NotificationManager({ module, presentation }: Notificati
         </Box>
       )}
 
-      {activeTab === 1 && (
-        <Box component="form" onSubmit={handleSendDirect} sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Autocomplete
-              size="small"
-              options={students}
-              filterOptions={filterOptions}
-              loading={studentsLoading}
-              value={selectedStudent}
-              onChange={(_, value) => {
-                setSelectedStudent(value)
-                if (value) setDmTitle(`Message to ${value.name}`)
-              }}
-              getOptionLabel={(o) => `${o.name} (#${o.id})`}
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                    <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: 'primary.main' }}>
-                      {option.name.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 500, lineHeight: 1.2 }} noWrap>
-                        {option.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
-                        ID: #{option.id}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField {...params} label="Select student" placeholder="Search by name or ID..."
-                  InputProps={{ ...params.InputProps, endAdornment: (<>{studentsLoading ? <CircularProgress size={14} /> : null}{params.InputProps.endAdornment}</>) }}
-                />
-              )}
-              noOptionsText={
-                !module || !presentation
-                  ? "Please select a course first"
-                  : studentsLoading
-                  ? "Loading students..."
-                  : "No students found"
-              }
-            />
-            <TextField fullWidth size="small" label="Title" value={dmTitle} onChange={(e) => setDmTitle(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <TextField fullWidth size="small" multiline rows={3} label="Message" placeholder="Write your message..." value={dmContent} onChange={(e) => setDmContent(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {selectedStudent && (
-                <Typography variant="caption" color="text.secondary">
-                  To: {selectedStudent.name} (#{selectedStudent.id})
-                </Typography>
-              )}
-              <Button type="submit" variant="contained" disableElevation size="small" color="secondary"
-                endIcon={isDmSending ? <CircularProgress size={14} color="inherit" /> : <SendRoundedIcon fontSize="small" />}
-                disabled={!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending}
-                sx={{ ml: 'auto', px: 2, py: 0.5, borderRadius: 1, fontWeight: 600, textTransform: 'none' }}
-              >
-                {isDmSending ? 'Sending...' : 'Send Message'}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      )}
+
 
       <Divider />
 

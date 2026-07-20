@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -162,3 +162,90 @@ async def attendance_stats(module: str, presentation: str) -> List[Dict[str, Any
 @router.post("/ai/chat")
 async def ai_chat(payload: ChatRequest) -> Dict[str, str]:
     return {"reply": f"ÄÃ£ nháº­n cÃ¢u há»i: {payload.message}"}
+
+
+@router.get("/classrooms")
+async def get_classrooms(module: str, presentation: str) -> Dict[str, Any]:
+    """Get classrooms dynamically by chunking students if not explicitly defined."""
+    try:
+        db = get_db()
+        import json as _json
+        
+        # 1. Check if explicit classrooms exist
+        docs = await db["classrooms"].find(
+            {"module": module, "code_presentation": presentation, "status": {"$ne": "deleted"}},
+            {"_id": 0, "name": 1, "student_ids": 1}
+        ).to_list(None)
+        
+        classrooms = []
+        for d in docs:
+            sids = d.get("student_ids", [])
+            if isinstance(sids, str):
+                try:
+                    sids = _json.loads(sids)
+                except Exception:
+                    sids = []
+            classrooms.append({"class_name": d.get("name", ""), "members": sids})
+            
+        # 2. If no classrooms exist, dynamically chunk students of this module+presentation
+        if not classrooms:
+            students = await db["processed_students"].find(
+                {"code_module": module, "code_presentation": presentation},
+                {"_id": 0, "id_student": 1}
+            ).to_list(None)
+            
+            sids = [s["id_student"] for s in students if "id_student" in s]
+            
+            # Chunk into groups of ~120 students
+            chunk_size = 120
+            for i in range(0, len(sids), chunk_size):
+                chunk = sids[i:i+chunk_size]
+                class_num = (i // chunk_size) + 1
+                classrooms.append({
+                    "class_name": f"Nhóm {class_num}",
+                    "members": chunk
+                })
+        
+        return {"classes": classrooms}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+@router.get("/course-options")
+async def get_course_options() -> Dict[str, Any]:
+    """Get all unique module and presentation options from processed_students"""
+    try:
+        db = get_db()
+        pipeline = [
+            {"$group": {"_id": {"module": "$code_module", "pres": "$code_presentation"}, "count": {"$sum": 1}}},
+            {"$sort": {"_id.module": 1, "_id.pres": 1}}
+        ]
+        results = await db["processed_students"].aggregate(pipeline).to_list(None)
+        
+        options = []
+        for r in results:
+            options.append({
+                "module": r["_id"]["module"],
+                "presentation": r["_id"]["pres"],
+                "student_count": r["count"]
+            })
+        return {"options": options}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+@router.get("/course-students")
+async def get_course_students(module: str, presentation: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Get all students for a course."""
+    try:
+        db = get_db()
+        query = {"code_module": module}
+        if presentation and presentation != "ALL":
+            query["code_presentation"] = presentation
+        
+        students = await db["processed_students"].find(
+            query,
+            {"_id": 0, "id_student": 1, "region": 1}
+        ).to_list(None)
+        
+        return students
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
