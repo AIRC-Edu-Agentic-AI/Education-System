@@ -1,19 +1,18 @@
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime, timezone
+import uuid
+from bson import ObjectId
 
 from db.mongodb import db_state
 from db.utils import serialize_doc
+from db.course_communication.channel import _ensure_course_channels
+from db.course_communication.constants import CHANNEL_TYPE_ANNOUNCEMENT
 
 router = APIRouter()
 
-
-class NotificationPayload(BaseModel):
-    senderRole: str
-    receiverRole: str
-    type: str
+class BroadcastPayload(BaseModel):
     title: str
     content: str
     student_ids: Optional[List[int]] = None
@@ -25,16 +24,20 @@ class BroadcastPayload(BaseModel):
     type: str
     title: str
     content: str
+    course_code: str
     sender_role: str = "instructor"
     course_code: Optional[str] = None
 
-
-class UpdateNotificationPayload(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-
-
-def get_db():
+@router.get("/notifications")
+async def list_notifications(
+    recipient_id: str,
+    module: Optional[str] = None,
+    presentation: Optional[str] = None,
+    limit: int = 50,
+):
+    """
+    List ALL notifications (Teacher Inbox and old logs).
+    """
     db = db_state.get("db")
     if db is None:
         raise HTTPException(status_code=503, detail="Database not connected")

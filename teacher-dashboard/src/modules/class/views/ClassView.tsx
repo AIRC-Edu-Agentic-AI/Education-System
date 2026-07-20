@@ -5,6 +5,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonthRounded';
 import ScheduleCrud from '../components/ScheduleCrud';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
+import ChatManager from '../components/ChatManager';
 import { useContextStore } from '../../../shared/stores/contextStore';
 import { getUetCourseInfo } from '../utils/courseMapping';
 
@@ -33,6 +34,7 @@ export const ClassView = () => {
         >
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Overview" />
           <Tab icon={<CalendarMonthIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Schedule" />
+          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Messages" />
         </Tabs>
       </Box>
 
@@ -49,6 +51,9 @@ export const ClassView = () => {
         )}
         {activeTab === 1 && (
           <ScheduleCrud module={selectedModule} presentation={selectedPresentation} />
+        )}
+        {activeTab === 2 && (
+          <ChatManager module={selectedModule} presentation={selectedPresentation} />
         )}
       </Box>
     </Box>
