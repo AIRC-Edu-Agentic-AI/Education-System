@@ -1,11 +1,12 @@
-from fastapi import FastAPI, HTTPException
+﻿from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
+
+load_dotenv()
 
 from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification
 from routers import study_groups
@@ -14,13 +15,6 @@ from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
 from routers.course_communication import router as course_communication_router
 
-
-load_dotenv()
-
-app = FastAPI()
-
-os.makedirs("uploads/submissions", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 class NoCacheStaticFiles(StaticFiles):
     async def get_response(self, path, scope):
@@ -40,8 +34,7 @@ async def lifespan(app: FastAPI):
     init_pool()
     await get_pool().healthcheck()
     setup_scheduler()
-    
-    # ⭐ THÊM DEBUG VÀO ĐÂY
+
     print("\n" + "="*60)
     print("REGISTERED ROUTES:")
     print("="*60)
@@ -53,9 +46,9 @@ async def lifespan(app: FastAPI):
                 if hasattr(r, "path"):
                     print(f"  {r.path}")
     print("="*60 + "\n")
-    
+
     yield
-    
+
     # Shutdown
     teardown_scheduler()
     await close_db()
@@ -74,39 +67,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# backend/main.py
+os.makedirs("uploads/submissions", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(course_communication_router, prefix="/course")
 app.include_router(student.router, prefix="/student", tags=["student"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
-app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
-app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
+app.include_router(schedule.teacher_router, prefix="/schedule", tags=["schedule"])
+app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
 app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
-app.include_router(study_groups.router, tags=["study-groups"])  # ✅ Bỏ prefix
+app.include_router(study_groups.router, tags=["study-groups"])
 
-# Teacher Dashboard APIs (trước đây nằm trong dashboard.py)
+# Teacher Dashboard APIs
 app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
 app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
-app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
+app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
-
-
-@app.on_event("startup")
-async def show_routes():
-    print("\n" + "="*60)
-    print("REGISTERED ROUTES:")
-    print("="*60)
-    for route in app.routes:
-        if hasattr(route, "path"):
-            print(f"  {route.path}")
-        elif hasattr(route, "routes"):
-            for r in route.routes:
-                if hasattr(r, "path"):
-                    print(f"  {r.path}")
-    print("="*60 + "\n")
 
 
 @app.get("/")
@@ -131,3 +111,5 @@ async def debug_trigger(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
     job.modify(next_run_time=__import__("datetime").datetime.now())
     return {"triggered": job_id}
+
+
