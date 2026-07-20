@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/data/mock/mock_message_store.dart';
 import 'package:student_agent/models/course_model.dart';
+import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/providers/providers.dart';
 
 import 'dart:async';
@@ -64,21 +65,25 @@ extends ConsumerState<CourseChannelMessagesScreen> {
       (_) {
         if (!mounted) return;
     
-        ref.invalidate(
-          channelThreadMessagesProvider(
-            ChannelMessagesArgs(channelId: widget.channelId),
-          ),
-        );
-
-        for (final parentId in _expandedThreads) {
+        if (_isAnnouncement) {
+          ref.invalidate(courseNotificationsProvider(widget.courseCode));
+        } else {
           ref.invalidate(
             channelThreadMessagesProvider(
-              ChannelMessagesArgs(
-                channelId: widget.channelId,
-                parentId: parentId,
-              ),
+              ChannelMessagesArgs(channelId: widget.channelId),
             ),
           );
+
+          for (final parentId in _expandedThreads) {
+            ref.invalidate(
+              channelThreadMessagesProvider(
+                ChannelMessagesArgs(
+                  channelId: widget.channelId,
+                  parentId: parentId,
+                ),
+              ),
+            );
+          }
         }
       },
     );
@@ -172,22 +177,35 @@ extends ConsumerState<CourseChannelMessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(
-      channelThreadMessagesProvider(
-        ChannelMessagesArgs(channelId: widget.channelId),
-      ),
-      (_, next) {
-        next.whenData((_) {
-          _scrollToBottom();
-        });
-      },
-    );
+    if (_isAnnouncement) {
+      ref.listen(
+        courseNotificationsProvider(widget.courseCode),
+        (_, next) {
+          next.whenData((_) {
+            _scrollToBottom();
+          });
+        },
+      );
+    } else {
+      ref.listen(
+        channelThreadMessagesProvider(
+          ChannelMessagesArgs(channelId: widget.channelId),
+        ),
+        (_, next) {
+          next.whenData((_) {
+            _scrollToBottom();
+          });
+        },
+      );
+    }
 
-    final rootsAsync = ref.watch(
-      channelThreadMessagesProvider(
-        ChannelMessagesArgs(channelId: widget.channelId),
-      ),
-    );
+    final rootsAsync = _isAnnouncement
+        ? null
+        : ref.watch(
+            channelThreadMessagesProvider(
+              ChannelMessagesArgs(channelId: widget.channelId),
+            ),
+          );
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
@@ -222,48 +240,74 @@ extends ConsumerState<CourseChannelMessagesScreen> {
       body: Column(
         children: [
           Expanded(
-            child: rootsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Lỗi: $e')),
-              data: (roots) {
-                if (roots.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Chưa có tin nhắn',
-                      style: TextStyle(color: AppTheme.textSecondary),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: roots.length,
-                  itemBuilder: (context, index) {
-                    final msg = roots[index];
-                    return _MessageThread(
-                      message: msg,
-                      channelId: widget.channelId,
-                      expanded: _expandedThreads.contains(msg.id),
-                      replyToId: _replyToMessageId,
-                      senderLabel: _senderLabel(msg),
-                      onToggleThread: () {
-                        setState(() {
-                          if (_expandedThreads.contains(msg.id)) {
-                            _expandedThreads.remove(msg.id);
-                          } else {
-                            _expandedThreads.add(msg.id);
-                          }
-                        });
-                      },
-                      onReply: () {
-                        setState(() => _replyToMessageId = msg.id);
-                      },
-                    );
-                  },
-                );
-              },
-            ),
+            child: _isAnnouncement
+                ? ref.watch(courseNotificationsProvider(widget.courseCode)).when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Lỗi: $e')),
+                    data: (notifications) {
+                      if (notifications.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'Chưa có thông báo nào',
+                            style: TextStyle(color: AppTheme.textSecondary),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          // Đảo thứ tự để thông báo cũ ở trên, thông báo mới nhất ở dưới cùng (giống giao diện chat)
+                          final noti = notifications[notifications.length - 1 - index];
+                          return _NotificationBubble(notification: noti);
+                        },
+                      );
+                    },
+                  )
+                : rootsAsync!.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Lỗi: $e')),
+                    data: (roots) {
+                      if (roots.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'Chưa có tin nhắn',
+                            style: TextStyle(color: AppTheme.textSecondary),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: roots.length,
+                        itemBuilder: (context, index) {
+                          final msg = roots[index];
+                          return _MessageThread(
+                            message: msg,
+                            channelId: widget.channelId,
+                            expanded: _expandedThreads.contains(msg.id),
+                            replyToId: _replyToMessageId,
+                            senderLabel: _senderLabel(msg),
+                            onToggleThread: () {
+                              setState(() {
+                                if (_expandedThreads.contains(msg.id)) {
+                                  _expandedThreads.remove(msg.id);
+                                } else {
+                                  _expandedThreads.add(msg.id);
+                                }
+                              });
+                            },
+                            onReply: () {
+                              setState(() => _replyToMessageId = msg.id);
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
+
           if (_replyToMessageId != null)
             Container(
               width: double.infinity,
@@ -524,3 +568,78 @@ class _MessageInputBar extends StatelessWidget {
     );
   }
 }
+
+class _NotificationBubble extends StatelessWidget {
+  final NotificationModel notification;
+
+  const _NotificationBubble({
+    required this.notification,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final time = DateFormat('dd/MM HH:mm').format(notification.createdAt);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.cardBorder,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.campaign_rounded,
+                color: AppTheme.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Thông báo từ Giảng viên',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                time,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 16, color: AppTheme.cardBorder),
+          Text(
+            notification.title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            notification.body,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.textPrimary,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

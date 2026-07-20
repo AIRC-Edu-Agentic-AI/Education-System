@@ -17,6 +17,7 @@ class NotificationPayload(BaseModel):
     title: str
     content: str
     student_ids: Optional[List[int]] = None
+    course_code: Optional[str] = None
 
 
 class BroadcastPayload(BaseModel):
@@ -25,6 +26,7 @@ class BroadcastPayload(BaseModel):
     title: str
     content: str
     sender_role: str = "instructor"
+    course_code: Optional[str] = None
 
 
 class UpdateNotificationPayload(BaseModel):
@@ -64,6 +66,7 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
                     "type": payload.type,
                     "read": False,
                     "sender_role": payload.senderRole,
+                    "course_code": payload.course_code,
                     "payload": {"title": payload.title, "body": payload.content},
                     "created_at": now_iso,
                 }
@@ -78,6 +81,7 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
             "type": payload.type,
             "title": payload.title,
             "content": payload.content,
+            "course_code": payload.course_code,
             "createdAt": now_iso,
         }
         result = await db["notifications"].insert_one(new_doc)
@@ -164,6 +168,7 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
                 "type": payload.type,
                 "read": False,
                 "sender_role": payload.sender_role,
+                "course_code": payload.course_code,
                 "payload": {"title": payload.title, "body": payload.content},
                 "created_at": now_iso,
             }
