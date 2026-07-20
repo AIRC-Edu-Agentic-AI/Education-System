@@ -18,7 +18,7 @@ export const ClassView = () => {
       <Box sx={{ px: 3, pt: 3, pb: 0, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Typography variant="h6" fontWeight={700} color="text.primary" lineHeight={1.3}>
-            {uetCourse.code} — {uetCourse.name}
+            {uetCourse.code} â€” {uetCourse.name}
           </Typography>
           <Chip label={selectedPresentation} size="small" sx={{ height: 20, fontSize: 11, bgcolor: 'action.selected' }} />
         </Box>
@@ -43,7 +43,7 @@ export const ClassView = () => {
               <AttendanceDashboard module={selectedModule} presentation={selectedPresentation} />
             </Grid>
             <Grid item xs={12} md={7}>
-              <NotificationManager />
+              <NotificationManager module={selectedModule} presentation={selectedPresentation} />
             </Grid>
           </Grid>
         )}

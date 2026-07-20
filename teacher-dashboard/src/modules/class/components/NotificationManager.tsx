@@ -5,7 +5,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 import {
   Box, Card, Typography, TextField, Button, Chip, Divider,
   List, ListItem, ListItemText, ListItemIcon, Avatar, CircularProgress,
-  Tab, Tabs, Autocomplete
+  Tab, Tabs, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle,
+  DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
@@ -14,6 +15,8 @@ import EventNoteRoundedIcon from '@mui/icons-material/EventNoteRounded';
 import UpdateRoundedIcon from '@mui/icons-material/UpdateRounded';
 import ReportRoundedIcon from '@mui/icons-material/ReportRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 
 interface NotificationItem {
   _id?: string;
@@ -52,6 +55,16 @@ export default function NotificationManager({ module, presentation }: Notificati
   const [dmContent, setDmContent] = useState('');
   const [isDmSending, setIsDmSending] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(false);
+
+  // Edit state
+  const [editingNoti, setEditingNoti] = useState<NotificationItem | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Delete state
+  const [deletingNoti, setDeletingNoti] = useState<NotificationItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchNotifications = async () => {
     try {
@@ -100,7 +113,6 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!title.trim() || !content.trim() || isSending) return;
     setIsSending(true);
     try {
-      // Gửi tới /notify/broadcast với đúng schema để student app đọc được
       const studentIds = students.map(s => s.id);
       await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
@@ -132,7 +144,6 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
     setIsDmSending(true);
     try {
-      // Gửi trực tiếp tới student_id cụ thể — student app sẽ nhận được
       await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,6 +163,64 @@ export default function NotificationManager({ module, presentation }: Notificati
       console.error(error);
     } finally {
       setIsDmSending(false);
+    }
+  };
+
+  // --- Edit handlers ---
+  const handleOpenEdit = (noti: NotificationItem) => {
+    setEditingNoti(noti);
+    setEditTitle(noti.title || '');
+    setEditContent(noti.content || '');
+  };
+
+  const handleCloseEdit = () => {
+    setEditingNoti(null);
+    setEditTitle('');
+    setEditContent('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingNoti?._id || isEditing) return;
+    setIsEditing(true);
+    try {
+      const res = await fetch(`${BASE_URL}/notify/notifications/${editingNoti._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editTitle, content: editContent }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      handleCloseEdit();
+      await fetchNotifications();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  // --- Delete handlers ---
+  const handleOpenDelete = (noti: NotificationItem) => {
+    setDeletingNoti(noti);
+  };
+
+  const handleCloseDelete = () => {
+    setDeletingNoti(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingNoti?._id || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${BASE_URL}/notify/notifications/${deletingNoti._id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      handleCloseDelete();
+      await fetchNotifications();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -231,11 +300,35 @@ export default function NotificationManager({ module, presentation }: Notificati
                 if (value) setDmTitle(`Message to ${value.name}`)
               }}
               getOptionLabel={(o) => `${o.name} (#${o.id})`}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                    <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: 'primary.main' }}>
+                      {option.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 500, lineHeight: 1.2 }} noWrap>
+                        {option.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                        ID: #{option.id}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField {...params} label="Select student" placeholder="Search by name or ID..."
                   InputProps={{ ...params.InputProps, endAdornment: (<>{studentsLoading ? <CircularProgress size={14} /> : null}{params.InputProps.endAdornment}</>) }}
                 />
               )}
+              noOptionsText={
+                !module || !presentation
+                  ? "Please select a course first"
+                  : studentsLoading
+                  ? "Loading students..."
+                  : "No students found"
+              }
             />
             <TextField fullWidth size="small" label="Title" value={dmTitle} onChange={(e) => setDmTitle(e.target.value)} required InputLabelProps={{ shrink: true }} />
             <TextField fullWidth size="small" multiline rows={3} label="Message" placeholder="Write your message..." value={dmContent} onChange={(e) => setDmContent(e.target.value)} required InputLabelProps={{ shrink: true }} />
@@ -271,13 +364,44 @@ export default function NotificationManager({ module, presentation }: Notificati
           ) : (
             notifications.map((noti, index) => (
               <React.Fragment key={noti._id || index}>
-                <ListItem alignItems="flex-start" sx={{ px: 2, py: 1, '&:hover': { bgcolor: 'action.hover' }, bgcolor: noti.senderRole === 'Admin' ? 'error.50' : 'transparent' }}>
+                <ListItem
+                  alignItems="flex-start"
+                  sx={{
+                    px: 2, py: 1,
+                    '&:hover': { bgcolor: 'action.hover' },
+                    '&:hover .noti-actions': { opacity: 1 },
+                    bgcolor: noti.senderRole === 'Admin' ? 'error.50' : 'transparent',
+                    position: 'relative',
+                  }}
+                >
                   <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>{getTypeUI(noti.type).icon}</ListItemIcon>
                   <ListItemText
                     primary={
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', pr: 1, mb: 0.25 }}>
                         <Typography variant="body2" fontWeight={600}>{noti.title}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{new Date(noti.createdAt).toLocaleString()}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{new Date(noti.createdAt).toLocaleString()}</Typography>
+                          {noti._id && (
+                            <Box
+                              className="noti-actions"
+                              sx={{
+                                display: 'flex', gap: 0, opacity: 0,
+                                transition: 'opacity 0.2s ease',
+                              }}
+                            >
+                              <Tooltip title="Edit" arrow>
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenEdit(noti); }} sx={{ p: 0.25 }}>
+                                  <EditRoundedIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete" arrow>
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenDelete(noti); }} sx={{ p: 0.25 }}>
+                                  <DeleteRoundedIcon sx={{ fontSize: 14, color: 'error.main' }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          )}
+                        </Box>
                       </Box>
                     }
                     secondary={
@@ -299,6 +423,67 @@ export default function NotificationManager({ module, presentation }: Notificati
           )}
         </List>
       </Box>
+
+      {/* Edit Dialog */}
+      <Dialog open={Boolean(editingNoti)} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EditRoundedIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+          Edit Notification
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              fullWidth size="small" label="Title"
+              value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+              required InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              fullWidth size="small" multiline rows={4} label="Content"
+              value={editContent} onChange={(e) => setEditContent(e.target.value)}
+              required InputLabelProps={{ shrink: true }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseEdit} color="inherit" disabled={isEditing} sx={{ textTransform: 'none', fontSize: 13 }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveEdit} variant="contained" disableElevation
+            disabled={!editTitle.trim() || !editContent.trim() || isEditing}
+            startIcon={isEditing ? <CircularProgress size={14} color="inherit" /> : null}
+            sx={{ textTransform: 'none', fontSize: 13, boxShadow: 'none' }}
+          >
+            {isEditing ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={Boolean(deletingNoti)} onClose={handleCloseDelete} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
+          <DeleteRoundedIcon sx={{ fontSize: 20 }} />
+          Delete Notification
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontSize: 13 }}>
+            Are you sure you want to delete "<strong>{deletingNoti?.title}</strong>"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseDelete} color="inherit" disabled={isDeleting} sx={{ textTransform: 'none', fontSize: 13 }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete} variant="contained" color="error" disableElevation
+            disabled={isDeleting}
+            startIcon={isDeleting ? <CircularProgress size={14} color="inherit" /> : null}
+            sx={{ textTransform: 'none', fontSize: 13, boxShadow: 'none' }}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -27,6 +27,11 @@ class BroadcastPayload(BaseModel):
     sender_role: str = "instructor"
 
 
+class UpdateNotificationPayload(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+
+
 def get_db():
     db = db_state.get("db")
     if db is None:
@@ -52,7 +57,6 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
         db = get_db()
         now_iso = datetime.now(timezone.utc).isoformat()
 
-        # Nếu có student_ids -> ghi thông báo riêng cho từng sinh viên
         if payload.student_ids:
             docs = [
                 {
@@ -68,7 +72,6 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
             result = await db["notifications"].insert_many(docs)
             return {"ok": True, "count": len(result.inserted_ids)}
 
-        # Thông báo chung
         new_doc = {
             "senderRole": payload.senderRole,
             "receiverRole": payload.receiverRole,
@@ -80,6 +83,70 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
         result = await db["notifications"].insert_one(new_doc)
         new_doc["_id"] = str(result.inserted_id)
         return new_doc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+
+@router.put("/notifications/{notif_id}")
+async def update_notification(notif_id: str, payload: UpdateNotificationPayload) -> Dict[str, Any]:
+    """Update an existing notification's title and/or content."""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        from bson.errors import InvalidId
+
+        try:
+            oid = ObjectId(notif_id)
+        except (InvalidId, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid notification ID")
+
+        update_fields: Dict[str, Any] = {}
+        if payload.title is not None:
+            update_fields["title"] = payload.title
+            # Also update nested payload.title for student-facing notifications
+            update_fields["payload.title"] = payload.title
+        if payload.content is not None:
+            update_fields["content"] = payload.content
+            update_fields["payload.body"] = payload.content
+        update_fields["updatedAt"] = datetime.now(timezone.utc).isoformat()
+
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        result = await db["notifications"].update_one(
+            {"_id": oid}, {"$set": update_fields}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+
+        updated = await db["notifications"].find_one({"_id": oid})
+        return serialize_doc(updated)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
+
+
+@router.delete("/notifications/{notif_id}")
+async def delete_notification(notif_id: str) -> Dict[str, Any]:
+    """Delete a notification by ID."""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        from bson.errors import InvalidId
+
+        try:
+            oid = ObjectId(notif_id)
+        except (InvalidId, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid notification ID")
+
+        result = await db["notifications"].delete_one({"_id": oid})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+
+        return {"ok": True, "deleted": notif_id}
     except HTTPException:
         raise
     except Exception as exc:
