@@ -33,10 +33,42 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         db = get_db()
         payload.pop("_id", None)
+        new_schedule = payload.pop("newSchedule", None)
+        
         if "schedules" in payload:
             await db["schedules"].delete_many({})
         result = await db["schedules"].insert_one(payload)
         payload["_id"] = str(result.inserted_id)
+
+        if new_schedule and new_schedule.get("module") and new_schedule.get("presentation"):
+            module = new_schedule["module"]
+            presentation = new_schedule["presentation"]
+            students = await db["processed_students"].find(
+                {"code_module": module, "code_presentation": presentation},
+                {"_id": 0}
+            ).to_list(None)
+
+            if students:
+                from datetime import datetime, timezone
+                now_iso = datetime.now(timezone.utc).isoformat()
+                docs = [
+                    {
+                        "student_id": s.get("id_student", s.get("id")),
+                        "type": "general",
+                        "read": False,
+                        "sender_role": "instructor",
+                        "course_code": module,
+                        "payload": {
+                            "title": "New Class Scheduled",
+                            "body": f"A new class \"{new_schedule.get('subject')}\" has been scheduled on {new_schedule.get('date')} at {new_schedule.get('startTime')}."
+                        },
+                        "created_at": now_iso,
+                    }
+                    for s in students
+                ]
+                if docs:
+                    await db["notifications"].insert_many(docs)
+
         return serialize_doc(payload)
     except HTTPException:
         raise
