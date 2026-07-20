@@ -69,7 +69,7 @@ export class ProcessedDataAdapter implements DataService {
     }
   }
 
-  async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void> {
+  async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string, newSchedule?: ScheduleItem): Promise<void> {
     try {
       if (module && presentation) {
         localStorage.setItem(`schedules_${module}_${presentation}`, JSON.stringify(schedules))
