@@ -256,19 +256,25 @@ class NotificationModel {
     this.actionOptions = const [],
   });
 
-  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
-      NotificationModel(
-        id: json['_id'] ?? '',
-        studentId: json['student_id'] ?? 0,
-        type: json['type'] ?? 'reminder',
-        title: json['payload']?['title'] ?? '',
-        body: json['payload']?['body'] ?? '',
-        read: json['read'] ?? false,
-        createdAt: parseServerTime(json['created_at']),
-        actionOptions: (json['action_options'] as List? ?? [])
-            .map((a) => NotificationAction.fromJson(a))
-            .toList(),
-      );
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    final payload = json['payload'] is Map ? json['payload'] as Map<String, dynamic> : <String, dynamic>{};
+    final title = payload['title'] ?? json['title'] ?? '';
+    final body = payload['body'] ?? json['content'] ?? json['body'] ?? '';
+    final createdAtValue = json['created_at'] ?? json['createdAt'];
+
+    return NotificationModel(
+      id: json['_id']?.toString() ?? json['id'] ?? '',
+      studentId: json['student_id'] ?? json['receiverId'] ?? json['studentId'] ?? 0,
+      type: json['type'] ?? 'reminder',
+      title: title.toString(),
+      body: body.toString(),
+      read: json['read'] ?? json['is_read'] ?? false,
+      createdAt: parseServerTime(createdAtValue),
+      actionOptions: (json['action_options'] as List? ?? [])
+          .map((a) => NotificationAction.fromJson(a))
+          .toList(),
+    );
+  }
 
   NotificationModel copyWith({bool? read}) => NotificationModel(
         id: id,
