@@ -8,6 +8,7 @@ import {
   Tab, Tabs, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle,
   DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
+import { createFilterOptions } from '@mui/material/Autocomplete';
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
@@ -30,6 +31,11 @@ interface NotificationItem {
   createdAt: string;
 }
 
+interface ClassGroup {
+  class_name: string;
+  members: number[];
+}
+
 interface StudentOption {
   id: number;
   name: string;
@@ -39,6 +45,10 @@ interface NotificationManagerProps {
   module?: string;
   presentation?: string;
 }
+
+const filterOptions = createFilterOptions<StudentOption>({
+  limit: 50,
+});
 
 export default function NotificationManager({ module, presentation }: NotificationManagerProps) {
   const [activeTab, setActiveTab] = useState(0);
@@ -55,6 +65,15 @@ export default function NotificationManager({ module, presentation }: Notificati
   const [dmContent, setDmContent] = useState('');
   const [isDmSending, setIsDmSending] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(false);
+
+  // Class group state
+  const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
+  const [selectedClassGroup, setSelectedClassGroup] = useState<ClassGroup | null>(null);
+  const [classGroupsLoading, setClassGroupsLoading] = useState(false);
+  const [classTitle, setClassTitle] = useState('');
+  const [classContent, setClassContent] = useState('');
+  const [isClassSending, setIsClassSending] = useState(false);
+  const [classType, setClassType] = useState<Exclude<NotificationItem['type'], 'Direct Message'>>('General Notice');
 
   // Edit state
   const [editingNoti, setEditingNoti] = useState<NotificationItem | null>(null);
@@ -83,7 +102,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!module || !presentation) return;
     setStudentsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/course/${module}/${presentation}`);
+      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/students-lite`);
       const data = await res.json();
       const list: StudentOption[] = (data.students ?? []).map((s: { id_student: number; name?: string }) => ({
         id: s.id_student,
@@ -97,6 +116,20 @@ export default function NotificationManager({ module, presentation }: Notificati
     }
   };
 
+  const fetchClasses = async () => {
+    if (!module || !presentation) return;
+    setClassGroupsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/classes`);
+      const data = await res.json();
+      setClassGroups(data.classes ?? []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setClassGroupsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
     if ('Notification' in window && Notification.permission !== 'granted') {
@@ -106,6 +139,7 @@ export default function NotificationManager({ module, presentation }: Notificati
 
   useEffect(() => {
     if (activeTab === 1) fetchStudents();
+    if (activeTab === 2) fetchClasses();
   }, [activeTab, module, presentation]);
 
   const handleSendBroadcast = async (e: React.FormEvent) => {
@@ -163,6 +197,37 @@ export default function NotificationManager({ module, presentation }: Notificati
       console.error(error);
     } finally {
       setIsDmSending(false);
+    }
+  };
+
+  const handleSendClassBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClassGroup || !classTitle.trim() || !classContent.trim() || isClassSending) return;
+    setIsClassSending(true);
+    try {
+      await fetch(`${BASE_URL}/notify/broadcast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_ids: selectedClassGroup.members,
+          type: classType.toLowerCase().replace(/ /g, '_'),
+          title: classTitle,
+          content: classContent,
+          sender_role: 'instructor',
+        }),
+      });
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`[${classType}] ${classTitle}`, { body: classContent });
+      }
+      setClassTitle('');
+      setClassContent('');
+      setClassType('General Notice');
+      setSelectedClassGroup(null);
+      await fetchNotifications();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsClassSending(false);
     }
   };
 
@@ -253,6 +318,7 @@ export default function NotificationManager({ module, presentation }: Notificati
         >
           <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Broadcast" />
           <Tab icon={<ChatRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Direct Message" />
+          <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Class Message" />
         </Tabs>
       </Box>
 
@@ -293,6 +359,7 @@ export default function NotificationManager({ module, presentation }: Notificati
             <Autocomplete
               size="small"
               options={students}
+              filterOptions={filterOptions}
               loading={studentsLoading}
               value={selectedStudent}
               onChange={(_, value) => {
@@ -408,7 +475,7 @@ export default function NotificationManager({ module, presentation }: Notificati
                       <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="caption" sx={{ color: noti.senderRole === 'Admin' ? 'error.main' : 'primary.main', fontWeight: 600, mb: 0.25 }}>
                           [{noti.type}] From: {noti.senderRole}
-                          {noti.receiverName && ` → ${noti.receiverName}`}
+                          {noti.receiverName && ` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ ${noti.receiverName}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {noti.content}

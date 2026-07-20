@@ -1,5 +1,4 @@
-# ── student.py ────────────────────────────────────────────────────────────────
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from db.mongodb import get_db
 from db.mock_data import MOCK_STUDENT, MOCK_KNOWLEDGE_STATES, MOCK_RISK_HISTORY
 
@@ -12,7 +11,7 @@ async def get_student(student_id: int):
         return MOCK_STUDENT
     doc = await db.students.find_one({"student_id": student_id})
     if not doc:
-        return MOCK_STUDENT
+        raise HTTPException(status_code=404, detail="Student not found")
     doc["_id"] = str(doc["_id"])
     return doc
 

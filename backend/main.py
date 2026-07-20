@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification
+from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification, realtime_chat
 from routers import study_groups
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
@@ -84,6 +84,7 @@ app.include_router(study_groups.router, tags=["study-groups"])
 app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
 app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
 app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
+app.include_router(realtime_chat.router, prefix="/realtime-chat", tags=["realtime-chat"])
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
