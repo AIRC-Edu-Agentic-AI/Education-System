@@ -29,17 +29,21 @@ export class MongoDataAdapter implements DataService {
     const res = await fetch(endpoint)
     if (!res.ok) throw new Error('Cannot reach schedules API')
     const body = await res.json()
+    if (Array.isArray(body)) {
+      if (body.length > 0) return (body[body.length - 1].schedules ?? []) as ScheduleItem[]
+      return []
+    }
     return (body.schedules ?? []) as ScheduleItem[]
   }
 
-  async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void> {
+  async saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string, newSchedule?: ScheduleItem): Promise<void> {
     const endpoint = module && presentation
       ? `${API_BASE}/schedules/${module}/${presentation}`
       : `${API_BASE}/schedules`
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ schedules }),
+      body: JSON.stringify({ schedules, newSchedule }),
     })
     if (!res.ok) throw new Error('Failed to save schedules')
   }

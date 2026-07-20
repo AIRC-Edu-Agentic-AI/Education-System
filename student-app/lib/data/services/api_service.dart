@@ -37,7 +37,7 @@ class ApiService {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) => handler.next(options),
       onError: (error, handler) {
-        _useMock = true;
+        // _useMock = true;
         handler.next(error);
       },
     ));
@@ -49,7 +49,7 @@ class ApiService {
       final res = await _dio.get('/health');
       return res.statusCode == 200;
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return false;
     }
   }
@@ -60,7 +60,7 @@ class ApiService {
       if (res.statusCode == 200) return Map<String, dynamic>.from(res.data);
       return null;
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return null;
     }
   }
@@ -72,7 +72,7 @@ class ApiService {
       final res = await _dio.get('/student/$studentId');
       return StudentModel.fromJson(res.data);
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.student;
     }
   }
@@ -84,7 +84,7 @@ class ApiService {
       final res = await _dio.get('/schedule/$studentId/weekly');
       return WeeklySchedule.fromJson(res.data);
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.weeklySchedule;
     }
   }
@@ -101,7 +101,7 @@ class ApiService {
     } catch (e, s) {
       print('GET COURSES ERROR = $e');
       print(s);
-      _useMock = true;
+      // _useMock = true;
       return MockData.courses;
     }
   }
@@ -127,7 +127,7 @@ class ApiService {
       final res = await _dio.get('/course/course-communication/$courseCode');
       return CourseModel.fromJson(Map<String, dynamic>.from(res.data));
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return CourseModel(
         id: '',
         courseCode: courseCode,
@@ -153,7 +153,7 @@ class ApiService {
         .map((channel) => CourseChannel.fromJson(Map<String, dynamic>.from(channel)))
         .toList();
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.channelsFor(courseCode);
     }
   }
@@ -176,7 +176,7 @@ class ApiService {
       final res = await _dio.get('/course/course-communication/$channelId');
       return CourseChannel.fromJson(Map<String, dynamic>.from(res.data));
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return CourseChannel(
         id: channelId,
         courseCode: '',
@@ -206,7 +206,7 @@ class ApiService {
             CourseMessage.fromJson(Map<String, dynamic>.from(message)))
         .toList();
   } catch (_) {
-    _useMock = true;
+    // _useMock = true;
     return MockMessageStore.allFor(channelId, parentId: parentId);
   }
 }
@@ -242,7 +242,7 @@ class ApiService {
     );
     return CourseMessage.fromJson(Map<String, dynamic>.from(res.data));
   } catch (_) {
-    _useMock = true;
+    // _useMock = true;
     return null;
   }
 }
@@ -271,7 +271,7 @@ class ApiService {
           .map((n) => NotificationModel.fromJson(n))
           .toList();
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.notifications;
     }
   }
@@ -281,6 +281,34 @@ class ApiService {
     try {
       await _dio.patch('/notify/$notifId/read');
     } catch (_) {}
+  }
+
+  Future<List<NotificationModel>> getCourseNotifications(
+      String courseCode, int studentId) async {
+    if (_useMock) {
+      return MockData.notifications.where((n) {
+        final title = n.title.toLowerCase();
+        final body = n.body.toLowerCase();
+        final code = courseCode.toLowerCase();
+        return title.contains(code) || body.contains(code);
+      }).toList();
+    }
+    try {
+      final res = await _dio.get(
+        '/notify/course/$courseCode',
+        queryParameters: {'student_id': studentId},
+      );
+      return (res.data as List)
+          .map((n) => NotificationModel.fromJson(n))
+          .toList();
+    } catch (_) {
+      return MockData.notifications.where((n) {
+        final title = n.title.toLowerCase();
+        final body = n.body.toLowerCase();
+        final code = courseCode.toLowerCase();
+        return title.contains(code) || body.contains(code);
+      }).toList();
+    }
   }
 
   // ── Chat (streaming SSE) ──────────────────────────────────────
@@ -339,7 +367,7 @@ class ApiService {
       return AssignmentMilestonesData.fromJson(
           Map<String, dynamic>.from(res.data));
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.milestonesFor(idAssessment);
     }
   }
@@ -355,7 +383,7 @@ class ApiService {
       return AssignmentMilestonesData.fromJson(
           Map<String, dynamic>.from(res.data));
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.milestonesFor(idAssessment);
     }
   }
@@ -399,7 +427,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       return _mockGetSubmissions(assessmentId, studentId);
     }
   }
@@ -458,7 +486,7 @@ class ApiService {
       final sub = Map<String, dynamic>.from(response.data['submission']);
       return AssignmentSubmission.fromJson(sub);
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       return _mockSubmit(idAssessment, studentId, file);
     }
   }
@@ -473,7 +501,7 @@ class ApiService {
         '/assignments/$assessmentId/submissions/$submissionId',
       );
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       _mockUnsubmit(assessmentId, submissionId);
     }
   }
@@ -526,7 +554,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       return _mockGetFeedbacks(assessmentId);
     }
   }
@@ -560,7 +588,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       return _mockGetClassComments(assessmentId);
     }
   }
@@ -607,7 +635,7 @@ class ApiService {
       );
       return ClassComment.fromJson(response.data);
     } catch (e) {
-      _useMock = true;
+      // _useMock = true;
       return _mockAddClassComment(assessmentId, studentId, content);
     }
   }
@@ -635,7 +663,7 @@ class ApiService {
       final res = await _dio.get('/student/$studentId/knowledge');
       return Map<String, dynamic>.from(res.data);
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.knowledgeState;
     }
   }
@@ -647,7 +675,7 @@ class ApiService {
       final res = await _dio.get('/student/$studentId/risk-history');
       return (res.data as List).map((e) => RiskPoint.fromJson(e)).toList();
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.riskHistory;
     }
   }
@@ -659,7 +687,7 @@ class ApiService {
       final res = await _dio.get('/schedule/$studentId/plan');
       return List<Map<String, dynamic>>.from(res.data);
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.studyPlanSessions;
     }
   }
@@ -671,7 +699,7 @@ class ApiService {
       final res = await _dio.get('/resources/$studentId');
       return List<Map<String, dynamic>>.from(res.data);
     } catch (_) {
-      _useMock = true;
+      // _useMock = true;
       return MockData.resources;
     }
   }

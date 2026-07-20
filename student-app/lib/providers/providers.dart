@@ -119,6 +119,13 @@ final courseChannelsProvider =
   return api.getCourseChannels(courseCode);
 });
 
+final courseNotificationsProvider =
+    FutureProvider.family<List<NotificationModel>, String>((ref, courseCode) async {
+  final api = ref.read(apiServiceProvider);
+  final studentId = ref.read(activeStudentIdProvider);
+  return api.getCourseNotifications(courseCode, studentId);
+});
+
 final courseChannelProvider =
     FutureProvider.family<CourseChannel, String>((ref, channelId) async {
   final api = ref.read(apiServiceProvider);

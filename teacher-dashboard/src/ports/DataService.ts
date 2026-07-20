@@ -16,5 +16,5 @@ export interface DataService {
 
   /** Scheduling APIs: get and save teaching schedules for a course or for all teacher schedules. */
   getSchedules(module?: string, presentation?: string): Promise<ScheduleItem[]>
-  saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string): Promise<void>
+  saveSchedules(schedules: ScheduleItem[], module?: string, presentation?: string, newSchedule?: ScheduleItem): Promise<void>
 }
