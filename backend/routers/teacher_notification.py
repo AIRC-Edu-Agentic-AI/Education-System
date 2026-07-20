@@ -78,6 +78,41 @@ async def create_notification(payload: NotificationPayload) -> Dict[str, Any]:
             result = await db["notifications"].insert_many(docs)
             return {"ok": True, "count": len(result.inserted_ids)}
 
+        # If course_code is provided but no explicit student_ids, expand to
+        # per-student notifications for all course members and keep a
+        # broadcast log for auditing.
+        if payload.course_code:
+            course = await db.courses.find_one({"course_code": payload.course_code})
+            members = course.get("members", []) if course else []
+            if members:
+                docs = [
+                    {
+                        "student_id": sid,
+                        "type": payload.type,
+                        "read": False,
+                        "sender_role": payload.senderRole,
+                        "course_code": payload.course_code,
+                        "payload": {"title": payload.title, "body": payload.content},
+                        "created_at": now_iso,
+                    }
+                    for sid in members
+                ]
+                result = await db["notifications"].insert_many(docs)
+                # Insert a broadcast log for auditing/visibility
+                broadcast_log = {
+                    "senderRole": payload.senderRole,
+                    "receiverRole": payload.receiverRole,
+                    "type": payload.type,
+                    "title": payload.title,
+                    "content": payload.content,
+                    "course_code": payload.course_code,
+                    "is_broadcast_log": True,
+                    "target_count": len(members),
+                    "createdAt": now_iso,
+                }
+                await db["notifications"].insert_one(broadcast_log)
+                return {"ok": True, "count": len(result.inserted_ids)}
+
         new_doc = {
             "senderRole": payload.senderRole,
             "receiverRole": payload.receiverRole,
