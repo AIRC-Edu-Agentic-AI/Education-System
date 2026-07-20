@@ -288,9 +288,9 @@ export function TeachingScheduleView() {
     setDialogOpen(true)
   }
 
-  const autoSaveSchedule = async (items: ScheduleItem[]) => {
+  const autoSaveSchedule = async (items: ScheduleItem[], newSchedule?: ScheduleItem) => {
     try {
-      await container.dataService.saveSchedules(items)
+      await container.dataService.saveSchedules(items, undefined, undefined, newSchedule)
       setMessage('Schedule saved.')
     } catch {
       setMessage('Could not save schedule.')
@@ -329,32 +329,7 @@ export function TeachingScheduleView() {
     }
     const updated = [...schedules, item]
     setSchedules(updated)
-    await autoSaveSchedule(updated)
-
-    if (draftSchedule.module && draftSchedule.presentation) {
-      try {
-        const course = await container.dataService.getCourse(draftSchedule.module, draftSchedule.presentation)
-        const studentIds = (course.students ?? []).map(s => s.id_student)
-        
-        if (studentIds.length > 0) {
-          const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
-          await fetch(`${BASE_URL}/notify/broadcast`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              student_ids: studentIds,
-              type: 'general',
-              title: 'New Class Scheduled',
-              content: `A new class "${item.subject}" has been scheduled on ${item.date} at ${item.startTime}.`,
-              sender_role: 'instructor',
-              course_code: draftSchedule.module,
-            }),
-          })
-        }
-      } catch (e) {
-        console.error('Failed to notify students:', e)
-      }
-    }
+    await autoSaveSchedule(updated, item)
 
     setDialogOpen(false)
     setDraftSchedule(null)
