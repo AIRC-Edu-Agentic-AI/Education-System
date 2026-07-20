@@ -43,7 +43,19 @@ def get_db():
 async def list_notifications() -> List[Dict[str, Any]]:
     try:
         db = get_db()
-        docs = await db["notifications"].find({}).sort("createdAt", -1).to_list(None)
+        # Only fetch notifications meant for the teacher inbox (must have root title or senderRole)
+        docs = await db["notifications"].find({
+            "$or": [
+                {"senderRole": {"$exists": True}},
+                {"title": {"$exists": True, "$ne": None, "$ne": ""}}
+            ]
+        }).sort("createdAt", -1).limit(50).to_list(None)
+        
+        # Map createdAt if missing but created_at exists
+        for d in docs:
+            if "createdAt" not in d and "created_at" in d:
+                d["createdAt"] = d["created_at"]
+                
         return serialize_doc(docs)
     except HTTPException:
         raise
@@ -171,6 +183,23 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
         ]
         if docs:
             result = await db["notifications"].insert_many(docs)
+            
+            # Also create a broadcast log for the teacher inbox
+            log_doc = {
+                "senderRole": "Instructor",
+                "receiverRole": "Student" if len(payload.student_ids) > 1 else "Direct Student",
+                "type": payload.type,
+                "title": payload.title,
+                "content": payload.content,
+                "createdAt": now_iso,
+                "is_broadcast_log": True,
+                "target_count": len(payload.student_ids)
+            }
+            if len(payload.student_ids) == 1:
+                log_doc["receiverId"] = payload.student_ids[0]
+                
+            await db["notifications"].insert_one(log_doc)
+            
             return {"ok": True, "count": len(result.inserted_ids)}
         return {"ok": True, "count": 0}
     except HTTPException:
