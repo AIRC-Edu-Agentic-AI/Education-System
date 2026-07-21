@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+import re
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -44,6 +45,16 @@ def _normalize_notification_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
                 break
 
     return normalized
+
+
+def _course_code_matches(stored_code: Optional[str], requested_code: Optional[str]) -> bool:
+    if not stored_code or not requested_code:
+        return False
+    stored = re.sub(r"\s+", " ", str(stored_code).strip()).lower()
+    requested = re.sub(r"\s+", " ", str(requested_code).strip()).lower()
+    if stored == requested:
+        return True
+    return stored.startswith(requested) or requested.startswith(stored)
 
 
 def _build_notification_query(student_id: int | None, unread_only: bool, now_iso: str, course_code: str | None = None):
@@ -104,7 +115,7 @@ async def get_notifications(student_id: int, unread_only: bool = True):
 
     now_iso = datetime.now(timezone.utc).isoformat()
     query = _build_notification_query(student_id, unread_only, now_iso)
-    cursor = db.notifications.find(query).sort("created_at", -1).limit(20)
+    cursor = db["notifications"].find(query).sort("created_at", -1).limit(20)
     docs = await cursor.to_list(length=20)
     normalized_docs = []
     for d in docs:
@@ -125,7 +136,7 @@ async def mark_read(notif_id: str):
     except (InvalidId, TypeError):
         # Non-ObjectId id (e.g. a mock/string id) — nothing to update
         return {"ok": True}
-    await db.notifications.update_one(
+    await db["notifications"].update_one(
         {"_id": oid}, {"$set": {"read": True, "is_read": True}}
     )
     return {"ok": True}
@@ -172,7 +183,7 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
         return {"ok": True, "count": len(docs), "mock": True}
 
     if docs:
-        result = await db.notifications.insert_many(docs)
+        result = await db["notifications"].insert_many(docs)
         return {"ok": True, "count": len(result.inserted_ids)}
 
     return {"ok": True, "count": 0}
@@ -188,18 +199,23 @@ async def get_course_notifications(course_code: str, student_id: int):
         return []
 
     now_iso = datetime.now(timezone.utc).isoformat()
-    # Include both per-student notifications and broadcast logs for the course.
+    course_code_clauses = [
+        {"course_code": course_code},
+        {"courseCode": course_code},
+        {"course_code": {"$regex": f"^{re.escape(course_code)}", "$options": "i"}},
+        {"courseCode": {"$regex": f"^{re.escape(course_code)}", "$options": "i"}},
+    ]
+    student_filter = {
+        "$or": [
+            {"student_id": student_id},
+            {"receiverId": student_id},
+            {"receiverRole": {"$regex": "^(student|students|all)$", "$options": "i"}},
+        ]
+    }
     query = {
         "$and": [
-            {"course_code": course_code},
-            {
-                "$or": [
-                    {"student_id": student_id},
-                    {"is_broadcast_log": True},
-                    {"receiverId": student_id},
-                    {"receiverRole": {"$regex": "^(student|students|all)$", "$options": "i"}},
-                ]
-            },
+            {"$or": course_code_clauses},
+            {"$and": [student_filter, {"is_broadcast_log": {"$ne": True}}]},
             {
                 "$or": [
                     {"send_at": {"$exists": False}},
@@ -209,8 +225,22 @@ async def get_course_notifications(course_code: str, student_id: int):
         ]
     }
 
-    cursor = db.notifications.find(query).sort("created_at", -1).limit(50)
+    cursor = db["notifications"].find(query).sort("created_at", -1).limit(50)
     docs = await cursor.to_list(length=50)
+    if not docs:
+        # Fallback only if query returns nothing, still keep student filtering.
+        all_docs = await db["notifications"].find({}).sort("created_at", -1).limit(200).to_list(length=200)
+        docs = [
+            doc for doc in all_docs
+            if _course_code_matches(doc.get("course_code") or doc.get("courseCode"), course_code)
+            and doc.get("is_broadcast_log") is not True
+            and (
+                doc.get("student_id") == student_id
+                or doc.get("receiverId") == student_id
+                or isinstance(doc.get("receiverRole"), str)
+                   and re.match(r"^(student|students|all)$", doc.get("receiverRole"), re.IGNORECASE)
+            )
+        ]
     normalized_docs = []
     for d in docs:
         d["_id"] = str(d["_id"])

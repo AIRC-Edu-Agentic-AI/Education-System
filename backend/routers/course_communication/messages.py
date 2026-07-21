@@ -16,6 +16,8 @@ class MessageRequest(BaseModel):
     sender_id: int
     content: str
     parent_id: str | None = None
+    course_code: str | None = None
+    channel_type: str | None = None
 
 
 @router.get("/{channel_id}/messages")
@@ -34,7 +36,7 @@ async def post_channel_message(channel_id: str, body: MessageRequest):
     if db is None:
         raise HTTPException(status_code=503, detail="Database required")
     try:
-        msg = await add_channel_message(db, channel_id, body.sender_id, body.content, body.parent_id)
+        msg = await add_channel_message(db, channel_id, body.sender_id, body.content, body.parent_id, course_code=body.course_code, channel_type=body.channel_type)
         
         try:
             from routers.realtime_chat import manager

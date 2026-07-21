@@ -216,6 +216,8 @@ class ApiService {
   required int senderId,
   required String content,
   String? parentId,
+  String? courseCode,
+  String? channelType,
 }) async {
   if (_useMock) {
     final msg = CourseMessage(
@@ -238,6 +240,8 @@ class ApiService {
         'sender_id': senderId,
         'content': content,
         if (parentId != null) 'parent_id': parentId,
+        if (courseCode != null && courseCode.isNotEmpty) 'course_code': courseCode,
+        if (channelType != null && channelType.isNotEmpty) 'channel_type': channelType,
       },
     );
     return CourseMessage.fromJson(Map<String, dynamic>.from(res.data));

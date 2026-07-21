@@ -27,6 +27,15 @@ def get_user_role(course: dict, user_id: int) -> str | None:
         return "class_rep"
     if user_id in course.get("members", []):
         return "student"
+
+    # Fallback for merged data / older seed data where instructor IDs may not be
+    # explicitly stored in the course document.
+    if isinstance(course.get("instructor_ids"), list) and user_id in course.get("instructor_ids", []):
+        return "instructor"
+    if isinstance(course.get("teacher_ids"), list) and user_id in course.get("teacher_ids", []):
+        return "instructor"
+    if isinstance(course.get("staff_ids"), list) and user_id in course.get("staff_ids", []):
+        return "instructor"
     return None
 
 

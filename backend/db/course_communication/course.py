@@ -86,7 +86,7 @@ async def enroll_student_in_course(db, student_id: int, course_code: str, title:
 
     await db.courses.update_one(
         {"course_code": course_code},
-        {"$addToSet": {"members": student_id, "class_reps": {"$each": class_rep_ids or []}}},
+        {"$addToSet": {"members": student_id, "instructors": {"$each": instructor_ids or []}, "class_reps": {"$each": class_rep_ids or []}}},
     )
 
     await record_audit(db, "enroll", course_code, student_id, {"action": "student_enrolled"})

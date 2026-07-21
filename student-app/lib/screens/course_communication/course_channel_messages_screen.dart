@@ -122,6 +122,8 @@ extends ConsumerState<CourseChannelMessagesScreen> {
       senderId: studentId,
       content: text,
       parentId: _replyToMessageId,
+      courseCode: widget.courseCode,
+      channelType: widget.channelType,
     );
 
     if (message == null) {

@@ -3,8 +3,8 @@
 from bson import ObjectId
 from bson.errors import InvalidId
 
-from .constants import CHANNEL_TYPE_ANNOUNCEMENT, COURSE_STATUS_ARCHIVED
-from .utils import now_iso, get_user_role, prepare_message_json
+from .constants import CHANNEL_TYPE_ANNOUNCEMENT, COURSE_STATUS_ARCHIVED, COURSE_STATUS_DELETED
+from .utils import now_iso, get_user_role, prepare_message_json, to_json
 from .audit import record_audit
 from .channel import get_channel
 
@@ -27,9 +27,18 @@ async def get_channel_messages(db, channel_id: str, parent_id: str | None = None
     return [prepare_message_json(doc) for doc in docs]
 
 
-async def add_channel_message(db, channel_id: str, sender_id: int, content: str, parent_id: str | None = None):
+async def add_channel_message(db, channel_id: str, sender_id: int, content: str, parent_id: str | None = None, course_code: str | None = None, channel_type: str | None = None):
     """Add a message to a channel."""
     channel = await get_channel(db, channel_id)
+    if channel is None and course_code:
+        from .channel import _ensure_course_channels
+        await _ensure_course_channels(db, course_code)
+        query = {"course_code": course_code, "status": {"$ne": COURSE_STATUS_DELETED}}
+        if channel_type:
+            query["type"] = channel_type
+        fallback_channel = await db.channels.find_one(query)
+        if fallback_channel is not None:
+            channel = to_json(fallback_channel)
     if channel is None:
         raise ValueError("Channel not found")
     course = await db.courses.find_one({"course_code": channel.get("course_code")})
@@ -51,8 +60,17 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
     if channel["type"] != CHANNEL_TYPE_ANNOUNCEMENT and user_role not in channel.get("allowed_post_roles", []):
         raise PermissionError("User cannot post in this channel")
 
+    resolved_channel_id = channel.get("_id")
+    if isinstance(resolved_channel_id, str):
+        try:
+            resolved_channel_id = ObjectId(resolved_channel_id)
+        except InvalidId:
+            resolved_channel_id = ObjectId(channel_id)
+    elif resolved_channel_id is None:
+        resolved_channel_id = ObjectId(channel_id)
+
     msg = {
-        "channel_id": ObjectId(channel_id),
+        "channel_id": resolved_channel_id,
         "course_code": channel.get("course_code"),
         "sender_id": sender_id,
         "sender_role": user_role,
@@ -67,5 +85,5 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
         except InvalidId:
             raise ValueError("Invalid parent_id")
     result = await db.messages.insert_one(msg)
-    await record_audit(db, "message_posted", channel.get("course_code"), sender_id, {"channel_id": channel_id, "message_id": str(result.inserted_id), "parent_id": parent_id})
+    await record_audit(db, "message_posted", channel.get("course_code"), sender_id, {"channel_id": str(resolved_channel_id), "message_id": str(result.inserted_id), "parent_id": parent_id})
     return prepare_message_json(await db.messages.find_one({"_id": result.inserted_id}))

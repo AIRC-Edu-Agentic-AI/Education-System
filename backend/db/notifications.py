@@ -18,7 +18,7 @@ async def recently_fired(db, student_id: int, notif_type: str, hours: int = 24) 
     if db is None:
         return False
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-    existing = await db.notifications.find_one({
+    existing = await db["notifications"].find_one({
         "student_id": student_id,
         "type": notif_type,
         "created_at": {"$gt": cutoff},
@@ -61,10 +61,5 @@ async def push_notification(
     if db is None:
         print(f"[notify] {notif_type} — {title}")
         return True
-    await db.notifications.insert_one(notif)
-    try:
-        from db.utils import serialize_doc
-        await db["notification"].insert_one(serialize_doc(notif))
-    except Exception:
-        pass
+    await db["notifications"].insert_one(notif)
     return True

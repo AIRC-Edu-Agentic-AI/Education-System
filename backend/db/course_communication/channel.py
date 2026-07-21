@@ -39,7 +39,8 @@ async def _ensure_course_channels(db, course_code: str):
 
 
 async def get_course_channels(db, course_code: str):
-    """Get all channels for a course."""
+    """Get all channels for a course, creating the default ones if missing."""
+    await _ensure_course_channels(db, course_code)
     docs = await db.channels.find({"course_code": course_code, "status": {"$ne": COURSE_STATUS_DELETED}}).sort("type", 1).to_list(length=20)
     return [to_json(doc) for doc in docs]
 
