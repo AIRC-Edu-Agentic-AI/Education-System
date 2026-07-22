@@ -11,6 +11,7 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 import ForumRoundedIcon from '@mui/icons-material/ForumRounded';
+import { getUetCourseInfo } from '../utils/courseMapping';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
@@ -51,15 +52,16 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   const [loadingChannels, setLoadingChannels] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
-  
 
-  
+  const [isCreating, setIsCreating] = useState(false);
+  const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<ClassGroup | null>(null);
+
   const ws = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const activeChannelRef = useRef<Channel | null>(null);
 
   const TEACHER_ID = "teacher_admin";
-  const courseCode = module && presentation ? `${module} ${presentation}` : '';
+  const courseCode = module ? getUetCourseInfo(module).code : '';
 
   useEffect(() => {
     if (courseCode) {
@@ -74,7 +76,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   }, [courseCode]);
 
   useEffect(() => {
-    activeChannelRef.current = activeChannel;
     if (activeChannel) {
       fetchMessages(activeChannel._id);
     }
@@ -87,17 +88,16 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   const setupWebSocket = () => {
     if (ws.current) ws.current.close();
     const socket = new WebSocket(`${WS_URL}/realtime-chat/ws/${TEACHER_ID}`);
-    
+
     socket.onopen = () => console.log("Chat WS Connected");
-    
+
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'new_message') {
           const newMsg = data.message as Message;
           setMessages(prev => {
-            const currentChannel = activeChannelRef.current;
-            if (currentChannel && newMsg.channel_id === currentChannel._id) {
+            if (activeChannel && newMsg.channel_id === activeChannel._id) {
               if (!prev.find(m => m._id === newMsg._id)) {
                 return [...prev, newMsg];
               }
@@ -105,17 +105,17 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
             return prev;
           });
         } else if (data.type === 'channel_created') {
-          fetchChannels(); 
+          fetchChannels();
         }
       } catch (e) {
         console.error("WS Parse error", e);
       }
     };
-    
+
     socket.onclose = () => {
       setTimeout(setupWebSocket, 3000);
     };
-    
+
     ws.current = socket;
   };
 
@@ -151,18 +151,54 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || !activeChannel || !ws.current) return;
-    
+
     const payload = {
       channel_id: activeChannel._id,
       content: inputMessage.trim(),
       sender_role: 'instructor'
     };
-    
+
     ws.current.send(JSON.stringify(payload));
     setInputMessage('');
   };
 
+  const handleOpenCreate = async () => {
+    setIsCreating(true);
+    if (!module || !presentation) return;
+    try {
+      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/classes`);
+      const data = await res.json();
+      setClassGroups(data.classes ?? []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
+  const handleConfirmCreate = async () => {
+    if (!selectedGroup) return;
+    try {
+      const members = selectedGroup.members.map(String);
+      if (!members.includes(TEACHER_ID)) members.push(TEACHER_ID);
+
+      const res = await fetch(`${BASE_URL}/realtime-chat/channels`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          course_code: courseCode,
+          name: `Lớp ${selectedGroup.class_name}`,
+          members: members,
+          type: 'class_group'
+        })
+      });
+      if (res.ok) {
+        setIsCreating(false);
+        setSelectedGroup(null);
+        fetchChannels();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const getChannelIcon = (type: string) => {
     switch (type) {
@@ -187,6 +223,11 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
       <Box sx={{ width: 320, borderRight: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Typography variant="subtitle1" fontWeight={700}>Unified Messages</Typography>
+          <Tooltip title="Create Class Group Chat">
+            <IconButton size="small" onClick={handleOpenCreate} sx={{ bgcolor: 'primary.50', color: 'primary.main', '&:hover': { bgcolor: 'primary.100' } }}>
+              <AddRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
         <List sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
           {loadingChannels ? (
@@ -290,9 +331,9 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
                   onChange={e => setInputMessage(e.target.value)}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
-                <IconButton 
-                  type="submit" 
-                  color="primary" 
+                <IconButton
+                  type="submit"
+                  color="primary"
                   disabled={!inputMessage.trim()}
                   sx={{ bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' } }}
                 >
@@ -307,6 +348,26 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
           </Box>
         )}
       </Box>
+
+      <Dialog open={isCreating} onClose={() => setIsCreating(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create Class Group Chat</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Select a class to create a real-time group chat.
+          </Typography>
+          <Autocomplete
+            options={classGroups}
+            getOptionLabel={(option) => `Class ${option.class_name} (${option.members.length} students)`}
+            value={selectedGroup}
+            onChange={(_, val) => setSelectedGroup(val)}
+            renderInput={(params) => <TextField {...params} label="Select Class" size="small" />}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsCreating(false)} color="inherit">Cancel</Button>
+          <Button onClick={handleConfirmCreate} variant="contained" disabled={!selectedGroup}>Create Group</Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
