@@ -338,6 +338,35 @@ RESOURCES = [
     },
 ]
 
+NOTIFICATIONS = [
+    {
+        "student_id": STUDENT_ID,
+        "type": "general_notice",
+        "read": False,
+        "payload": {
+            "title": "Thông báo: Thay đổi phòng học",
+            "body": "Lớp DATA201 sẽ chuyển sang học tại phòng B302 vào thứ 3 tuần này. Các em lưu ý đi đúng phòng nhé!"
+        },
+        "course_code": "DATA201",
+        "sender_role": "instructor",
+        "is_broadcast_log": False,
+        "created_at": (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat()
+    },
+    {
+        "student_id": STUDENT_ID,
+        "type": "warning",
+        "read": False,
+        "payload": {
+            "title": "Nhắc nhở: Nộp bài tập nhóm TMA-02",
+            "body": "Chào Văn An, thầy thấy em chưa nộp bài TMA-02. Em chú ý hạn chót là thứ 6 tuần này, đừng để bị trừ điểm nộp muộn nhé."
+        },
+        "course_code": "DATA201",
+        "sender_role": "instructor",
+        "is_broadcast_log": False,
+        "created_at": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    }
+]
+
 
 # ── Reusable seed routine ───────────────────────────────────────────────────────
 
@@ -371,6 +400,7 @@ async def seed_demo(db) -> dict:
     await db.risk_history.insert_one(copy.deepcopy(RISK_HISTORY))
     await db.assignment_milestones.insert_one(copy.deepcopy(MILESTONES))
     await db.resources.insert_many([copy.deepcopy(r) for r in RESOURCES])
+    await db.notifications.insert_many([copy.deepcopy(n) for n in NOTIFICATIONS])
 
     return {
         "student_id": STUDENT_ID,

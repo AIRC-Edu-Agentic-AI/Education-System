@@ -28,3 +28,15 @@ build/
 # Logs
 logs/
 *.log
+backend/db/schemas/cleanup_old_collections.py
+backend/db/seed.py
+student-app/linux/flutter/generated_plugin_registrant.cc
+student-app/linux/flutter/generated_plugins.cmake
+student-app/windows/flutter/generated_plugins.cmake
+backend/db/seed.py
+student-app/linux/flutter/generated_plugin_registrant.cc
+student-app/linux/flutter/generated_plugin_registrant.h
+student-app/macos/Flutter/GeneratedPluginRegistrant.swift
+student-app/windows/flutter/generated_plugin_registrant.cc
+student-app/windows/flutter/generated_plugin_registrant.h
+student-app/windows/flutter/generated_plugins.cmake
