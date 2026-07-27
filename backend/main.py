@@ -10,6 +10,7 @@ load_dotenv()
 
 from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification, realtime_chat
 from routers import study_groups
+from routers import teacher_risk, teacher_classrooms
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
@@ -55,8 +56,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Student Agent API",
-    version="1.0.0-demo",
+    title="Education System API",
+    version="2.0.0",
+    description="API cho he thong giao duc tich hop AI -- Student + Teacher + AI Agent",
     lifespan=lifespan,
 )
 
@@ -70,22 +72,44 @@ app.add_middleware(
 os.makedirs("uploads/submissions", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# Authentication
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(course_communication_router, prefix="/course")
-app.include_router(student.router, prefix="/student", tags=["student"])
-app.include_router(chat.router, prefix="/chat", tags=["chat"])
-app.include_router(schedule.teacher_router, prefix="/schedule", tags=["schedule"])
-app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
-app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
-app.include_router(admin.router, prefix="/admin", tags=["admin"])
-app.include_router(study_groups.router, tags=["study-groups"])
 
-# Teacher Dashboard APIs
-app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
-app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
+# Student endpoints (BR01-BR18)
+app.include_router(student.router, prefix="/student", tags=["student"])
+app.include_router(schedule.student_router, prefix="/schedule", tags=["schedule-student"])
+app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
 app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
+
+# Course Communication (channels, messages, courses)
+app.include_router(course_communication_router, prefix="/course")
+
+# Chat (AI agent chat for students)
+app.include_router(chat.router, prefix="/chat", tags=["chat"])
+
+# Real-time WebSocket chat
 app.include_router(realtime_chat.router, prefix="/realtime-chat", tags=["realtime-chat"])
 
+# Study Groups
+app.include_router(study_groups.router, tags=["study-groups"])
+
+# Teacher: Notifications (BR26-27, BR32-33, BR38-39)
+app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
+
+# Teacher: Dashboard & Analytics (BR34-35)
+app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
+app.include_router(teacher_schedule.router, prefix="/api", tags=["teacher-schedule"])
+
+# Teacher: Risk Management (BR36-37, BR40-42)
+app.include_router(teacher_risk.router, prefix="/api/risk", tags=["teacher-risk"])
+
+# Teacher: Classroom Management (BR28-29)
+app.include_router(teacher_classrooms.router, prefix="/api/classrooms", tags=["teacher-classrooms"])
+
+# Admin
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+# Static files (teacher dashboard UI)
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/dashboard", NoCacheStaticFiles(directory=_STATIC_DIR, html=True), name="dashboard")
 
@@ -101,6 +125,7 @@ async def health():
         "status": "ok",
         "db": "connected" if db_state["connected"] else "mock",
         "environment": os.getenv("ENVIRONMENT", "demo"),
+        "version": "2.0.0",
     }
 
 
@@ -112,5 +137,3 @@ async def debug_trigger(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
     job.modify(next_run_time=__import__("datetime").datetime.now())
     return {"triggered": job_id}
-
-
