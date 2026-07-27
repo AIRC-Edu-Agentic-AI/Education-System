@@ -130,11 +130,11 @@ async def send_broadcast(payload: BroadcastPayload, background_tasks: Background
         parts = payload.course_code.split(' ', 1)
         if len(parts) == 2:
             module, presentation = parts
-            students = await db["processed_students"].find(
-                {"code_module": module, "code_presentation": presentation},
-                {"_id": 0, "id_student": 1}
+            students = await db["students"].find(
+                {"enrollments.code_module": module, "enrollments.code_presentation": presentation},
+                {"_id": 0, "student_id": 1}
             ).to_list(None)
-            target_student_ids = [s["id_student"] for s in students if "id_student" in s]
+            target_student_ids = [s.get("student_id") for s in students if "student_id" in s]
         else:
             target_student_ids = []
 
@@ -208,16 +208,23 @@ async def send_direct_message(payload: DirectMessagePayload, background_tasks: B
     
     # Log for teacher
     log_doc = {
+        "student_id": 0,
         "senderRole": "Instructor",
         "receiverRole": "Direct Student",
         "receiverId": payload.student_id,
         "type": "direct_message",
+        "read": True,
         "title": payload.title,
         "content": payload.content,
-        "createdAt": now,
+        "payload": {
+            "title": payload.title,
+            "body": payload.content
+        },
+        "created_at": now,
         "is_broadcast_log": True,
         "target_count": 1,
-        "course_code": payload.course_code
+        "course_code": payload.course_code,
+        "recipient_id": "teacher_admin"
     }
     result = await db["notifications"].insert_one(log_doc)
     log_doc["_id"] = result.inserted_id

@@ -214,23 +214,7 @@ async def get_classroom_students(classroom_id: str) -> Dict[str, Any]:
             {"_id": 0, "student_id": 1, "full_name": 1, "email": 1, "risk": 1, "is_active": 1, "avatar_url": 1}
         ).to_list(None)
 
-        # Fallback sang processed_students neu khong co trong students
-        found_ids = {s["student_id"] for s in student_docs}
-        missing_ids = [sid for sid in student_ids if sid not in found_ids]
-        if missing_ids:
-            processed = await db["processed_students"].find(
-                {"id_student": {"$in": missing_ids}},
-                {"_id": 0, "id_student": 1, "name": 1, "risk_score": 1}
-            ).to_list(None)
-            for p in processed:
-                student_docs.append({
-                    "student_id": p.get("id_student"),
-                    "full_name": p.get("name", f"Student {p.get('id_student')}"),
-                    "email": None,
-                    "risk": {"score": p.get("risk_score"), "tier": None, "flags": []},
-                    "is_active": True,
-                    "avatar_url": None,
-                })
+
 
         return {
             "classroom": serialize_doc(classroom),
