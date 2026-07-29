@@ -40,3 +40,16 @@ student-app/macos/Flutter/GeneratedPluginRegistrant.swift
 student-app/windows/flutter/generated_plugin_registrant.cc
 student-app/windows/flutter/generated_plugin_registrant.h
 student-app/windows/flutter/generated_plugins.cmake
+backend/check_empty_notif.py
+backend/check_db.py
+backend/check_db2.py
+backend/check_enrollments.py
+backend/check_groups.py
+backend/check_notifications.py
+backend/db/seed.py
+backend/generate_classes.py
+backend/migrate_to_courses.py
+backend/migrate_to_students.py
+backend/test_db.py
+backend/test_login.py
+backend/test_login2.py

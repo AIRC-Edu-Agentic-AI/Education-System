@@ -68,44 +68,29 @@ async def _get_students_by_risk(db, module: str, presentation: str, tiers: List[
     """
     query: Dict[str, Any] = {"code_module": module, "code_presentation": presentation}
     
-    docs = await db["processed_students"].find(
-        query,
+    docs = await db["students"].find(
+        {"enrollments.code_module": module, "enrollments.code_presentation": presentation},
         {
             "_id": 0,
-            "id_student": 1,
-            "name": 1,
-            "risk_score": 1,
-            "risk_tier": 1,
-            "final_result": 1,
-            "vle_total": 1,
+            "student_id": 1,
+            "full_name": 1,
+            "email": 1,
+            "risk": 1,
+            "enrollments": 1
         }
     ).to_list(None)
 
     if not docs:
         return []
 
-    # Enrich voi risk data tu students collection
-    student_ids = [d.get("id_student") for d in docs if d.get("id_student")]
-    students_map: Dict[int, Dict] = {}
-    if student_ids:
-        student_docs = await db["students"].find(
-            {"student_id": {"$in": student_ids}},
-            {"_id": 0, "student_id": 1, "full_name": 1, "risk": 1, "email": 1}
-        ).to_list(None)
-        for s in student_docs:
-            students_map[s["student_id"]] = s
-
     result = []
     for d in docs:
-        sid = d.get("id_student")
-        enriched = students_map.get(sid, {})
-        risk_obj = enriched.get("risk", {})
+        sid = d.get("student_id")
+        risk_obj = d.get("risk", {})
         
-        # Prefer risk from students collection, fallback to processed_students
-        risk_score = risk_obj.get("score") if risk_obj else d.get("risk_score")
-        risk_tier = risk_obj.get("tier") if risk_obj else d.get("risk_tier")
+        risk_score = risk_obj.get("score")
+        risk_tier = risk_obj.get("tier")
 
-        # Tinh tier tu score neu khong co tier
         if risk_tier is None and risk_score is not None:
             if risk_score >= 0.8:
                 risk_tier = 4
@@ -121,14 +106,14 @@ async def _get_students_by_risk(db, module: str, presentation: str, tiers: List[
 
         result.append({
             "student_id": sid,
-            "name": enriched.get("full_name") or d.get("name") or f"Student {sid}",
-            "email": enriched.get("email"),
+            "name": d.get("full_name") or f"Student {sid}",
+            "email": d.get("email"),
             "risk_score": round(float(risk_score), 3) if risk_score is not None else None,
             "risk_tier": risk_tier,
             "risk_tier_label": _risk_tier_label(risk_tier) if risk_tier else None,
-            "risk_flags": risk_obj.get("flags", []) if risk_obj else [],
-            "final_result": d.get("final_result"),
-            "vle_total": d.get("vle_total"),
+            "risk_flags": risk_obj.get("flags", []),
+            "final_result": None,
+            "vle_total": 0,
         })
 
     # Sort by risk_score desc (cao nhat len dau)

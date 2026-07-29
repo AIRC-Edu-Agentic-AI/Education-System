@@ -75,6 +75,9 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # Authentication
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
+# Teacher: Notifications (BR26-27, BR32-33, BR38-39)
+app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
+
 # Student endpoints (BR01-BR18)
 app.include_router(student.router, prefix="/student", tags=["student"])
 app.include_router(schedule.student_router, prefix="/schedule", tags=["schedule-student"])
@@ -93,8 +96,7 @@ app.include_router(realtime_chat.router, prefix="/realtime-chat", tags=["realtim
 # Study Groups
 app.include_router(study_groups.router, tags=["study-groups"])
 
-# Teacher: Notifications (BR26-27, BR32-33, BR38-39)
-app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher-notification"])
+
 
 # Teacher: Dashboard & Analytics (BR34-35)
 app.include_router(teacher_dashboard.router, prefix="/api", tags=["teacher-dashboard"])
