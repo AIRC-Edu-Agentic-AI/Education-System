@@ -12,20 +12,26 @@ const _days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7',
 enum BlockKind { lecture, classes, study, exam }
 
 class _Block {
+  final String id;
   final String day;
   final int startMin;
   final int endMin;
   final String title;
   final String sub;
   final BlockKind kind;
+  final DateTime? date;
+  final bool isCustom;
 
   const _Block({
+    required this.id,
     required this.day,
     required this.startMin,
     required this.endMin,
     required this.title,
     required this.sub,
     required this.kind,
+    this.date,
+    this.isCustom = false,
   });
 
   String get timeLabel => '${_fmt(startMin)}–${_fmt(endMin)}';
@@ -177,7 +183,7 @@ Color _kindColor(BlockKind k) => switch (k) {
     };
 
 IconData _kindIcon(BlockKind k) => switch (k) {
-      BlockKind.lecture => Icons.cast_for_education_rounded,
+      BlockKind.lecture => Icons.school_outlined,
       BlockKind.classes => Icons.groups_2_outlined,
       BlockKind.study => Icons.menu_book_rounded,
       BlockKind.exam => Icons.assignment_late_outlined,
@@ -215,6 +221,7 @@ class TimetableScreen extends ConsumerStatefulWidget {
 
 class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   final List<_Block> _addedBlocks = [];
+  final Set<String> _removedStdIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -243,10 +250,16 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                 style: const TextStyle(color: AppTheme.danger))),
         data: (schedule) {
           final sessions = planAsync.asData?.value ?? const [];
-          final blocks = [..._buildBlocks(schedule, sessions), ..._addedBlocks];
+          final stdBlocks = _buildBlocks(schedule, sessions).where((b) => !_removedStdIds.contains(b.id)).toList();
+          final blocks = [...stdBlocks, ..._addedBlocks];
           final byDay = <String, List<_Block>>{for (final d in _days) d: []};
+          final byDate = <String, List<_Block>>{};
           for (final b in blocks) {
             (byDay[b.day] ??= []).add(b);
+            if (b.date != null) {
+              final key = '${b.date!.year}-${b.date!.month.toString().padLeft(2, '0')}-${b.date!.day.toString().padLeft(2, '0')}';
+              (byDate[key] ??= []).add(b);
+            }
           }
           for (final list in byDay.values) {
             list.sort((a, b) => a.startMin.compareTo(b.startMin));
@@ -306,6 +319,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       final start = _matchTime(it.subtitle);
       if (day == null || start == null) return;
       blocks.add(_Block(
+        id: 'std-${kind.name}-${day}-${start}-${it.title}',
         day: day,
         startMin: start,
         endMin: start + defaultMin,
@@ -329,6 +343,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       final dur = (s['duration'] is num) ? (s['duration'] as num).toInt() : 45;
       final type = (s['type'] ?? '').toString();
       blocks.add(_Block(
+        id: 'std-study-${day}-${start}-${dur}-${(s['subject'] ?? '').toString()}',
         day: day,
         startMin: start,
         endMin: start + dur,
@@ -340,10 +355,16 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     return blocks;
   }
 
-  Future<void> _showAddEventDialog([DateTime? preselect]) async {
-    final titleController = TextEditingController();
-    String selectedDay = preselect != null ? _labelFromDate(preselect) : _days[0];
-    TimeOfDay selectedTime = preselect != null ? TimeOfDay(hour: preselect.hour, minute: preselect.minute) : const TimeOfDay(hour: 9, minute: 0);
+  Future<void> _showAddEventDialog([DateTime? preselect, _Block? editingBlock]) async {
+    final titleController = TextEditingController(text: editingBlock?.title ?? '');
+    DateTime selectedDate = preselect ?? editingBlock?.date ?? DateTime.now();
+    String selectedDay = _labelFromDate(selectedDate);
+    TimeOfDay selectedTime = editingBlock != null
+        ? TimeOfDay(hour: editingBlock.startMin ~/ 60, minute: editingBlock.startMin % 60)
+        : TimeOfDay(hour: selectedDate.hour == 0 && selectedDate.minute == 0 ? 9 : selectedDate.hour, minute: selectedDate.minute);
+    if (selectedTime.hour == 0 && selectedTime.minute == 0) {
+      selectedTime = const TimeOfDay(hour: 9, minute: 0);
+    }
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -364,10 +385,31 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Ngày'),
+                    subtitle: Text('${selectedDate.day}/${selectedDate.month}/${selectedDate.year} ($selectedDay)'),
+                    trailing: const Icon(Icons.calendar_month),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setDialogState(() {
+                          selectedDate = picked;
+                          selectedDay = _labelFromDate(picked);
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: selectedDay,
                     decoration: const InputDecoration(
-                      labelText: 'Ngày',
+                      labelText: 'Thứ trong tuần',
                       border: OutlineInputBorder(),
                     ),
                     items: _days
@@ -410,9 +452,11 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                       'title': title,
                       'day': selectedDay,
                       'time': selectedTime,
+                      'date': selectedDate,
+                      'editingId': editingBlock?.id,
                     });
                   },
-                  child: const Text('Thêm lịch'),
+                  child: Text(editingBlock == null ? 'Thêm lịch' : 'Cập nhật'),
                 ),
               ],
             );
@@ -423,16 +467,89 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 
     if (result != null) {
       final startMin = result['time'].hour * 60 + result['time'].minute;
+      final eventDate = result['date'] as DateTime;
+      final existingId = result['editingId'] as String?;
       setState(() {
+        if (existingId != null) {
+          final index = _addedBlocks.indexWhere((b) => b.id == existingId);
+          if (index >= 0) {
+            _addedBlocks[index] = _Block(
+              id: existingId,
+              day: result['day'] as String,
+              startMin: startMin,
+              endMin: startMin + 60,
+              title: result['title'] as String,
+              sub: 'Lịch mới · ${result['time'].format(context)}',
+              kind: BlockKind.study,
+              date: eventDate,
+              isCustom: true,
+            );
+            return;
+          }
+          // editing a standard block -> create a custom replacement and hide original
+          _removedStdIds.add(existingId);
+        }
         _addedBlocks.add(_Block(
+          id: 'custom-${DateTime.now().millisecondsSinceEpoch}',
           day: result['day'] as String,
           startMin: startMin,
           endMin: startMin + 60,
           title: result['title'] as String,
           sub: 'Lịch mới · ${result['time'].format(context)}',
           kind: BlockKind.study,
+          date: eventDate,
+          isCustom: true,
         ));
       });
+      // Sync study-plan with backend (adds custom sessions, hides removed standard ones)
+      _syncStudyPlanWithBackend();
+    }
+  }
+
+  Future<void> _syncStudyPlanWithBackend() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final studentId = ref.read(activeStudentIdProvider);
+
+      final current = await api.getStudyPlan(studentId);
+      final mutable = List<Map<String, dynamic>>.from(current);
+
+      // Remove sessions that match removed standard IDs
+      for (final rid in _removedStdIds) {
+        final m = RegExp(r'std-study-(.+?)-(\d+)-(\d+)-(.+)').firstMatch(rid);
+        if (m != null) {
+          final day = m.group(1) ?? '';
+          final start = int.tryParse(m.group(2) ?? '0') ?? 0;
+          final dur = int.tryParse(m.group(3) ?? '0') ?? 0;
+          final subj = (m.group(4) ?? '').replaceAll('%', '-');
+          mutable.removeWhere((s) =>
+              (s['day'] ?? '') == day &&
+              (s['time'] ?? '') == _fmt(start) &&
+              ((s['duration'] ?? 0) == dur || (s['duration'] ?? 0) == dur) &&
+              ((s['subject'] ?? '') == subj || (s['subject'] ?? '') == subj));
+        }
+      }
+
+      // Add custom added blocks as study sessions
+      for (final b in _addedBlocks.where((b) => b.isCustom && b.kind == BlockKind.study)) {
+        mutable.add({
+          'subject': b.title,
+          'type': 'manual',
+          'duration': b.endMin - b.startMin,
+          'day': b.day,
+          'time': _fmt(b.startMin),
+          'sm2_interval': 1,
+        });
+      }
+
+      final ok = await api.updateStudyPlan(studentId, mutable);
+      if (!ok) {
+        // Optionally show toast — keep silent for now
+        print('Failed to sync study plan');
+      }
+    } catch (e, s) {
+      print('sync error: $e');
+      print(s);
     }
   }
 
@@ -491,7 +608,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                               FilledButton(
                                 onPressed: () {
                                   Navigator.of(ctx).pop();
-                                  _showAddEventDialog();
+                                  _showAddEventDialog(date);
                                 },
                                 child: const Text('Tạo lịch mới'),
                               ),
@@ -506,6 +623,10 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                               title: Text(b.title),
                               subtitle: Text('${b.timeLabel}${b.sub.isNotEmpty ? ' · ${b.sub}' : ''}'),
                               leading: CircleAvatar(backgroundColor: _kindColor(b.kind)),
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                _showEventActions(b);
+                              },
                             );
                           },
                         ),
@@ -516,6 +637,109 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         );
       },
     );
+  }
+  
+  void _showEventActions(_Block block) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final allowEdit = block.isCustom || block.kind == BlockKind.study;
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(block.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Text('${block.timeLabel} · ${_kindLabel(block.kind)}', style: const TextStyle(color: AppTheme.textSecondary)),
+              if (block.sub.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(block.sub, style: const TextStyle(color: AppTheme.textMuted)),
+              ],
+              if (block.date != null) ...[
+                const SizedBox(height: 8),
+                Text('Ngày: ${block.date!.day}/${block.date!.month}/${block.date!.year}', style: const TextStyle(color: AppTheme.textMuted)),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  if (allowEdit)
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          final pre = block.date ?? _dateForBlock(block);
+                          _showAddEventDialog(pre, block);
+                        },
+                        child: const Text('Sửa'),
+                      ),
+                    ),
+                  if (allowEdit) const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        if (block.isCustom) {
+                          setState(() {
+                            _addedBlocks.removeWhere((b) => b.id == block.id);
+                          });
+                          _syncStudyPlanWithBackend();
+                        } else if (block.kind == BlockKind.study) {
+                          setState(() {
+                            _removedStdIds.add(block.id);
+                          });
+                          _syncStudyPlanWithBackend();
+                        }
+                      },
+                      style: FilledButton.styleFrom(backgroundColor: (block.isCustom || block.kind == BlockKind.study) ? AppTheme.danger : AppTheme.surfaceCard),
+                      child: Text((block.isCustom || block.kind == BlockKind.study) ? 'Xóa' : 'Đóng'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  DateTime _dateForBlock(_Block b) {
+    final now = DateTime.now();
+    int targetWeekday;
+    switch (b.day) {
+      case 'Thứ 2':
+        targetWeekday = DateTime.monday;
+        break;
+      case 'Thứ 3':
+        targetWeekday = DateTime.tuesday;
+        break;
+      case 'Thứ 4':
+        targetWeekday = DateTime.wednesday;
+        break;
+      case 'Thứ 5':
+        targetWeekday = DateTime.thursday;
+        break;
+      case 'Thứ 6':
+        targetWeekday = DateTime.friday;
+        break;
+      case 'Thứ 7':
+        targetWeekday = DateTime.saturday;
+        break;
+      case 'CN':
+      default:
+        targetWeekday = DateTime.sunday;
+    }
+    final delta = (targetWeekday - now.weekday + 7) % 7; // next occurrence (0..6)
+    final date = DateTime(now.year, now.month, now.day).add(Duration(days: delta));
+    final hour = b.startMin ~/ 60;
+    final minute = b.startMin % 60;
+    return DateTime(date.year, date.month, date.day, hour, minute);
   }
 }
 
@@ -675,55 +899,62 @@ class _MiniEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _kindColor(block.kind);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.24), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(_kindIcon(block.kind), size: 14, color: color),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  block.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        final state = context.findAncestorStateOfType<_TimetableScreenState>();
+        state?._showEventActions(block);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.24), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(_kindIcon(block.kind), size: 14, color: color),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    block.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${block.timeLabel} · ${_kindLabel(block.kind)}',
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            if (block.sub.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(
+                block.sub,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textMuted,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${block.timeLabel} · ${_kindLabel(block.kind)}',
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-          if (block.sub.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Text(
-              block.sub,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppTheme.textMuted,
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
-  }
+}
 }
