@@ -2,46 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
-import 'package:student_agent/providers/providers.dart';
-import 'package:student_agent/widgets/glass_card.dart';
+
 
 import 'package:student_agent/providers/auth_provider.dart';
+import 'package:student_agent/providers/providers.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
-  // ✅ ĐẢM BẢO DANH SÁCH NÀY CÓ ĐỦ 5 ITEMS
-  static const _items = [
-     _MoreItem(
-    icon: Icons.map_outlined,
-    label: 'Study Plan',
-    route: '/study-plan',
-    color: AppTheme.accentGreen,
+  static const List<_QuickAction> _quickActions = [
+    _QuickAction(
+      icon: Icons.school_rounded,
+      label: 'Study Plan',
+      route: '/study-plan',
+      color: Color(0xFF3B82F6),
     ),
-    _MoreItem(
-      icon: Icons.book_outlined,
-      label: 'MyEnrollment',
+    _QuickAction(
+      icon: Icons.assignment_rounded,
+      label: 'My Enrollment',
       route: '/my-enrollment',
-      color: AppTheme.accentGreen,
+      color: Color(0xFF10B981),
     ),
-    _MoreItem(
-      icon: Icons.library_books_outlined,
-      label: 'Resource Center',
+    _QuickAction(
+      icon: Icons.library_books_rounded,
+      label: 'Resource',
       route: '/resources',
-      color: AppTheme.primaryBlue,
+      color: Color(0xFFF59E0B),
     ),
-    // ⭐ THÊM ITEM NHÓM HỌC TẬP VÀO ĐÂY
-    _MoreItem(
-      icon: Icons.group_outlined,
-      label: 'Nhóm học tập',
+    _QuickAction(
+      icon: Icons.group_rounded,
+      label: 'Nhóm học',
       route: '/study-groups',
-      color: AppTheme.primaryBlue,
+      color: Color(0xFF8B5CF6),
     ),
-    _MoreItem(
-      icon: Icons.person_outline_rounded,
-      label: 'Profile',
-      route: '/profile',
-      color: AppTheme.accentGreen,
+  ];
+
+  static const List<_RecentItem> _recentActivities = [
+    _RecentItem(
+      icon: Icons.book_rounded,
+      title: 'Đã xem: Slide Tuần 7',
+      time: '2 giờ trước',
+      color: Color(0xFF3B82F6),
+      isUrgent: false,
+    ),
+    _RecentItem(
+      icon: Icons.chat_rounded,
+      title: 'Tin nhắn mới từ nhóm DATA201',
+      time: '5 phút trước',
+      color: Color(0xFF10B981),
+      isUrgent: false,
+    ),
+    _RecentItem(
+      icon: Icons.assignment_rounded,
+      title: 'TMA-02 sắp đến hạn',
+      time: '3 ngày nữa',
+      color: Color(0xFFEF4444),
+      isUrgent: true,
+    ),
+  ];
+
+  static const List<_SettingItem> _settings = [
+    _SettingItem(
+      icon: Icons.language_rounded,
+      label: 'Language',
+      value: 'Tiếng Việt',
+      route: null,
+    ),
+    _SettingItem(
+      icon: Icons.dark_mode_rounded,
+      label: 'Theme',
+      value: 'Dark Mode',
+      route: null,
+    ),
+    _SettingItem(
+      icon: Icons.notifications_rounded,
+      label: 'Notifications',
+      value: 'On',
+      route: null,
     ),
   ];
 
@@ -52,140 +89,271 @@ class MoreScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        title: const Text('More'),
+        title: const Text(
+          'More',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+          ),
+        ),
         backgroundColor: Colors.transparent,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          // Profile summary
-          studentAsync.when(
-            loading: () => const _ProfileSkeleton(),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (student) => GlassCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: const BoxDecoration(
-                      gradient: AppTheme.blueGreenGradient,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        student.shortName.isNotEmpty
-                            ? student.shortName[0].toUpperCase()
-                            : 'S',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          student.fullName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'MSV ${student.studentId}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppTheme.textMuted,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // ── Navigation grid ──
-          const Text(
-            'Quick Access',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+        elevation: 0,
+        leading: const SizedBox.shrink(),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
               color: AppTheme.textSecondary,
+              size: 24,
             ),
+            onPressed: () => context.push('/notifications'),
           ),
-          const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.5,
-            children: _items
-                .map((item) => _MoreCard(item: item))
-                .toList(),
+        ],
+      ),
+      body: studentAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+        error: (_, __) => const Center(
+          child: Text(
+            'Không thể tải thông tin',
+            style: TextStyle(color: AppTheme.danger),
           ),
+        ),
+        data: (student) => ListView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          children: [
+            const SizedBox(height: 8),
 
-          const SizedBox(height: 32),
+            // ── Banner Card ──
+            _BannerCard(student: student),
 
-          // ── Logout ──
-          GestureDetector(
-            onTap: () async {
-              await ref.read(authNotifierProvider).logout();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: AppTheme.dangerGlow,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.danger.withValues(alpha: 0.3),
-                  width: 1,
+            const SizedBox(height: 24),
+
+            // ── Quick Actions ──
+            _QuickActionsSection(actions: _quickActions),
+
+            const SizedBox(height: 24),
+
+            // ── Recent Activity ──
+            _RecentActivitySection(activities: _recentActivities),
+
+            const SizedBox(height: 24),
+
+            // ── Settings Section ──
+            _SettingsSection(settings: _settings),
+
+            const SizedBox(height: 24),
+
+            // ── Divider ──
+            Container(
+              height: 1,
+              color: AppTheme.divider,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ── Logout ──
+            _LogoutButton(ref: ref),
+
+            const SizedBox(height: 20),
+
+            // ── Version ──
+            Center(
+              child: Text(
+                'Student Agent v1.0',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textMuted.withValues(alpha: 0.5),
                 ),
               ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    color: AppTheme.danger,
-                    size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 1. BANNER CARD
+// ═══════════════════════════════════════════════════════════════════
+
+class _BannerCard extends StatelessWidget {
+  final dynamic student;
+
+  const _BannerCard({required this.student});
+
+  double _calculateProgress() {
+    final total = student.enrollments.length;
+    if (total == 0) return 0.0;
+    final completed = student.enrollments.where((e) => e.finalResult != null).length;
+    return completed / total;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _calculateProgress();
+    final progressPercent = (progress * 100).round();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1A2A4A),
+            Color(0xFF0D1A2D),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppTheme.primaryBlue.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryBlue.withValues(alpha: 0.08),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppTheme.primaryBlue,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '👋 Welcome back, ${student.shortName}!',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Tiếp tục hành trình học tập của bạn',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGreen.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.accentGreen.withValues(alpha: 0.2),
                   ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Đăng xuất',
-                    style: TextStyle(
-                      color: AppTheme.danger,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                ),
+                child: Text(
+                  '$progressPercent%',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.accentGreen,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _StatItem(
+                value: '${student.enrollments.length}',
+                label: 'Môn học',
+                icon: Icons.school_rounded,
+                color: AppTheme.primaryBlue,
+              ),
+              _StatItem(
+                value: '${student.demographics.studiedCredits}',
+                label: 'Tín chỉ',
+                icon: Icons.credit_card_rounded,
+                color: AppTheme.accentGreen,
+              ),
+              _StatItem(
+                value: '12',
+                label: 'Ngày học',
+                icon: Icons.local_fire_department_rounded,
+                color: const Color(0xFFF59E0B),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Icon(
+                Icons.trending_up_rounded,
+                size: 16,
+                color: AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Tiến độ học tập',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: AppTheme.surfaceDark,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 0.7
+                          ? AppTheme.accentGreen
+                          : progress >= 0.4
+                              ? AppTheme.warning
+                              : AppTheme.danger,
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-          const Center(
-            child: Text(
-              'Student Agent v1.0',
-              style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
-            ),
+              const SizedBox(width: 8),
+              Text(
+                '$progressPercent%',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: progress >= 0.7
+                      ? AppTheme.accentGreen
+                      : progress >= 0.4
+                          ? AppTheme.warning
+                          : AppTheme.danger,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -193,34 +361,508 @@ class MoreScreen extends ConsumerWidget {
   }
 }
 
-class _MoreCard extends StatelessWidget {
-  const _MoreCard({required this.item});
-  final _MoreItem item;
+// ── Stat Item ──
+class _StatItem extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _StatItem({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withValues(alpha: 0.1),
+            width: 1,
+          ),
+        ),
+        
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 14, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. QUICK ACTIONS SECTION
+// ═══════════════════════════════════════════════════════════════════
+
+class _QuickActionsSection extends StatelessWidget {
+  final List<_QuickAction> actions;
+
+  const _QuickActionsSection({required this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '⚡ Quick Actions',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            Text(
+              '${actions.length} items',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppTheme.textMuted.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: actions.map((action) {
+            return Expanded(
+              child: _QuickActionCard(action: action),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Quick Action Card ──
+class _QuickActionCard extends StatelessWidget {
+  final _QuickAction action;
+
+  const _QuickActionCard({required this.action});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go(item.route),
+      onTap: () => context.push(action.route),
       child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: item.color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
+          color: action.color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: item.color.withValues(alpha: 0.25),
+            color: action.color.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
-        padding: const EdgeInsets.all(14),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: action.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                action.icon,
+                color: action.color,
+                size: 22,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              action.label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. RECENT ACTIVITY SECTION
+// ═══════════════════════════════════════════════════════════════════
+
+class _RecentActivitySection extends StatelessWidget {
+  final List<_RecentItem> activities;
+
+  const _RecentActivitySection({required this.activities});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(item.icon, color: item.color, size: 24),
-            Text(
-              item.label,
-              style: const TextStyle(
+            const Text(
+              '📌 Recent Activity',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {},
+              child: Text(
+                'Xem tất cả',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.8),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.cardBorder,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: activities.map((activity) {
+              return _RecentItemWidget(activity: activity);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Recent Item Widget ──
+class _RecentItemWidget extends StatelessWidget {
+  final _RecentItem activity;
+
+  const _RecentItemWidget({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.divider,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: activity.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              activity.icon,
+              color: activity.color,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activity.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 12,
+                      color: AppTheme.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      activity.time,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.textMuted.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (activity.isUrgent)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.danger.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.danger.withValues(alpha: 0.2),
+                ),
+              ),
+              child: const Text(
+                '⚠️',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppTheme.textMuted,
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 4. SETTINGS SECTION
+// ═══════════════════════════════════════════════════════════════════
+
+class _SettingsSection extends StatelessWidget {
+  final List<_SettingItem> settings;
+
+  const _SettingsSection({required this.settings});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '⚙️ Settings',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.cardBorder,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: settings.map((setting) {
+              return _SettingRow(setting: setting);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Setting Row ──
+class _SettingRow extends StatelessWidget {
+  final _SettingItem setting;
+
+  const _SettingRow({required this.setting});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        if (setting.route != null) {
+          context.push(setting.route!);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.divider,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                setting.icon,
+                color: AppTheme.primaryBlue,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                setting.label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+            Text(
+              setting.value,
+              style: TextStyle(
                 fontSize: 13,
+                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppTheme.textMuted,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. LOGOUT BUTTON
+// ═══════════════════════════════════════════════════════════════════
+
+class _LogoutButton extends StatelessWidget {
+  final WidgetRef ref;
+
+  const _LogoutButton({required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.surfaceDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppTheme.cardBorder),
+            ),
+            title: const Text(
+              'Đăng xuất',
+              style: TextStyle(color: AppTheme.textPrimary),
+            ),
+            content: const Text(
+              'Bạn có chắc chắn muốn đăng xuất?',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text(
+                  'Hủy',
+                  style: TextStyle(color: AppTheme.textSecondary),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.danger,
+                ),
+                child: const Text('Đăng xuất'),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true) {
+          await ref.read(authNotifierProvider).logout();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.dangerGlow,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppTheme.danger.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.logout_rounded,
+              color: AppTheme.danger,
+              size: 20,
+            ),
+            SizedBox(width: 10),
+            Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: AppTheme.danger,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -231,56 +873,50 @@ class _MoreCard extends StatelessWidget {
   }
 }
 
-class _ProfileSkeleton extends StatelessWidget {
-  const _ProfileSkeleton();
+// ═══════════════════════════════════════════════════════════════════
+// MODELS
+// ═══════════════════════════════════════════════════════════════════
 
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceDark,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 120,
-                height: 14,
-                color: AppTheme.surfaceDark,
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: 80,
-                height: 12,
-                color: AppTheme.surfaceDark,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MoreItem {
+class _QuickAction {
   final IconData icon;
   final String label;
   final String route;
   final Color color;
 
-  const _MoreItem({
+  const _QuickAction({
     required this.icon,
     required this.label,
     required this.route,
     required this.color,
+  });
+}
+
+class _RecentItem {
+  final IconData icon;
+  final String title;
+  final String time;
+  final Color color;
+  final bool isUrgent;
+
+  const _RecentItem({
+    required this.icon,
+    required this.title,
+    required this.time,
+    required this.color,
+    required this.isUrgent,
+  });
+}
+
+class _SettingItem {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? route;
+
+  const _SettingItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.route,
   });
 }
