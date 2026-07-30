@@ -372,7 +372,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: AppTheme.surfaceCard,
+              backgroundColor: AppTheme.surfaceDark,
               title: const Text('Tạo lịch mới'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -578,7 +578,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     final dayBlocks = blocks.where((b) => b.day == label).toList();
     await showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceCard,
+      backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -642,7 +642,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   void _showEventActions(_Block block) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceCard,
+      backgroundColor: AppTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
