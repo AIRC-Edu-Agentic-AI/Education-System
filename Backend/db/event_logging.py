@@ -3,6 +3,8 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+from db.analytics_db import ingest_event
+
 EVENT_LOGS_COLLECTION = "event_logs"
 EVENT_LOGS_FILE = os.path.join(os.path.dirname(__file__), "..", "uploads", "event_logs.jsonl")
 
@@ -39,6 +41,11 @@ async def log_event(
     os.makedirs(os.path.dirname(EVENT_LOGS_FILE), exist_ok=True)
     with open(EVENT_LOGS_FILE, "a", encoding="utf-8") as handle:
         handle.write(json.dumps(event_doc, default=str) + "\n")
+
+    try:
+        ingest_event(event_doc)
+    except Exception:
+        pass
 
     return event_doc
 
