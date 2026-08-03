@@ -314,21 +314,11 @@ export default function NotificationManager({ module, presentation }: Notificati
             <Typography variant="caption" color="text.secondary">Send notifications or direct messages to students</Typography>
           </Box>
         </Box>
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => setActiveTab(v)}
-          sx={{ '& .MuiTab-root': { minHeight: 36, fontSize: 12, textTransform: 'none', fontWeight: 500 }, '& .Mui-selected': { fontWeight: 700 } }}
-        >
-          <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Broadcast" />
-          <Tab icon={<ChatRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Direct Message" />
-          <Tab icon={<CampaignRoundedIcon sx={{ fontSize: 15 }} />} iconPosition="start" label="Class Message" />
-        </Tabs>
       </Box>
 
       <Divider />
 
-      {activeTab === 0 && (
-        <Box component="form" onSubmit={handleSendBroadcast} sx={{ p: 2 }}>
+      <Box component="form" onSubmit={handleSendBroadcast} sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
             {(['General Notice', 'Exam Schedule', 'Makeup Class', 'Academic Warning'] as const).map((t) => (
               <Chip
@@ -353,72 +343,7 @@ export default function NotificationManager({ module, presentation }: Notificati
               </Button>
             </Box>
           </Box>
-        </Box>
-      )}
-
-      {activeTab === 1 && (
-        <Box component="form" onSubmit={handleSendDirect} sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Autocomplete
-              size="small"
-              options={students}
-              filterOptions={filterOptions}
-              loading={studentsLoading}
-              value={selectedStudent}
-              onChange={(_, value) => {
-                setSelectedStudent(value)
-                if (value) setDmTitle(`Message to ${value.name}`)
-              }}
-              getOptionLabel={(o) => `${o.name} (#${o.id})`}
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                    <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: 'primary.main' }}>
-                      {option.name.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 500, lineHeight: 1.2 }} noWrap>
-                        {option.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
-                        ID: #{option.id}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField {...params} label="Select student" placeholder="Search by name or ID..."
-                  InputProps={{ ...params.InputProps, endAdornment: (<>{studentsLoading ? <CircularProgress size={14} /> : null}{params.InputProps.endAdornment}</>) }}
-                />
-              )}
-              noOptionsText={
-                !module || !presentation
-                  ? "Please select a course first"
-                  : studentsLoading
-                  ? "Loading students..."
-                  : "No students found"
-              }
-            />
-            <TextField fullWidth size="small" label="Title" value={dmTitle} onChange={(e) => setDmTitle(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <TextField fullWidth size="small" multiline rows={3} label="Message" placeholder="Write your message..." value={dmContent} onChange={(e) => setDmContent(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {selectedStudent && (
-                <Typography variant="caption" color="text.secondary">
-                  To: {selectedStudent.name} (#{selectedStudent.id})
-                </Typography>
-              )}
-              <Button type="submit" variant="contained" disableElevation size="small" color="secondary"
-                endIcon={isDmSending ? <CircularProgress size={14} color="inherit" /> : <SendRoundedIcon fontSize="small" />}
-                disabled={!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending}
-                sx={{ ml: 'auto', px: 2, py: 0.5, borderRadius: 1, fontWeight: 600, textTransform: 'none' }}
-              >
-                {isDmSending ? 'Sending...' : 'Send Message'}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      )}
+      </Box>
 
       <Divider />
 
