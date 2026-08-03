@@ -3,7 +3,7 @@ import {
   Box, Card, Typography, TextField, IconButton, List, ListItem,
   ListItemText, ListItemAvatar, Avatar, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  Autocomplete, Tooltip, Chip, Checkbox, Tabs, Tab
+  Autocomplete, Tooltip, Chip
 } from '@mui/material';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -57,15 +57,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<ClassGroup | null>(null);
 
-  const [openNewChatDialog, setOpenNewChatDialog] = useState(false);
-  const [students, setStudents] = useState<{ id_student: number; name: string }[]>([]);
-  const [loadingStudents, setLoadingStudents] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStudentIds, setSelectedStudentIds] = useState<(string | number)[]>([]);
-  const [groupName, setGroupName] = useState('');
-  const [dialogMode, setDialogMode] = useState<'private' | 'group'>('private');
-  
-
   const ws = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -93,84 +84,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  useEffect(() => {
-    if (openNewChatDialog && courseCode) {
-      const fetchStudents = async () => {
-        setLoadingStudents(true);
-        try {
-          const [m, p] = courseCode.split(' ');
-          const res = await fetch(`${API_BASE}/course/${m}/${p}/students-lite`);
-          const data = await res.json();
-          setStudents(data.students || []);
-        } catch (e) {
-          console.error("Error fetching students list", e);
-        } finally {
-          setLoadingStudents(false);
-        }
-      };
-      fetchStudents();
-    }
-  }, [openNewChatDialog, courseCode]);
-
-  const handleStartPrivateChat = async (studentId: string | number, studentName: string) => {
-    const existing = channels.find(c => 
-      c.type === 'private_message' && 
-      c.members?.includes(String(studentId))
-    );
-    if (existing) {
-      setActiveChannel(existing);
-      setOpenNewChatDialog(false);
-      return;
-    }
-    
-    try {
-      const res = await fetch(`${BASE_URL}/realtime-chat/channels`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: studentName,
-          course_code: courseCode,
-          members: [TEACHER_ID, String(studentId)],
-          type: 'private_message'
-        })
-      });
-      if (res.ok) {
-        const newChan = await res.json();
-        setChannels(prev => [newChan, ...prev]);
-        setActiveChannel(newChan);
-        setOpenNewChatDialog(false);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleCreateGroupChat = async () => {
-    if (!groupName.trim() || selectedStudentIds.length === 0) return;
-    try {
-      const res = await fetch(`${BASE_URL}/realtime-chat/channels`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: groupName.trim(),
-          course_code: courseCode,
-          members: [TEACHER_ID, ...selectedStudentIds.map(String)],
-          type: 'private_group'
-        })
-      });
-      if (res.ok) {
-        const newChan = await res.json();
-        setChannels(prev => [newChan, ...prev]);
-        setActiveChannel(newChan);
-        setOpenNewChatDialog(false);
-        setGroupName('');
-        setSelectedStudentIds([]);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const setupWebSocket = () => {
     if (ws.current) ws.current.close();
@@ -292,8 +205,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
       case 'announcement': return <CampaignRoundedIcon />;
       case 'discussion': return <ForumRoundedIcon />;
       case 'class_group': return <GroupRoundedIcon />;
-      case 'private_group': return <GroupRoundedIcon />;
-      case 'private_message': return <PersonRoundedIcon />;
       default: return <PersonRoundedIcon />;
     }
   };
@@ -302,8 +213,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
       case 'announcement': return 'error.main';
       case 'discussion': return 'success.main';
       case 'class_group': return 'primary.main';
-      case 'private_group': return 'info.main';
-      case 'private_message': return 'secondary.main';
       default: return 'secondary.main';
     }
   };
@@ -314,11 +223,9 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
       <Box sx={{ width: 320, borderRight: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Typography variant="subtitle1" fontWeight={700}>Unified Messages</Typography>
-          <Tooltip title="New Chat / Group">
-            <IconButton size="small" onClick={() => setOpenNewChatDialog(true)} sx={{ bgcolor: 'primary.50', color: 'primary.main', '&:hover': { bgcolor: 'primary.100' } }}>
+          <Tooltip title="Create Class Group Chat">
+            <IconButton size="small" onClick={handleOpenCreate} sx={{ bgcolor: 'primary.50', color: 'primary.main', '&:hover': { bgcolor: 'primary.100' } }}>
               <AddRoundedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
             </IconButton>
           </Tooltip>
         </Box>
@@ -459,133 +366,6 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
         <DialogActions>
           <Button onClick={() => setIsCreating(false)} color="inherit">Cancel</Button>
           <Button onClick={handleConfirmCreate} variant="contained" disabled={!selectedGroup}>Create Group</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog for New Chat / Group */}
-      <Dialog 
-        open={openNewChatDialog} 
-        onClose={() => {
-          setOpenNewChatDialog(false);
-          setSearchQuery('');
-          setSelectedStudentIds([]);
-          setGroupName('');
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" fontWeight={700}>New Conversation</Typography>
-          <Tabs 
-            value={dialogMode === 'private' ? 0 : 1} 
-            onChange={(_, v) => {
-              setDialogMode(v === 0 ? 'private' : 'group');
-              setSearchQuery('');
-              setSelectedStudentIds([]);
-            }}
-            sx={{ mt: 1, borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Tab label="Private Message" />
-            <Tab label="Group Chat" />
-          </Tabs>
-        </DialogTitle>
-        <DialogContent sx={{ p: 2, maxHeight: 400, overflowY: 'auto' }}>
-          {dialogMode === 'group' && (
-            <TextField
-              fullWidth
-              label="Group Name"
-              placeholder="Enter group name..."
-              size="small"
-              value={groupName}
-              onChange={e => setGroupName(e.target.value)}
-              sx={{ mb: 2, mt: 1 }}
-            />
-          )}
-
-          <TextField
-            fullWidth
-            placeholder="Search students by name or ID..."
-            size="small"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            sx={{ mb: 2, mt: dialogMode === 'private' ? 1 : 0 }}
-          />
-
-          {loadingStudents ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress size={24} />
-            </Box>
-          ) : (
-            <List>
-              {students
-                .filter(s => 
-                  s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  String(s.id_student).includes(searchQuery)
-                )
-                .map(student => {
-                  const isSelected = selectedStudentIds.includes(student.id_student);
-                  return (
-                    <ListItem 
-                      key={student.id_student}
-                      button
-                      onClick={() => {
-                        if (dialogMode === 'private') {
-                          handleStartPrivateChat(student.id_student, student.name);
-                        } else {
-                          setSelectedStudentIds(prev => 
-                            prev.includes(student.id_student)
-                              ? prev.filter(id => id !== student.id_student)
-                              : [...prev, student.id_student]
-                          );
-                        }
-                      }}
-                      sx={{ borderRadius: 1, mb: 0.5 }}
-                    >
-                      {dialogMode === 'group' && (
-                        <Checkbox 
-                          checked={isSelected}
-                          edge="start"
-                          disableRipple
-                        />
-                      )}
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, fontSize: 13 }}>
-                          <PersonRoundedIcon sx={{ fontSize: 18 }} />
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText 
-                        primary={student.name} 
-                        secondary={`ID: ${student.id_student}`}
-                      />
-                    </ListItem>
-                  );
-                })}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Button 
-            onClick={() => {
-              setOpenNewChatDialog(false);
-              setSearchQuery('');
-              setSelectedStudentIds([]);
-              setGroupName('');
-            }}
-          >
-            Cancel
-          </Button>
-          {dialogMode === 'group' && (
-            <Button 
-              variant="contained" 
-              color="primary"
-              disabled={!groupName.trim() || selectedStudentIds.length === 0}
-              onClick={handleCreateGroupChat}
-            >
-              Create Group ({selectedStudentIds.length})
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
         </DialogActions>
       </Dialog>
     </Card>

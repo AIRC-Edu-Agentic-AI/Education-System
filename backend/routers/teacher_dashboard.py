@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional
-from bson import ObjectId
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -29,23 +28,21 @@ def get_db():
 async def list_courses() -> Dict[str, Any]:
     try:
         db = get_db()
-        courses = await db["courses"].find({}, {"_id": 0}).to_list(None)
+        courses = await db["processed_courses"].find({}, {"students": 0, "_id": 0}).to_list(None)
         result = []
         for course in courses:
-            try:
-                mod_len = int(course.get("module_length") or 30)
-            except (ValueError, TypeError):
-                mod_len = 30
             result.append({
-                "module": course.get("code_module"),
-                "module_name": course.get("title", ""),
-                "presentation": course.get("code_presentation"),
-                "presentation_name": course.get("code_presentation"),
-                "course_length_days": mod_len * 7,
-                "num_weeks": mod_len,
-                "student_count": 0,
+                "module": course.get("module"),
+                "module_name": course.get("module_name"),
+                "presentation": course.get("presentation"),
+                "presentation_name": course.get("presentation_name"),
+                "course_length_days": int(course.get("num_weeks", 0) or 0) * 7,
+                "num_weeks": course.get("num_weeks"),
+                "student_count": course.get("student_count"),
             })
         return {"courses": result}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
@@ -54,82 +51,44 @@ async def list_courses() -> Dict[str, Any]:
 async def get_course_classes(module: str, presentation: str) -> Dict[str, Any]:
     try:
         db = get_db()
-        classrooms = await db["classrooms"].find(
-            {"course_code": module},
-            {"_id": 0, "name": 1, "student_ids": 1}
-        ).to_list(None)
-        return {"classes": classrooms}
+        course = await db["courses"].find_one(
+            {"course_code": module, "presentation": presentation},
+            {"_id": 0, "classes": 1}
+        )
+        if not course:
+            return {"classes": []}
+            
+        return {"classes": course.get("classes", [])}
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
-
 
 @router.get("/course/{module}/{presentation}/students-lite")
 async def get_course_students_lite(module: str, presentation: str) -> Dict[str, Any]:
     try:
         db = get_db()
-        students = await db["students"].find(
-            {"enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}},
-            {"_id": 0, "student_id": 1, "full_name": 1}
+        students = await db["processed_students"].find(
+            {"code_module": module, "code_presentation": presentation},
+            {"_id": 0, "id_student": 1, "name": 1}
         ).to_list(None)
-        
-        mapped = []
-        for s in students:
-            mapped.append({
-                "id_student": s.get("student_id"),
-                "name": s.get("full_name")
-            })
-        return {"students": mapped}
+        return {"students": students}
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
-
 
 @router.get("/course/{module}/{presentation}")
 async def get_course(module: str, presentation: str) -> Dict[str, Any]:
     try:
         db = get_db()
-        course = await db["courses"].find_one(
-            {"code_module": module, "code_presentation": presentation}, {"_id": 0}
+        course = await db["processed_courses"].find_one(
+            {"module": module, "presentation": presentation}, {"_id": 0}
         )
         if not course:
             raise HTTPException(status_code=404, detail="Course not found")
 
-        course_data = {
-            "module": course.get("code_module"),
-            "presentation": course.get("code_presentation"),
-            "module_name": course.get("title"),
-            "num_weeks": course.get("module_length", 30),
-            "cohort_p75_decayed": [0] * 40
-        }
-
-        students_raw = await db["students"].find(
-            {"enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}},
+        students = await db["processed_students"].find(
+            {"code_module": module, "code_presentation": presentation},
             {"_id": 0},
         ).to_list(None)
-        
-        students = []
-        for s in students_raw:
-            students.append({
-                "id_student": s.get("student_id"),
-                "name": s.get("full_name"),
-                "gender": s.get("demographics", {}).get("gender", "Unknown"),
-                "region": s.get("demographics", {}).get("region", "Unknown"),
-                "highest_education": s.get("demographics", {}).get("highest_education", "Unknown"),
-                "age_band": s.get("demographics", {}).get("age_band", "Unknown"),
-                "num_of_prev_attempts": s.get("demographics", {}).get("num_of_prev_attempts", 0),
-                "studied_credits": s.get("demographics", {}).get("studied_credits", 0),
-                "disability": "Y" if s.get("demographics", {}).get("disability") else "N",
-                "final_result": "Unknown",
-                "date_registration": 0,
-                "date_unregistration": None,
-                "weekly_clicks": [0] * 40,
-                "decayed_engagement": [0] * 40,
-                "risk_by_week": [0.2] * 40,
-                "tier_by_week": [1] * 40,
-                "lstm_trajectories": None,
-                "assessments": []
-            })
-
-        return serialize_doc({**course_data, "students": students})
+        return serialize_doc({**course, "students": students})
     except HTTPException:
         raise
     except Exception as exc:
@@ -140,36 +99,21 @@ async def get_course(module: str, presentation: str) -> Dict[str, Any]:
 async def get_student(module: str, presentation: str, student_id: str) -> Dict[str, Any]:
     try:
         db = get_db()
-        student = await db["students"].find_one(
-            {"student_id": int(student_id)},
+        student = await db["processed_students"].find_one(
+            {
+                "code_module": module,
+                "code_presentation": presentation,
+                "id_student": int(student_id),
+            },
             {"_id": 0},
         )
         if not student:
             raise HTTPException(status_code=404, detail="Student not found")
-            
-        mapped_student = {
-            "id_student": student.get("student_id"),
-            "name": student.get("full_name"),
-            "code_module": module,
-            "code_presentation": presentation,
-            "gender": student.get("demographics", {}).get("gender", "Unknown"),
-            "region": student.get("demographics", {}).get("region", "Unknown"),
-            "highest_education": student.get("demographics", {}).get("highest_education", "Unknown"),
-            "age_band": student.get("demographics", {}).get("age_band", "Unknown"),
-            "num_of_prev_attempts": student.get("demographics", {}).get("num_of_prev_attempts", 0),
-            "studied_credits": student.get("demographics", {}).get("studied_credits", 0),
-            "disability": "Y" if student.get("demographics", {}).get("disability") else "N",
-            "final_result": "Unknown",
-            "date_registration": 0,
-            "date_unregistration": None,
-            "weekly_clicks": [0] * 40,
-            "decayed_engagement": [0] * 40,
-            "risk_by_week": [0.2] * 40,
-            "tier_by_week": [1] * 40,
-            "lstm_trajectories": None,
-            "assessments": []
-        }
-        return serialize_doc(mapped_student)
+        return serialize_doc(student)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="student_id must be an integer") from exc
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
@@ -180,6 +124,8 @@ async def import_students(payload: ImportStudentsRequest) -> Dict[str, Any]:
         db = get_db()
         result = await db["students"].insert_many(payload.students)
         return {"message": "Imported successfully", "count": len(result.inserted_ids)}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
@@ -188,121 +134,118 @@ async def import_students(payload: ImportStudentsRequest) -> Dict[str, Any]:
 async def attendance_stats(module: str, presentation: str) -> List[Dict[str, Any]]:
     try:
         db = get_db()
-        pipeline = [
-            {"$match": {
-                "enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}
-            }},
-            {"$unwind": "$enrollments"},
-            {"$match": {
-                "enrollments.code_module": module,
-                "enrollments.code_presentation": presentation
-            }},
-            {"$group": {
-                "_id": "$enrollments.final_result",
-                "count": {"$sum": 1}
-            }}
-        ]
-        results = await db["students"].aggregate(pipeline).to_list(None)
-        
-        stats_map = {
-            "Pass": {"value": 0, "color": "#4CAF50"},
-            "Fail": {"value": 0, "color": "#F44336"},
-            "Withdrawn": {"value": 0, "color": "#FFC107"},
-            "Distinction": {"value": 0, "color": "#2196F3"},
+        raw_data = await db["processed_students"].aggregate([
+            {"$match": {"code_module": module, "code_presentation": presentation}},
+            {"$group": {"_id": "$final_result", "count": {"$sum": 1}}},
+        ]).to_list(None)
+
+        color_map = {
+            "Pass": "#4CAF50",
+            "Fail": "#F44336",
+            "Withdrawn": "#FFC107",
+            "Distinction": "#2196F3",
         }
-        
-        for r in results:
-            name = r.get("_id")
-            count = r.get("count", 0)
-            
-            if not name:
-                # Distribute 'Unknown' into demo categories (75% On Time, 15% Late, 10% Absent)
-                pass_c = int(count * 0.75)
-                fail_c = int(count * 0.15)
-                withdrawn_c = count - pass_c - fail_c
-                
-                stats_map["Pass"]["value"] += pass_c
-                stats_map["Fail"]["value"] += fail_c
-                stats_map["Withdrawn"]["value"] += withdrawn_c
-            else:
-                if name in stats_map:
-                    stats_map[name]["value"] += count
-                else:
-                    stats_map[name] = {"value": count, "color": "#9E9E9E"}
-                
-        output = []
-        for name, data in stats_map.items():
-            if data["value"] > 0:
-                output.append({"name": name, "value": data["value"], "color": data["color"]})
-                
-        if not output:
-            return [{"name": "No Data", "value": 1, "color": "#E0E0E0"}]
-            
-        return output
+        return [
+            {
+                "name": item.get("_id") or "Unknown",
+                "value": item.get("count", 0),
+                "color": color_map.get(item.get("_id"), "#9E9E9E"),
+            }
+            for item in raw_data
+        ]
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
 
 @router.post("/ai/chat")
 async def ai_chat(payload: ChatRequest) -> Dict[str, str]:
-    return {"reply": f"Đã nhận câu hỏi: {payload.message}"}
+    return {"reply": f"ÄÃ£ nháº­n cÃ¢u há»i: {payload.message}"}
 
 
 @router.get("/classrooms")
 async def get_classrooms(module: str, presentation: str) -> Dict[str, Any]:
+    """Get classrooms dynamically by chunking students if not explicitly defined."""
     try:
         db = get_db()
+        import json as _json
+        
+        # 1. Check if explicit classrooms exist
         docs = await db["classrooms"].find(
-            {"course_code": module},
+            {"module": module, "code_presentation": presentation, "status": {"$ne": "deleted"}},
             {"_id": 0, "name": 1, "student_ids": 1}
         ).to_list(None)
         
         classrooms = []
         for d in docs:
-            classrooms.append({"class_name": d.get("name", ""), "members": d.get("student_ids", [])})
+            sids = d.get("student_ids", [])
+            if isinstance(sids, str):
+                try:
+                    sids = _json.loads(sids)
+                except Exception:
+                    sids = []
+            classrooms.append({"class_name": d.get("name", ""), "members": sids})
             
+        # 2. If no classrooms exist, dynamically chunk students of this module+presentation
+        if not classrooms:
+            students = await db["processed_students"].find(
+                {"code_module": module, "code_presentation": presentation},
+                {"_id": 0, "id_student": 1}
+            ).to_list(None)
+            
+            sids = [s["id_student"] for s in students if "id_student" in s]
+            
+            # Chunk into groups of ~120 students
+            chunk_size = 120
+            for i in range(0, len(sids), chunk_size):
+                chunk = sids[i:i+chunk_size]
+                class_num = (i // chunk_size) + 1
+                classrooms.append({
+                    "class_name": f"Nhóm {class_num}",
+                    "members": chunk
+                })
+        
         return {"classes": classrooms}
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
-
 @router.get("/course-options")
 async def get_course_options() -> Dict[str, Any]:
+    """Get all unique module and presentation options from processed_students"""
     try:
         db = get_db()
-        courses = await db["courses"].find({}, {"_id": 0}).to_list(None)
+        pipeline = [
+            {"$group": {"_id": {"module": "$code_module", "pres": "$code_presentation"}, "count": {"$sum": 1}}},
+            {"$sort": {"_id.module": 1, "_id.pres": 1}}
+        ]
+        results = await db["processed_students"].aggregate(pipeline).to_list(None)
         
         options = []
-        for r in courses:
+        for r in results:
             options.append({
-                "module": r.get("code_module"),
-                "presentation": r.get("code_presentation"),
-                "student_count": 0
+                "module": r["_id"]["module"],
+                "presentation": r["_id"]["pres"],
+                "student_count": r["count"]
             })
         return {"options": options}
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
 
-
 @router.get("/course-students")
 async def get_course_students(module: str, presentation: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Get all students for a course."""
     try:
         db = get_db()
-        query = {"enrollments.code_module": module}
-        if presentation:
-            query = {"enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}}
-            
-        students = await db["students"].find(
+        query = {"code_module": module}
+        if presentation and presentation != "ALL":
+            query["code_presentation"] = presentation
+        
+        students = await db["processed_students"].find(
             query,
-            {"_id": 0, "student_id": 1, "demographics.region": 1}
+            {"_id": 0, "id_student": 1, "region": 1}
         ).to_list(None)
         
-        mapped = []
-        for s in students:
-            mapped.append({
-                "id_student": s.get("student_id"),
-                "region": s.get("demographics", {}).get("region", "Unknown")
-            })
-        return mapped
+        return students
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc

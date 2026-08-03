@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography, Chip, Grid } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/DashboardRounded';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonthRounded';
+import ScheduleCrud from '../components/ScheduleCrud';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
 import ChatManager from '../components/ChatManager';
@@ -30,11 +32,12 @@ export const ClassView = () => {
           }}
         >
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Overview" />
+          <Tab icon={<CalendarMonthIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Schedule" />
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Communication" />
         </Tabs>
       </Box>
 
-      <Box sx={{ flex: 1, p: 3 }}>
+      <Box sx={{ flex: 1, p: activeTab === 1 ? 0 : 3 }}>
         {activeTab === 0 && (
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
@@ -43,6 +46,9 @@ export const ClassView = () => {
           </Grid>
         )}
         {activeTab === 1 && (
+          <ScheduleCrud module={selectedModule} presentation={selectedPresentation} />
+        )}
+        {activeTab === 2 && (
           <Grid container spacing={2} sx={{ height: 'calc(100vh - 180px)' }}>
              <Grid item xs={12} md={5} sx={{ height: '100%', overflowY: 'auto' }}>
                 <NotificationManager module={selectedModule} presentation={selectedPresentation} />

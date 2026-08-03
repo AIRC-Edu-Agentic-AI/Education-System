@@ -96,23 +96,9 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
         except Exception as e:
             print(f"Error seeding channels for {course_code}: {e}")
 
+    query = {"$or": [{"members": user_id}]}
     if course_code:
-        query = {
-            "$or": [
-                {"members": user_id},
-                {
-                    "course_code": course_code,
-                    "type": {"$in": ["announcement", "discussion", "class_group"]},
-                    "$or": [
-                        {"members": {"$exists": False}},
-                        {"members": {"$size": 0}},
-                        {"members": None}
-                    ]
-                }
-            ]
-        }
-    else:
-        query = {"members": user_id}
+        query["$or"].append({"course_code": course_code})
         
     docs = await db["channels"].find(query).sort("created_at", -1).to_list(None)
     

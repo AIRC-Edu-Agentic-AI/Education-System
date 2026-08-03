@@ -696,17 +696,6 @@ class ApiService {
     }
   }
 
-  Future<bool> updateStudyPlan(int studentId, List<Map<String, dynamic>> sessions) async {
-    if (_useMock) return true;
-    try {
-      final res = await _dio.put('/schedule/$studentId/plan', data: {'sessions': sessions});
-      return res.statusCode == 200 || res.statusCode == 201;
-    } catch (e) {
-      print('updateStudyPlan error: $e');
-      return false;
-    }
-  }
-
   // ── Resources ─────────────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getResources(int studentId) async {
     if (_useMock) return MockData.resources;

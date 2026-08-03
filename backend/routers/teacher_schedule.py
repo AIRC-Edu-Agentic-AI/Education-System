@@ -43,18 +43,17 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
         if new_schedule and new_schedule.get("module") and new_schedule.get("presentation"):
             module = new_schedule["module"]
             presentation = new_schedule["presentation"]
-            students = await db["students"].find(
-                {"enrollments.code_module": module, "enrollments.code_presentation": presentation},
-                {"_id": 0, "student_id": 1}
+            students = await db["processed_students"].find(
+                {"code_module": module, "code_presentation": presentation},
+                {"_id": 0}
             ).to_list(None)
-            target_sids = [s.get("student_id") for s in students if "student_id" in s]
 
-            if target_sids:
+            if students:
                 from datetime import datetime, timezone
                 now_iso = datetime.now(timezone.utc).isoformat()
                 docs = [
                     {
-                        "student_id": sid,
+                        "student_id": s.get("id_student", s.get("id")),
                         "type": "general",
                         "read": False,
                         "sender_role": "instructor",
