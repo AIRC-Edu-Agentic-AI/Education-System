@@ -15,6 +15,7 @@ from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
 from routers.course_communication import router as course_communication_router
+from db.event_logging import log_event
 
 
 class NoCacheStaticFiles(StaticFiles):
@@ -61,6 +62,41 @@ app = FastAPI(
     description="API cho he thong giao duc tich hop AI -- Student + Teacher + AI Agent",
     lifespan=lifespan,
 )
+
+@app.middleware("http")
+async def auto_event_logging_middleware(request, call_next):
+    path = request.url.path
+    if path in {"/docs", "/openapi.json", "/redoc", "/health", "/uploads"}:
+        return await call_next(request)
+
+    payload = {
+        "method": request.method,
+        "path": path,
+        "query_params": dict(request.query_params),
+        "user_agent": request.headers.get("user-agent"),
+        "client_ip": request.headers.get("x-forwarded-for") or request.client.host if request.client else None,
+    }
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        await log_event(
+            None,
+            "http_error",
+            target_id=path,
+            payload={**payload, "error": str(exc)},
+            source="http_middleware",
+        )
+        raise
+
+    await log_event(
+        None,
+        "http_request",
+        target_id=path,
+        payload={**payload, "status_code": response.status_code},
+        source="http_middleware",
+    )
+    return response
 
 app.add_middleware(
     CORSMiddleware,

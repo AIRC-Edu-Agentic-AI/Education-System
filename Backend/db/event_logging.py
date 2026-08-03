@@ -3,14 +3,17 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+
+DEFAULT_EVENT_LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "uploads", "event_logs.jsonl")
+
 from db.analytics_db import ingest_event
 
 EVENT_LOGS_COLLECTION = "event_logs"
-EVENT_LOGS_FILE = os.path.join(os.path.dirname(__file__), "..", "uploads", "event_logs.jsonl")
+EVENT_LOGS_FILE = DEFAULT_EVENT_LOG_PATH
 
 
 async def log_event(
-    db: Any,
+    db: Optional[Any],
     event_type: str,
     actor_id: Optional[str] = None,
     target_id: Optional[str] = None,
@@ -19,9 +22,6 @@ async def log_event(
     metadata: Optional[dict] = None,
 ) -> dict:
     """Persist a structured event for analytics, auditing, and ETL input."""
-    if db is None:
-        raise ValueError("db must not be None")
-
     now = datetime.now(timezone.utc)
     event_doc = {
         "event_type": event_type,
@@ -34,7 +34,7 @@ async def log_event(
         "created_at_dt": now,
     }
 
-    if "event_logs" in db:
+    if db is not None and hasattr(db, "__contains__") and "event_logs" in db:
         result = await db[EVENT_LOGS_COLLECTION].insert_one(event_doc)
         event_doc["_id"] = result.inserted_id
 

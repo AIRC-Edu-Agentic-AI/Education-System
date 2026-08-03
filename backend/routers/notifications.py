@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from db.mongodb import get_db
 from db.mock_data import MOCK_NOTIFICATIONS
+from db.event_logging import log_event
 
 router = APIRouter()
 
@@ -180,10 +181,26 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
 
     if db is None:
         # Mock mode — không persist, trả về danh sách mock
+        await log_event(
+            None,
+            "notification_broadcast",
+            actor_id=payload.sender_role,
+            target_id=payload.course_code or "broadcast",
+            payload={"student_ids": payload.student_ids, "type": payload.type, "count": len(docs), "mock": True},
+            source="notifications",
+        )
         return {"ok": True, "count": len(docs), "mock": True}
 
     if docs:
         result = await db["notifications"].insert_many(docs)
+        await log_event(
+            None,
+            "notification_broadcast",
+            actor_id=payload.sender_role,
+            target_id=payload.course_code or "broadcast",
+            payload={"student_ids": payload.student_ids, "type": payload.type, "count": len(result.inserted_ids)},
+            source="notifications",
+        )
         return {"ok": True, "count": len(result.inserted_ids)}
 
     return {"ok": True, "count": 0}
