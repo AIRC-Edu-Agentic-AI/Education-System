@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from db.analytics_db import get_analytics_summary, get_daily_trends, run_etl_from_jsonl
 from db.mock_data import MOCK_STUDENT
 
 router = APIRouter()
@@ -228,6 +229,21 @@ async def notification_plan(student_id: int | None = None):
         "title": (d.get("payload") or {}).get("title", ""),
         "send_at": d.get("send_at"),
     } for d in docs]
+
+
+@router.get("/analytics/summary")
+async def analytics_summary(days: int = 7):
+    return get_analytics_summary(days=days)
+
+
+@router.post("/analytics/etl")
+async def analytics_etl():
+    return run_etl_from_jsonl()
+
+
+@router.get("/analytics/trends")
+async def analytics_trends(days: int = 7):
+    return get_daily_trends(days=days)
 
 
 @router.get("/settings")
