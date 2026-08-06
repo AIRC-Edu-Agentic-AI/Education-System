@@ -337,16 +337,20 @@ class GradeSubmissionRequest(BaseModel):
 
 
 class CreateAssignmentRequest(BaseModel):
-    code_module: str
+    title: str
+    description: str
     type: str = "TMA"           # TMA | CMA | Exam
     weight: float = 10.0
     due_date: int               # Module-day offset
     allowed_formats: List[str] = ["pdf", "docx"]
     max_file_size_mb: int = 25
+    teacher_id: Optional[str] = None
 
 
 class CreateClassroomAssignmentRequest(BaseModel):
     code_module: str
+    title: str
+    description: str
     type: str = "TMA"           # TMA | CMA | Exam
     weight: float = 10.0
     due_date: int               # Module-day offset
@@ -356,6 +360,8 @@ class CreateClassroomAssignmentRequest(BaseModel):
 
 
 class UpdateClassroomAssignmentRequest(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
     type: Optional[str] = None
     weight: Optional[float] = None
     due_date: Optional[int] = None
@@ -408,6 +414,8 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
     doc = {
         "id_assessment": id_assessment,
         "code_module": payload.code_module,
+        "title": payload.title,
+        "description": payload.description,
         "type": payload.type,
         "weight": payload.weight,
         "due_date": payload.due_date,
@@ -448,6 +456,10 @@ async def update_classroom_assignment(classroom_id: str, id_assessment: int, pay
         raise HTTPException(status_code=404, detail="Classroom not found")
 
     update_fields = {"updated_at": datetime.now().isoformat()}
+    if payload.title is not None:
+        update_fields["title"] = payload.title
+    if payload.description is not None:
+        update_fields["description"] = payload.description
     if payload.type is not None:
         update_fields["type"] = payload.type
     if payload.weight is not None:
@@ -504,6 +516,106 @@ async def delete_classroom_assignment(classroom_id: str, id_assessment: int):
     return {"ok": True, "deleted": id_assessment}
 
 
+async def _load_assignments(module: str, presentation: str):
+    db = get_db()
+    if db is None:
+        return []
+    docs = await db.assignments.find({"code_module": module, "code_presentation": presentation}).to_list(None)
+    for d in docs:
+        d["_id"] = str(d.get("_id", ""))
+    return docs
+
+
+@router.get("")
+async def list_assignments(module: str, presentation: str):
+    """
+    Lay tat ca assignment cho mot mon va hoc phan qua query params.
+    """
+    return await _load_assignments(module, presentation)
+
+
+@router.get("/{module}/{presentation}")
+async def list_assignments_by_path(module: str, presentation: str):
+    """
+    Lay tat ca assignment cho mot mon va hoc phan qua path params.
+    """
+    return await _load_assignments(module, presentation)
+
+
+async def _create_assignment(module: str, presentation: str, payload: CreateAssignmentRequest):
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+    now = datetime.now().isoformat()
+    id_assessment = int(datetime.now().timestamp() * 1000)
+    doc = {
+        "id_assessment": id_assessment,
+        "code_module": module,
+        "code_presentation": presentation,
+        "title": payload.title,
+        "description": payload.description,
+        "type": payload.type,
+        "weight": payload.weight,
+        "due_date": payload.due_date,
+        "allowed_formats": payload.allowed_formats,
+        "max_file_size_mb": payload.max_file_size_mb,
+        "teacher_id": payload.teacher_id,
+        "created_at": now,
+        "updated_at": now,
+        "status": "active",
+    }
+    result = await db.assignments.insert_one(doc)
+    doc["_id"] = str(result.inserted_id)
+    await log_event(
+        None,
+        "assignment_created",
+        actor_id=payload.teacher_id,
+        target_id=str(id_assessment),
+        payload={"code_module": module, "code_presentation": presentation},
+        source="assignments",
+    )
+    return doc
+
+
+@router.post("", status_code=201)
+async def create_assignment_for_course(module: str, presentation: str, payload: CreateAssignmentRequest):
+    """
+    Tao assignment cho mot mon va hoc phan qua query params.
+    """
+    return await _create_assignment(module, presentation, payload)
+
+
+@router.post("/{module}/{presentation}", status_code=201)
+async def create_assignment_for_course_by_path(module: str, presentation: str, payload: CreateAssignmentRequest):
+    """
+    Tao assignment cho mot mon va hoc phan qua path params.
+    """
+    return await _create_assignment(module, presentation, payload)
+
+
+@router.delete("/{id_assessment}")
+async def delete_assignment(id_assessment: int):
+    """
+    Delete an assignment by id_assessment.
+    """
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+
+    result = await db.assignments.delete_one({"id_assessment": id_assessment})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+
+    await log_event(
+        None,
+        "assignment_deleted",
+        target_id=str(id_assessment),
+        source="assignments",
+    )
+
+    return {"ok": True, "deleted": id_assessment}
+
+
 @router.get("/course/{code_module}/all")
 async def get_course_assignments(code_module: str):
     """
@@ -517,31 +629,6 @@ async def get_course_assignments(code_module: str):
     for d in docs:
         d["_id"] = str(d.get("_id", ""))
     return docs
-
-
-@router.post("/course/{code_module}", status_code=201)
-async def create_assignment(code_module: str, payload: CreateAssignmentRequest):
-    """
-    BR30: Giao vien tao bai tap moi.
-    BR31: Bai tap phai thuoc 1 khoa hoc cu the.
-    """
-    db = get_db()
-    if db is None:
-        return {"ok": True, "mock": True}
-    now = datetime.now().isoformat()
-    doc = {
-        "code_module": code_module,
-        "type": payload.type,
-        "weight": payload.weight,
-        "due_date": payload.due_date,
-        "allowed_formats": payload.allowed_formats,
-        "max_file_size_mb": payload.max_file_size_mb,
-        "created_at": now,
-        "updated_at": now,
-    }
-    result = await db.assignments.insert_one(doc)
-    doc["_id"] = str(result.inserted_id)
-    return doc
 
 
 @router.get("/{id_assessment}/all-submissions")
