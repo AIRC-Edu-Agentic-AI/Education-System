@@ -51,6 +51,8 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
             channel = to_json(fallback_channel)
     if channel is None:
         raise ValueError("Channel not found")
+
+    channel_type_actual = channel.get("type", "discussion")
     course_code_key = channel.get("course_code")
     course = await db.courses.find_one({"$or": [{"course_code": course_code_key}, {"code_module": course_code_key}]})
     if course is None:
@@ -59,36 +61,19 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
     if user_role is None:
         user_role = "student" if isinstance(sender_id, int) and sender_id > 0 else "instructor"
 
-    if user_role == "student":
-        code_mod = channel.get("course_code", "").split(' ', 1)[0]
-        sid_int = int(sender_id) if str(sender_id).isdigit() else sender_id
-        sid_str = str(sender_id)
-        enrolled = (sid_int in course.get("members", []) or sid_str in course.get("members", []) or
-                    sid_int in course.get("student_ids", []) or sid_str in course.get("student_ids", []))
-        if not enrolled:
-            query = {
-                "$or": [{"student_id": sid_int}, {"student_id": sid_str}],
-                "enrollments.code_module": code_mod
-            }
-            student_doc = await db.students.find_one(query)
-            if not student_doc:
-                # Check if student exists in students collection
-                student_doc = await db.students.find_one({"$or": [{"student_id": sid_int}, {"student_id": sid_str}]})
-                if not student_doc:
-                    pass # allow active student
-
     if course.get("status") == COURSE_STATUS_ARCHIVED:
         raise PermissionError("Course communication is archived")
 
-    if channel["type"] == CHANNEL_TYPE_ANNOUNCEMENT and parent_id is None and user_role not in channel.get("allowed_post_roles", []):
-        raise PermissionError("Only instructors and class reps may create announcement posts")
-
-    if channel["type"] == CHANNEL_TYPE_ANNOUNCEMENT and parent_id is not None:
-        # comment on announcement thread is allowed for course members
-        pass
-
-    if channel["type"] != CHANNEL_TYPE_ANNOUNCEMENT and user_role not in channel.get("allowed_post_roles", []):
-        raise PermissionError("User cannot post in this channel")
+    # ── Permission check ─────────────────────────────────────────────────────
+    # For discussion / private_message / class_group channels: all roles may post
+    # For announcement channels: only instructors and class reps may create threads;
+    #   anyone may reply in a thread (parent_id is not None)
+    if channel_type_actual == CHANNEL_TYPE_ANNOUNCEMENT:
+        if parent_id is None and user_role not in ("instructor", "class_rep"):
+            raise PermissionError("Only instructors and class reps may create announcement posts")
+        # Replies in announcement thread are allowed for all enrolled members – fall through
+    # All other channel types (discussion, private_message, class_group, etc.) allow any role
+    # ─────────────────────────────────────────────────────────────────────────
 
     resolved_channel_id = channel.get("_id")
     if isinstance(resolved_channel_id, str):
@@ -102,6 +87,7 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
     msg = {
         "channel_id": resolved_channel_id,
         "course_code": channel.get("course_code"),
+        "channel_type": channel_type_actual,
         "sender_id": sender_id,
         "sender_role": user_role,
         "content": content,

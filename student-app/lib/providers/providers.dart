@@ -143,8 +143,8 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
               final activeStudentId = ref.read(activeStudentIdProvider).toString();
               if (msg.senderId.toString() != activeStudentId) {
                 newMessageStreamController.add(msg);
-                ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
               }
+              ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
             }
           } catch (_) {}
         },

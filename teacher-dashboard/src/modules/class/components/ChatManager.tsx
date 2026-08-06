@@ -189,7 +189,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
             return prev;
           });
         } else if (data.type === 'channel_created') {
-          fetchChannels(); 
+          fetchChannels();
         }
       } catch (e) {
         console.error("WS Parse error", e);

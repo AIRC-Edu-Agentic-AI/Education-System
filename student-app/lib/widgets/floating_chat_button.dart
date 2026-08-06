@@ -45,6 +45,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   StreamSubscription? _msgSub;
   final TextEditingController _textController = TextEditingController();
   final ScrollController _aiScrollController = ScrollController();
+  final ScrollController _msgScrollController = ScrollController();
   bool _isSending = false;
 
   // List of instructors (form structured so adding new instructors is effortless)
@@ -95,6 +96,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     _msgSub?.cancel();
     _textController.dispose();
     _aiScrollController.dispose();
+    _msgScrollController.dispose();
     super.dispose();
   }
 
@@ -567,12 +569,13 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
         final activeStudentId = ref.watch(activeStudentIdProvider).toString();
 
         return ListView.builder(
+          controller: _msgScrollController,
           padding: const EdgeInsets.all(12),
           itemCount: messages.length,
           itemBuilder: (context, index) {
             final msg = messages[index];
             final isMe = msg.senderId.toString() == activeStudentId;
-            final isTeacher = msg.senderId == 'teacher_admin' || msg.senderId == '0' || msg.senderRole == 'instructor';
+            final isTeacher = msg.senderRole == 'instructor';
 
             return Align(
               alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
