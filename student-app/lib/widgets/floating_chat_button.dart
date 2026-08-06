@@ -7,6 +7,20 @@ import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/providers/providers.dart';
 import 'package:student_agent/widgets/formatted_text.dart';
 
+class InstructorInfo {
+  final String id;
+  final String name;
+  final String title;
+  final String avatarUrl;
+
+  const InstructorInfo({
+    required this.id,
+    required this.name,
+    required this.title,
+    this.avatarUrl = '',
+  });
+}
+
 class FloatingChatButton extends ConsumerStatefulWidget {
   final Size bodySize;
 
@@ -20,7 +34,11 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   static const double _size = 58;
   Offset? _pos;
   bool _isExpanded = false;
-  int _activeTab = 0; // 0 = Giảng viên (Tin nhắn riêng), 1 = Hỏi AI Assistant
+  int _activeTab = 0; // 0 = Nhắn tin (Giảng viên), 1 = Hỏi AI Assistant
+  
+  // Selected instructor for chat thread view (null = show instructor list)
+  InstructorInfo? _selectedInstructor;
+  
   int _unreadCount = 0;
   CourseMessage? _lastMessage;
   String? _privateChannelId;
@@ -28,6 +46,15 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _aiScrollController = ScrollController();
   bool _isSending = false;
+
+  // List of instructors (form structured so adding new instructors is effortless)
+  final List<InstructorInfo> _instructors = const [
+    InstructorInfo(
+      id: 'teacher_admin',
+      name: 'Giảng viên Quản lý',
+      title: 'Phụ trách môn học & Lớp AAA 2013J',
+    ),
+  ];
 
   @override
   void initState() {
@@ -105,7 +132,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // ── 1. EXPANDED MINI CHAT WINDOW (WITH 2 TABS: GIẢNG VIÊN & HỎI AI) ──
+        // ── 1. EXPANDED MINI CHAT WINDOW ────────────────────────────────────
         if (_isExpanded)
           Positioned(
             right: 16,
@@ -132,7 +159,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                 ),
                 child: Column(
                   children: [
-                    // Header Segmented 2 Tabs Bar
+                    // Header Segmented 2 Tabs Bar (Nhắn tin / Hỏi AI)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       decoration: const BoxDecoration(
@@ -141,6 +168,12 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                       ),
                       child: Row(
                         children: [
+                          if (_activeTab == 0 && _selectedInstructor != null)
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
+                              onPressed: () => setState(() => _selectedInstructor = null),
+                              tooltip: 'Danh sách giảng viên',
+                            ),
                           Expanded(
                             child: Container(
                               height: 34,
@@ -153,20 +186,22 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                 children: [
                                   Expanded(
                                     child: GestureDetector(
-                                      onTap: () => setState(() => _activeTab = 0),
+                                      onTap: () => setState(() {
+                                        _activeTab = 0;
+                                      }),
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: _activeTab == 0 ? const Color(0xFF0EA5E9) : Colors.transparent,
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(Icons.person_rounded, size: 14, color: Colors.white),
+                                            Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Colors.white),
                                             SizedBox(width: 4),
                                             Text(
-                                              'Giảng viên',
+                                              'Nhắn tin',
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.bold,
@@ -186,7 +221,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                           color: _activeTab == 1 ? const Color(0xFF10B981) : Colors.transparent,
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -228,64 +263,69 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
 
                     // Body List Area
                     Expanded(
-                      child: _activeTab == 0 ? _buildPrivateMessagesList() : _buildAiChatList(),
+                      child: _activeTab == 0
+                          ? (_selectedInstructor == null ? _buildInstructorList() : _buildInstructorMessageThread())
+                          : _buildAiChatList(),
                     ),
 
-                    // Input Bar
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1E293B),
-                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 38,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0F172A),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFF334155)),
-                              ),
-                              child: TextField(
-                                controller: _textController,
-                                style: const TextStyle(fontSize: 12, color: Colors.white),
-                                onSubmitted: (_) => _handleSend(),
-                                decoration: InputDecoration(
-                                  hintText: _activeTab == 0 ? 'Nhắn riêng cho Giảng viên...' : 'Hỏi Trợ lý AI bài học...',
-                                  hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    // Input Bar (only shown when in Chat Thread or AI Tab)
+                    if (_activeTab == 1 || (_activeTab == 0 && _selectedInstructor != null))
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF1E293B),
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 38,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF334155)),
+                                ),
+                                child: TextField(
+                                  controller: _textController,
+                                  style: const TextStyle(fontSize: 12, color: Colors.white),
+                                  onSubmitted: (_) => _handleSend(),
+                                  decoration: InputDecoration(
+                                    hintText: _activeTab == 0
+                                        ? 'Nhắn cho ${_selectedInstructor?.name ?? "Giảng viên"}...'
+                                        : 'Hỏi Trợ lý AI bài học...',
+                                    hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          _isSending
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF38BDF8)),
-                                )
-                              : Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: BoxDecoration(
-                                    color: _activeTab == 0 ? const Color(0xFF0EA5E9) : const Color(0xFF10B981),
-                                    borderRadius: BorderRadius.circular(10),
+                            const SizedBox(width: 8),
+                            _isSending
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF38BDF8)),
+                                  )
+                                : Container(
+                                    width: 38,
+                                    height: 38,
+                                    decoration: BoxDecoration(
+                                      color: _activeTab == 0 ? const Color(0xFF0EA5E9) : const Color(0xFF10B981),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                                      onPressed: _handleSend,
+                                    ),
                                   ),
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-                                    onPressed: _handleSend,
-                                  ),
-                                ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -306,7 +346,8 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                   onTap: () {
                     setState(() {
                       _isExpanded = true;
-                      _activeTab = 0; // Chuyển sang Tab Giảng viên
+                      _activeTab = 0; // Tab Nhắn tin
+                      _selectedInstructor = _instructors.first; // Open instructor thread
                       _unreadCount = 0;
                     });
                   },
@@ -332,7 +373,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                         const Row(
                           children: [
                             Text(
-                              'Giảng viên nhắn riêng:',
+                              'Giảng viên nhắn:',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -418,8 +459,91 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     );
   }
 
-  // ── TAB 1: Private Messages with Instructor ──────────────────────────────
-  Widget _buildPrivateMessagesList() {
+  // ── TAB 0 - SUBVIEW A: Instructor List ─────────────────────────────────────
+  Widget _buildInstructorList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(14, 12, 14, 8),
+          child: Text(
+            'Danh sách Giảng viên',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF94A3B8),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            itemCount: _instructors.length,
+            itemBuilder: (context, index) {
+              final inst = _instructors[index];
+              return Card(
+                color: const Color(0xFF1E293B),
+                margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  leading: Stack(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0EA5E9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.person_rounded, color: Colors.white, size: 24),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF1E293B), width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  title: Text(
+                    inst.name,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    inst.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF38BDF8)),
+                  onTap: () {
+                    setState(() {
+                      _selectedInstructor = inst;
+                      _unreadCount = 0;
+                    });
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── TAB 0 - SUBVIEW B: Instructor Chat Thread ──────────────────────────────
+  Widget _buildInstructorMessageThread() {
     final chanId = _privateChannelId ?? 'private_${ref.watch(activeStudentIdProvider)}';
     final messagesAsync = ref.watch(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: chanId)));
 
@@ -428,13 +552,13 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
       error: (e, _) => const Center(child: Text('Chưa có tin nhắn riêng', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))),
       data: (messages) {
         if (messages.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
-                'Chưa có tin nhắn riêng từ Giảng viên.\nBạn có thể nhắn tin hỏi trực tiếp ở đây.',
+                'Nhắn tin riêng cho ${_selectedInstructor?.name ?? "Giảng viên"}.\nBạn có thể gửi thắc mắc học tập ở đây.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
               ),
             ),
           );
@@ -473,7 +597,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                   children: [
                     if (!isMe)
                       Text(
-                        isTeacher ? 'Giảng viên' : 'Sinh viên',
+                        isTeacher ? (_selectedInstructor?.name ?? 'Giảng viên') : 'Sinh viên',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -494,7 +618,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     );
   }
 
-  // ── TAB 2: AI Study Assistant Chat ───────────────────────────────────────
+  // ── TAB 1: AI Study Assistant Chat ───────────────────────────────────────
   Widget _buildAiChatList() {
     final chatState = ref.watch(chatProvider);
     final messages = chatState.active?.messages ?? [];

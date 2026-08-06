@@ -40,7 +40,6 @@ final weeklyScheduleProvider = FutureProvider<WeeklySchedule>((ref) async {
 // ── Notifications & Real-time Messages Stream ──────────────────────────────────
 final newNotificationStreamController = StreamController<NotificationModel>.broadcast();
 final newMessageStreamController = StreamController<CourseMessage>.broadcast();
-
 class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
   WebSocket? _socket;
   bool _isDisposed = false;
