@@ -166,14 +166,19 @@ extends ConsumerState<CourseChannelMessagesScreen> {
   }
 
   String _senderLabel(CourseMessage msg) {
-    if (msg.senderId == ref.read(activeStudentIdProvider)) return 'Bạn';
+    final activeIdStr = ref.read(activeStudentIdProvider).toString();
+    final senderIdStr = msg.senderId.toString();
+    if (senderIdStr == activeIdStr) return 'Bạn';
+    if (msg.senderRole == 'instructor' || senderIdStr == 'teacher_admin' || senderIdStr == '0') {
+      return 'Giảng viên';
+    }
     switch (msg.senderRole) {
       case 'instructor':
         return 'Giảng viên';
       case 'class_rep':
         return 'Lớp trưởng';
       default:
-        return 'SV ${msg.senderId}';
+        return 'SV $senderIdStr';
     }
   }
 

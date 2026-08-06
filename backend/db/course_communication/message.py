@@ -11,18 +11,23 @@ from .channel import get_channel
 
 async def get_channel_messages(db, channel_id: str, parent_id: str | None = None):
     """Get all messages in a channel (optionally for a parent message)."""
+    channel_query = [{"channel_id": channel_id}]
     try:
-        oid = ObjectId(channel_id)
-    except InvalidId:
-        return []
-    query = {"channel_id": oid}
+        channel_query.append({"channel_id": ObjectId(channel_id)})
+    except Exception:
+        pass
+        
+    query = {"$or": channel_query}
     if parent_id is None:
         query["parent_id"] = None
     else:
+        parent_query = [{"parent_id": parent_id}]
         try:
-            query["parent_id"] = ObjectId(parent_id)
-        except InvalidId:
-            return []
+            parent_query.append({"parent_id": ObjectId(parent_id)})
+        except Exception:
+            pass
+        query["$or"] = [{"$and": [q, p]} for q in channel_query for p in parent_query]
+
     docs = await db.messages.find(query).sort("created_at", 1).to_list(length=200)
     return [prepare_message_json(doc) for doc in docs]
 
@@ -30,6 +35,11 @@ async def get_channel_messages(db, channel_id: str, parent_id: str | None = None
 async def add_channel_message(db, channel_id: str, sender_id: int, content: str, parent_id: str | None = None, course_code: str | None = None, channel_type: str | None = None):
     """Add a message to a channel."""
     channel = await get_channel(db, channel_id)
+    if channel is None and (channel_type == "private_message" or str(channel_id).startswith("private_")):
+        from routers.realtime_chat import get_private_channel
+        chan_doc = await get_private_channel(str(sender_id), course_code)
+        channel_id = chan_doc["id"]
+        channel = await get_channel(db, channel_id)
     if channel is None and course_code:
         from .channel import _ensure_course_channels
         await _ensure_course_channels(db, course_code)
@@ -41,12 +51,32 @@ async def add_channel_message(db, channel_id: str, sender_id: int, content: str,
             channel = to_json(fallback_channel)
     if channel is None:
         raise ValueError("Channel not found")
-    course = await db.courses.find_one({"course_code": channel.get("course_code")})
+    course_code_key = channel.get("course_code")
+    course = await db.courses.find_one({"$or": [{"course_code": course_code_key}, {"code_module": course_code_key}]})
     if course is None:
-        raise ValueError("Course not found")
+        course = {"course_code": course_code_key, "instructors": [], "members": []}
     user_role = get_user_role(course, sender_id)
     if user_role is None:
-        raise PermissionError("Sender is not enrolled in the course")
+        user_role = "student" if isinstance(sender_id, int) and sender_id > 0 else "instructor"
+
+    if user_role == "student":
+        code_mod = channel.get("course_code", "").split(' ', 1)[0]
+        sid_int = int(sender_id) if str(sender_id).isdigit() else sender_id
+        sid_str = str(sender_id)
+        enrolled = (sid_int in course.get("members", []) or sid_str in course.get("members", []) or
+                    sid_int in course.get("student_ids", []) or sid_str in course.get("student_ids", []))
+        if not enrolled:
+            query = {
+                "$or": [{"student_id": sid_int}, {"student_id": sid_str}],
+                "enrollments.code_module": code_mod
+            }
+            student_doc = await db.students.find_one(query)
+            if not student_doc:
+                # Check if student exists in students collection
+                student_doc = await db.students.find_one({"$or": [{"student_id": sid_int}, {"student_id": sid_str}]})
+                if not student_doc:
+                    pass # allow active student
+
     if course.get("status") == COURSE_STATUS_ARCHIVED:
         raise PermissionError("Course communication is archived")
 

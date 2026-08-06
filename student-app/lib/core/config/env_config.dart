@@ -4,6 +4,9 @@ class EnvConfig {
   static String get apiBaseUrl =>
       dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
+  static String get wsBaseUrl =>
+      apiBaseUrl.replaceFirst('http', 'ws');
+
   static String get auth0Domain =>
       dotenv.env['AUTH0_DOMAIN'] ?? '';
 
