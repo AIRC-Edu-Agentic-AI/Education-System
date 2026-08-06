@@ -53,3 +53,5 @@ backend/migrate_to_students.py
 backend/test_db.py
 backend/test_login.py
 backend/test_login2.py
+Backend/tests/test_course_channels.py
+Backend/tests/test_notification_course_matching.py

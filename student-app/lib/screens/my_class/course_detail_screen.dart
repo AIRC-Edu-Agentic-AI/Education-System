@@ -17,7 +17,6 @@ class CourseDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final studentAsync = ref.watch(studentProvider);
-    final channelsAsync = ref.watch(courseChannelsProvider(courseCode));
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
@@ -40,8 +39,13 @@ class CourseDetailScreen extends ConsumerWidget {
         ),
         data: (student) {
           final enrollment = student.enrollments
-              .where((e) => e.codeModule == courseCode)
+              .where((e) => e.codeModule == courseCode || '${e.codeModule} ${e.codePresentation}' == courseCode)
               .firstOrNull;
+
+          final fullCourseCode = enrollment != null && enrollment.codePresentation.isNotEmpty
+              ? '${enrollment.codeModule} ${enrollment.codePresentation}'
+              : courseCode;
+          final channelsAsync = ref.watch(courseChannelsProvider(fullCourseCode));
 
           if (enrollment == null) {
             return const Center(
@@ -422,7 +426,14 @@ class _FeatureGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fullCourseCode = '${enrollment.codeModule} ${enrollment.codePresentation}';
     String? channelId(String type) {
+      for (final channel in channels) {
+        if (channel.type == type && channel.courseCode == fullCourseCode) return channel.id;
+      }
+      for (final channel in channels) {
+        if (channel.type == type && channel.courseCode == enrollment.codeModule) return channel.id;
+      }
       for (final channel in channels) {
         if (channel.type == type) return channel.id;
       }
@@ -502,12 +513,15 @@ class _FeatureGrid extends StatelessWidget {
     String name,
     String type,
   ) {
+    final fullCode = enrollment.codePresentation.isNotEmpty
+        ? '${enrollment.codeModule} ${enrollment.codePresentation}'
+        : enrollment.codeModule;
     if (channelId == null) {
-      context.go('/course/${enrollment.codeModule}/channels');
+      context.go('/course/$fullCode/channels');
       return;
     }
     context.go(
-      '/course/${enrollment.codeModule}/channels/$channelId/messages'
+      '/course/$fullCode/channels/$channelId/messages'
       '?name=${Uri.encodeComponent(name)}'
       '&type=${Uri.encodeComponent(type)}'
       '&returnTo=${Uri.encodeComponent('/my-class/${enrollment.codeModule}')}',

@@ -63,6 +63,15 @@ class CreateChannelPayload(BaseModel):
 @router.post("/channels")
 async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
     db = get_db()
+    if payload.type == "private_message":
+        mem_strs = [str(m) for m in payload.members]
+        existing = await db["channels"].find_one({
+            "type": "private_message",
+            "members": {"$all": mem_strs}
+        })
+        if existing:
+            return serialize_doc(existing)
+
     now = datetime.now(timezone.utc).isoformat()
     doc = {
         "course_code": payload.course_code,
@@ -148,12 +157,13 @@ async def get_messages(channel_id: str, skip: int = 0, limit: int = 50) -> List[
         messages.reverse()
         return messages
 
+    channel_query = [{"channel_id": channel_id}]
     try:
-        oid = ObjectId(channel_id)
+        channel_query.append({"channel_id": ObjectId(channel_id)})
     except Exception:
-        return []
+        pass
         
-    docs = await db["messages"].find({"channel_id": oid, "parent_id": None}).sort("created_at", -1).skip(skip).limit(limit).to_list(None)
+    docs = await db["messages"].find({"$or": channel_query, "parent_id": None}).sort("created_at", -1).skip(skip).limit(limit).to_list(None)
     docs.reverse()
     for d in docs:
         d["_id"] = str(d["_id"])
@@ -182,13 +192,21 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                     if channel_id == "legacy_broadcasts":
                         continue # read only
                     
-                    channel = await db["channels"].find_one({"_id": ObjectId(channel_id)})
+                    query_list = [{"_id": channel_id}]
+                    try:
+                        query_list.append({"_id": ObjectId(channel_id)})
+                    except Exception:
+                        pass
+                    
+                    channel = await db["channels"].find_one({"$or": query_list})
                     if not channel:
+                        print(f"[WS] Channel not found for ID: {channel_id}")
                         continue
                         
                     doc = {
-                        "channel_id": ObjectId(channel_id),
+                        "channel_id": channel["_id"],
                         "course_code": channel.get("course_code"),
+                        "channel_type": channel.get("type", "discussion"),
                         "sender_id": sender_id_int,
                         "sender_role": sender_role,
                         "content": content,
@@ -208,3 +226,41 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                 pass
     except WebSocketDisconnect:
         manager.disconnect(websocket, user_id)
+
+@router.get("/private-channel")
+async def get_private_channel(student_id: str, course_code: Optional[str] = None) -> Dict[str, Any]:
+    """Get or create a private message channel between instructor and a specific student."""
+    db = get_db()
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database required")
+    sid_str = str(student_id)
+    sid_int = int(student_id) if student_id.isdigit() else student_id
+    chans = await db["channels"].find({
+        "type": "private_message",
+        "members": {"$all": ["teacher_admin"]}
+    }).to_list(100)
+    chan = None
+    for c in chans:
+        mems = [str(m) for m in c.get("members", [])]
+        if sid_str in mems or str(sid_int) in mems:
+            chan = c
+            break
+    if not chan:
+        sid_int = int(student_id) if student_id.isdigit() else student_id
+        student_doc = await db["students"].find_one({"$or": [{"student_id": sid_int}, {"student_id": sid_str}]})
+        student_name = student_doc.get("full_name", f"Sinh viên {student_id}") if student_doc else f"Sinh viên {student_id}"
+        now = datetime.now(timezone.utc).isoformat()
+        new_chan = {
+            "name": student_name,
+            "course_code": course_code or "AAA 2013J",
+            "members": ["teacher_admin", sid_str],
+            "type": "private_message",
+            "status": "active",
+            "created_at": now,
+            "updated_at": now
+        }
+        res = await db["channels"].insert_one(new_chan)
+        new_chan["_id"] = res.inserted_id
+        chan = new_chan
+        
+    return serialize_doc(chan)

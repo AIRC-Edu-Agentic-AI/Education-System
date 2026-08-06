@@ -85,12 +85,34 @@ export default function NotificationManager({ module, presentation }: Notificati
   const [deletingNoti, setDeletingNoti] = useState<NotificationItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const sortByNewest = (list: NotificationItem[]) => {
+    return [...list].sort((a, b) => {
+      const timeA = new Date(a.createdAt || (a as Record<string, any>).created_at || 0).getTime();
+      const timeB = new Date(b.createdAt || (b as Record<string, any>).created_at || 0).getTime();
+      return timeB - timeA;
+    });
+  };
+
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${BASE_URL}/notify/notifications`);
+      const url = module ? `${BASE_URL}/notify/notifications?module=${module}${presentation ? `&presentation=${presentation}` : ''}` : `${BASE_URL}/notify/notifications`;
+      const res = await fetch(url);
       const data = await res.json();
-      setNotifications(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        const seen = new Set<string>();
+        const unique: NotificationItem[] = [];
+        for (const item of data) {
+          const key = `${item._id}_${item.title}_${item.content}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(item);
+          }
+        }
+        setNotifications(sortByNewest(unique));
+      } else {
+        setNotifications([]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -135,12 +157,36 @@ export default function NotificationManager({ module, presentation }: Notificati
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
+  }, [module, presentation]);
+
+  useEffect(() => {
+    const wsUrl = BASE_URL.replace('http', 'ws');
+    const socket = new WebSocket(`${wsUrl}/realtime-chat/ws/teacher_admin`);
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'new_notification' && data.notification) {
+          setNotifications(prev => sortByNewest([data.notification, ...prev.filter(n => n._id !== data.notification._id)]));
+        } else if (data.type === 'notification_updated' && data.notification) {
+          setNotifications(prev => sortByNewest(prev.map(n => n._id === data.notification._id ? { ...n, ...data.notification } : n)));
+        } else if (data.type === 'notification_deleted') {
+          setNotifications(prev => prev.filter(n => n._id !== data.notification_id && n.title !== data.title && n.content !== data.content));
+        }
+      } catch (e) {
+        console.error("Notification WS parse error", e);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
   }, []);
 
   useEffect(() => {
-    if (activeTab === 1) fetchStudents();
-    if (activeTab === 2) fetchClasses();
-  }, [activeTab, module, presentation]);
+    fetchStudents();
+    fetchClasses();
+  }, [module, presentation]);
 
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,18 +194,23 @@ export default function NotificationManager({ module, presentation }: Notificati
     setIsSending(true);
     try {
       const studentIds = students.map(s => s.id);
-      await fetch(`${BASE_URL}/notify/broadcast`, {
+      const courseCode = module && presentation ? `${module} ${presentation}` : (module || 'ALL');
+      const res = await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_ids: studentIds,
+          student_ids: studentIds.length > 0 ? studentIds : undefined,
           type: type.toLowerCase().replace(/ /g, '_'),
           title,
           content,
           sender_role: 'instructor',
-          course_code: `${module} ${presentation}`,
+          course_code: courseCode,
         }),
       });
+      const data = await res.json();
+      if (data?.log) {
+        setNotifications(prev => [data.log, ...prev.filter(n => n._id !== data.log._id)]);
+      }
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(`[${type}] ${title}`, { body: content });
       }
@@ -179,7 +230,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
     setIsDmSending(true);
     try {
-      await fetch(`${BASE_URL}/notify/broadcast`, {
+      const res = await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -191,6 +242,10 @@ export default function NotificationManager({ module, presentation }: Notificati
           course_code: `${module} ${presentation}`,
         }),
       });
+      const data = await res.json();
+      if (data?.log) {
+        setNotifications(prev => [data.log, ...prev.filter(n => n._id !== data.log._id)]);
+      }
       setDmTitle('');
       setDmContent('');
       setSelectedStudent(null);
@@ -207,7 +262,7 @@ export default function NotificationManager({ module, presentation }: Notificati
     if (!selectedClassGroup || !classTitle.trim() || !classContent.trim() || isClassSending) return;
     setIsClassSending(true);
     try {
-      await fetch(`${BASE_URL}/notify/broadcast`, {
+      const res = await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -217,8 +272,13 @@ export default function NotificationManager({ module, presentation }: Notificati
           content: classContent,
           sender_role: 'instructor',
           course_code: `${module} ${presentation}`,
+          classroom_name: selectedClassGroup.class_name,
         }),
       });
+      const data = await res.json();
+      if (data?.log) {
+        setNotifications(prev => [data.log, ...prev.filter(n => n._id !== data.log._id)]);
+      }
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(`[${classType}] ${classTitle}`, { body: classContent });
       }

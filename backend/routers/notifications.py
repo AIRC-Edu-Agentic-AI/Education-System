@@ -53,9 +53,9 @@ def _course_code_matches(stored_code: Optional[str], requested_code: Optional[st
         return False
     stored = re.sub(r"\s+", " ", str(stored_code).strip()).lower()
     requested = re.sub(r"\s+", " ", str(requested_code).strip()).lower()
-    if stored == requested:
+    if stored == requested or stored.startswith(requested) or requested.startswith(stored):
         return True
-    return stored.startswith(requested) or requested.startswith(stored)
+    return stored.split(' ')[0] == requested.split(' ')[0]
 
 
 def _build_notification_query(student_id: int | None, unread_only: bool, now_iso: str, course_code: str | None = None):
@@ -69,9 +69,11 @@ def _build_notification_query(student_id: int | None, unread_only: bool, now_iso
                 {"receiver_id": student_id},
                 {"recipient_id": student_id},
                 {"studentId": student_id},
-                {"receiverRole": {"$regex": "^(student|students|all)$", "$options": "i"}},
             ]
         })
+
+    # Always filter out teacher broadcast log documents
+    conditions.append({"is_broadcast_log": {"$ne": True}})
 
     if unread_only:
         conditions.append({
