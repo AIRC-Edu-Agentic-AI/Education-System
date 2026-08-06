@@ -6,6 +6,9 @@ import os
 from datetime import datetime
 import uuid
 
+from bson import ObjectId
+from bson.errors import InvalidId
+
 from db.mongodb import get_db
 from db.mock_data import MOCK_MILESTONES
 from db.submissions import get_submission, submit_assignment
@@ -340,6 +343,165 @@ class CreateAssignmentRequest(BaseModel):
     due_date: int               # Module-day offset
     allowed_formats: List[str] = ["pdf", "docx"]
     max_file_size_mb: int = 25
+
+
+class CreateClassroomAssignmentRequest(BaseModel):
+    code_module: str
+    type: str = "TMA"           # TMA | CMA | Exam
+    weight: float = 10.0
+    due_date: int               # Module-day offset
+    allowed_formats: List[str] = ["pdf", "docx"]
+    max_file_size_mb: int = 25
+    teacher_id: Optional[str] = None
+
+
+class UpdateClassroomAssignmentRequest(BaseModel):
+    type: Optional[str] = None
+    weight: Optional[float] = None
+    due_date: Optional[int] = None
+    allowed_formats: Optional[List[str]] = None
+    max_file_size_mb: Optional[int] = None
+    status: Optional[str] = None
+
+
+def _parse_classroom_id(classroom_id: str) -> ObjectId:
+    try:
+        return ObjectId(classroom_id)
+    except (InvalidId, TypeError):
+        raise HTTPException(status_code=400, detail=f"Invalid classroom id: {classroom_id}")
+
+
+@router.get("/class/{classroom_id}/assignments")
+async def get_class_assignments(classroom_id: str):
+    """Get all assignments created for a classroom."""
+    db = get_db()
+    if db is None:
+        return []
+    oid = _parse_classroom_id(classroom_id)
+    classroom = await db["classrooms"].find_one({"_id": oid, "status": {"$ne": "deleted"}})
+    if classroom is None:
+        raise HTTPException(status_code=404, detail="Classroom not found")
+
+    docs = await db["assignments"].find({"classroom_id": classroom_id}).to_list(None)
+    for d in docs:
+        d["_id"] = str(d.get("_id", ""))
+    return docs
+
+
+@router.post("/class/{classroom_id}/assignments", status_code=201)
+async def create_classroom_assignment(classroom_id: str, payload: CreateClassroomAssignmentRequest):
+    """Create a new assignment for all students in a classroom."""
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+
+    classroom = await db["classrooms"].find_one({"_id": classroom_id, "status": {"$ne": "deleted"}})
+    if classroom is None:
+        raise HTTPException(status_code=404, detail="Classroom not found")
+
+    student_ids = classroom.get("student_ids", []) or []
+    if not student_ids:
+        raise HTTPException(status_code=400, detail="Classroom has no students")
+
+    now = datetime.now().isoformat()
+    id_assessment = int(datetime.now().timestamp() * 1000)
+    doc = {
+        "id_assessment": id_assessment,
+        "code_module": payload.code_module,
+        "type": payload.type,
+        "weight": payload.weight,
+        "due_date": payload.due_date,
+        "allowed_formats": payload.allowed_formats,
+        "max_file_size_mb": payload.max_file_size_mb,
+        "teacher_id": payload.teacher_id,
+        "classroom_id": classroom_id,
+        "classroom_name": classroom.get("name"),
+        "student_ids": student_ids,
+        "created_at": now,
+        "updated_at": now,
+        "status": "active",
+    }
+    result = await db["assignments"].insert_one(doc)
+    doc["_id"] = str(result.inserted_id)
+
+    await log_event(
+        None,
+        "assignment_created",
+        actor_id=payload.teacher_id,
+        target_id=str(id_assessment),
+        payload={"classroom_id": classroom_id, "code_module": payload.code_module, "student_count": len(student_ids)},
+        source="assignments",
+    )
+
+    return doc
+
+
+@router.put("/class/{classroom_id}/assignments/{id_assessment}")
+async def update_classroom_assignment(classroom_id: str, id_assessment: int, payload: UpdateClassroomAssignmentRequest):
+    """Update assignment details for a classroom assignment."""
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+
+    classroom = await db["classrooms"].find_one({"_id": classroom_id, "status": {"$ne": "deleted"}})
+    if classroom is None:
+        raise HTTPException(status_code=404, detail="Classroom not found")
+
+    update_fields = {"updated_at": datetime.now().isoformat()}
+    if payload.type is not None:
+        update_fields["type"] = payload.type
+    if payload.weight is not None:
+        update_fields["weight"] = payload.weight
+    if payload.due_date is not None:
+        update_fields["due_date"] = payload.due_date
+    if payload.allowed_formats is not None:
+        update_fields["allowed_formats"] = payload.allowed_formats
+    if payload.max_file_size_mb is not None:
+        update_fields["max_file_size_mb"] = payload.max_file_size_mb
+    if payload.status is not None:
+        update_fields["status"] = payload.status
+
+    result = await db["assignments"].update_one(
+        {"classroom_id": classroom_id, "id_assessment": id_assessment},
+        {"$set": update_fields}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found for classroom")
+
+    await log_event(
+        None,
+        "assignment_updated",
+        actor_id=payload.teacher_id,
+        target_id=str(id_assessment),
+        payload={"classroom_id": classroom_id},
+        source="assignments",
+    )
+
+    doc = await db["assignments"].find_one({"classroom_id": classroom_id, "id_assessment": id_assessment})
+    doc["_id"] = str(doc.get("_id", ""))
+    return doc
+
+
+@router.delete("/class/{classroom_id}/assignments/{id_assessment}")
+async def delete_classroom_assignment(classroom_id: str, id_assessment: int):
+    """Delete an assignment from a classroom."""
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+
+    result = await db["assignments"].delete_one({"classroom_id": classroom_id, "id_assessment": id_assessment})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Assignment not found for classroom")
+
+    await log_event(
+        None,
+        "assignment_deleted",
+        target_id=str(id_assessment),
+        payload={"classroom_id": classroom_id},
+        source="assignments",
+    )
+
+    return {"ok": True, "deleted": id_assessment}
 
 
 @router.get("/course/{code_module}/all")
