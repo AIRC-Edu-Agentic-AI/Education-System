@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:student_agent/core/config/env_config.dart';
@@ -17,62 +19,180 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 
 // ── Active student ID (derived from auth session) ─────────────────────────────
 final activeStudentIdProvider = Provider<int>((ref) {
-  return ref.watch(authNotifierProvider).state.studentId ?? 0;
+  final sid = ref.watch(authNotifierProvider).state.studentId;
+  return (sid != null && sid > 0) ? sid : 28400;
 });
 
 // ── Student profile ───────────────────────────────────────────────────────────
 final studentProvider = FutureProvider<StudentModel>((ref) async {
   final api = ref.read(apiServiceProvider);
-  final studentId = ref.read(activeStudentIdProvider);
+  final studentId = ref.watch(activeStudentIdProvider);
   return api.getStudent(studentId);
 });
 
 // ── Weekly schedule ───────────────────────────────────────────────────────────
 final weeklyScheduleProvider = FutureProvider<WeeklySchedule>((ref) async {
   final api = ref.read(apiServiceProvider);
-  final studentId = ref.read(activeStudentIdProvider);
+  final studentId = ref.watch(activeStudentIdProvider);
   return api.getWeeklySchedule(studentId);
 });
 
-// ── Notifications (auto-polls every N seconds) ────────────────────────────────
+// ── Notifications & Real-time Messages Stream ──────────────────────────────────
+final newNotificationStreamController = StreamController<NotificationModel>.broadcast();
+final newMessageStreamController = StreamController<CourseMessage>.broadcast();
 class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
-  Timer? _timer;
+  WebSocket? _socket;
+  bool _isDisposed = false;
 
   @override
   Future<List<NotificationModel>> build() async {
-    ref.onDispose(() => _timer?.cancel());
+    _isDisposed = false;
+    ref.watch(activeStudentIdProvider);
+    ref.onDispose(() {
+      _isDisposed = true;
+      _socket?.close();
+    });
     final result = await _fetch();
-    _startPolling();
+    _connectWebSocket();
     return result;
+  }
+
+  static int _sortNotifications(NotificationModel a, NotificationModel b) {
+    if (a.read != b.read) {
+      return a.read ? 1 : -1;
+    }
+    return b.createdAt.compareTo(a.createdAt);
   }
 
   Future<List<NotificationModel>> _fetch() async {
     final api = ref.read(apiServiceProvider);
     final studentId = ref.read(activeStudentIdProvider);
-    return api.getNotifications(studentId);
+    final raw = await api.getNotifications(studentId);
+    final seen = <String>{};
+    final unique = <NotificationModel>[];
+    for (final item in raw) {
+      final key = '${item.id}_${item.title}_${item.body}';
+      if (!seen.contains(key)) {
+        seen.add(key);
+        unique.add(item);
+      }
+    }
+    unique.sort(_sortNotifications);
+    return unique;
   }
 
-  void _startPolling() {
-    _timer = Timer.periodic(
-      Duration(seconds: EnvConfig.pollingIntervalSeconds),
-      (_) async {
-        try {
-          final fresh = await _fetch();
-          state = AsyncData(fresh);
-        } catch (_) {}
-      },
-    );
+  void _connectWebSocket() async {
+    if (_isDisposed) return;
+    final studentId = ref.read(activeStudentIdProvider);
+    try {
+      final wsUrl = '${EnvConfig.wsBaseUrl}/realtime-chat/ws/$studentId';
+      _socket = await WebSocket.connect(wsUrl);
+      _socket?.listen(
+        (message) {
+          if (_isDisposed) return;
+          try {
+            final data = jsonDecode(message as String) as Map<String, dynamic>;
+            final eventType = data['type'] as String?;
+
+            if (eventType == 'new_notification' && data['notification'] != null) {
+              final newNotif = NotificationModel.fromJson(Map<String, dynamic>.from(data['notification']));
+              final current = state.value ?? [];
+              final isDuplicate = current.any((n) =>
+                n.id == newNotif.id || (n.title == newNotif.title && n.body == newNotif.body));
+              if (!isDuplicate) {
+                final updated = [newNotif, ...current];
+                updated.sort(_sortNotifications);
+                state = AsyncData(updated);
+                newNotificationStreamController.add(newNotif);
+              }
+            } else if (eventType == 'notification_updated' && data['notification'] != null) {
+              final updatedNotif = NotificationModel.fromJson(Map<String, dynamic>.from(data['notification']));
+              final current = state.value ?? [];
+              final updatedList = current.map((n) {
+                if (n.id == updatedNotif.id ||
+                    (data['title'] != null && n.title == data['title'])) {
+                  return n.copyWith(
+                    title: updatedNotif.title,
+                    body: updatedNotif.body,
+                  );
+                }
+                return n;
+              }).toList();
+              updatedList.sort(_sortNotifications);
+              state = AsyncData(updatedList);
+            } else if (eventType == 'notification_deleted') {
+              final targetId = data['notification_id']?.toString();
+              if (targetId == 'ALL') {
+                state = const AsyncData([]);
+                return;
+              }
+              final targetTitle = data['title']?.toString();
+              final targetContent = data['content']?.toString();
+              final current = state.value ?? [];
+              final updatedList = current.where((n) {
+                if (targetId != null && n.id == targetId) return false;
+                if (targetTitle != null && (n.title == targetTitle || n.title.trim() == targetTitle.trim())) return false;
+                if (targetContent != null && (n.body == targetContent || n.body.trim() == targetContent.trim())) return false;
+                return true;
+              }).toList();
+              updatedList.sort(_sortNotifications);
+              state = AsyncData(updatedList);
+            } else if (eventType == 'new_message' && data['message'] != null) {
+              final msgData = Map<String, dynamic>.from(data['message']);
+              final msg = CourseMessage.fromJson(msgData);
+              final activeStudentId = ref.read(activeStudentIdProvider).toString();
+              if (msg.senderId.toString() != activeStudentId) {
+                newMessageStreamController.add(msg);
+              }
+              ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
+              ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$activeStudentId')));
+              ref.invalidate(notificationProvider);
+            }
+          } catch (e) {
+            print('[WS Data Parse Error] $e');
+          }
+        },
+        onError: (e) {
+          print('[WS Connection Error] $e');
+          if (!_isDisposed) {
+            Future.delayed(const Duration(seconds: 3), _connectWebSocket);
+          }
+        },
+        onDone: () {
+          print('[WS Connection Closed] Auto reconnecting...');
+          if (!_isDisposed) {
+            Future.delayed(const Duration(seconds: 3), _connectWebSocket);
+          }
+        },
+      );
+    } catch (e) {
+      print('[WS Connect Catch] $e');
+      if (!_isDisposed) {
+        Future.delayed(const Duration(seconds: 3), _connectWebSocket);
+      }
+    }
   }
 
   Future<void> markRead(String notifId) async {
     final api = ref.read(apiServiceProvider);
     await api.markNotificationRead(notifId);
-    state = AsyncData(
-      state.value
-              ?.map((n) => n.id == notifId ? n.copyWith(read: true) : n)
-              .toList() ??
-          [],
-    );
+    final updatedList = state.value
+            ?.map((n) => n.id == notifId ? n.copyWith(read: true) : n)
+            .toList() ??
+        [];
+    updatedList.sort(_sortNotifications);
+    state = AsyncData(updatedList);
+  }
+
+  Future<void> markAllRead() async {
+    final api = ref.read(apiServiceProvider);
+    final current = state.value ?? [];
+    for (final n in current.where((item) => !item.read)) {
+      api.markNotificationRead(n.id);
+    }
+    final updatedList = current.map((n) => n.copyWith(read: true)).toList();
+    updatedList.sort(_sortNotifications);
+    state = AsyncData(updatedList);
   }
 
   int get unreadCount =>
@@ -121,6 +241,18 @@ final courseChannelsProvider =
 
 final courseNotificationsProvider =
     FutureProvider.family<List<NotificationModel>, String>((ref, courseCode) async {
+  final notifs = ref.watch(notificationProvider).value ?? [];
+  final cleanCode = courseCode.trim().toLowerCase();
+  final moduleCode = cleanCode.split(' ').first;
+  
+  if (notifs.isNotEmpty) {
+    return notifs.where((n) {
+      if (n.courseCode == null || n.courseCode!.isEmpty) return true;
+      final c = n.courseCode!.trim().toLowerCase();
+      final nModule = c.split(' ').first;
+      return c == cleanCode || nModule == moduleCode || c.startsWith(moduleCode) || cleanCode.startsWith(c);
+    }).toList();
+  }
   final api = ref.read(apiServiceProvider);
   final studentId = ref.read(activeStudentIdProvider);
   return api.getCourseNotifications(courseCode, studentId);

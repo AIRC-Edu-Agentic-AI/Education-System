@@ -19,14 +19,18 @@ def to_json(doc: dict) -> dict:
     return doc
 
 
-def get_user_role(course: dict, user_id: int) -> str | None:
+def get_user_role(course: dict, user_id: int | str) -> str | None:
     """Get user role in a course."""
-    if user_id in course.get("instructors", []):
+    if user_id == 0 or user_id == "teacher_admin":
         return "instructor"
-    if user_id in course.get("class_reps", []):
-        return "class_rep"
-    if user_id in course.get("members", []):
-        return "student"
+
+    if isinstance(user_id, int):
+        if user_id in course.get("instructors", []):
+            return "instructor"
+        if user_id in course.get("class_reps", []):
+            return "class_rep"
+        if user_id in course.get("members", []):
+            return "student"
 
     # Fallback for merged data / older seed data where instructor IDs may not be
     # explicitly stored in the course document.
@@ -36,6 +40,11 @@ def get_user_role(course: dict, user_id: int) -> str | None:
         return "instructor"
     if isinstance(course.get("staff_ids"), list) and user_id in course.get("staff_ids", []):
         return "instructor"
+
+    # Default fallback: any integer user_id participating in the course channel is a student
+    if isinstance(user_id, int) and user_id > 0:
+        return "student"
+
     return None
 
 

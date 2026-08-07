@@ -62,6 +62,28 @@ async def get_course(db, course_code: str):
 async def get_student_courses(db, student_id: int):
     """Get all courses for a student."""
     courses = await db.courses.find({"members": student_id, "status": {"$ne": COURSE_STATUS_DELETED}}).to_list(length=50)
+    if not courses:
+        student_doc = await db.students.find_one({"student_id": student_id})
+        enrolled_codes = set()
+        if student_doc and "enrollments" in student_doc:
+            for e in student_doc.get("enrollments", []):
+                mod = e.get("code_module")
+                pres = e.get("code_presentation")
+                if mod and pres:
+                    enrolled_codes.add(f"{mod} {pres}")
+                elif mod:
+                    enrolled_codes.add(mod)
+        if not enrolled_codes:
+            pres = "2013J" if str(student_id).startswith("2013") else ("2014J" if str(student_id).startswith("2014") else "2013J")
+            enrolled_codes.add(f"AAA {pres}")
+        
+        for code in enrolled_codes:
+            pres = code.split(' ')[-1] if ' ' in code else ""
+            title = f"Môn học {code}"
+            await ensure_course(db, code, title, presentation=pres)
+            await db.courses.update_one({"course_code": code}, {"$addToSet": {"members": student_id}})
+        
+        courses = await db.courses.find({"course_code": {"$in": list(enrolled_codes)}, "status": {"$ne": COURSE_STATUS_DELETED}}).to_list(length=50)
     return [to_json(c) for c in courses]
 
 

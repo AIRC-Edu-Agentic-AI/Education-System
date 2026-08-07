@@ -35,8 +35,8 @@ async def lifespan(app: FastAPI):
     import notify_schedule
     await notify_schedule.load_settings()
     init_pool()
-    await get_pool().healthcheck()
-    setup_scheduler()
+    import asyncio
+    asyncio.create_task(realtime_chat.listen_to_change_stream())
 
     print("\n" + "="*60)
     print("REGISTERED ROUTES:")

@@ -95,6 +95,19 @@ class NotificationsScreen extends ConsumerWidget {
           onPressed: () =>
               context.canPop() ? context.pop() : context.go('/'),
         ),
+        actions: [
+          if (ref.watch(unreadCountProvider) > 0)
+            TextButton.icon(
+              onPressed: () {
+                ref.read(notificationProvider.notifier).markAllRead();
+              },
+              icon: const Icon(Icons.done_all_rounded, size: 16, color: AppTheme.primaryBlue),
+              label: const Text(
+                'Đọc tất cả',
+                style: TextStyle(color: AppTheme.primaryBlue, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
       ),
       body: notifAsync.when(
         loading: () => const Center(
@@ -136,9 +149,11 @@ class _NotificationTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = notificationColor(notification.type);
+    final isUnread = !notification.read;
+
     return GestureDetector(
       onTap: () {
-        if (!notification.read) {
+        if (isUnread) {
           ref.read(notificationProvider.notifier).markRead(notification.id);
         }
         _showDetail(context, ref, notification);
@@ -146,27 +161,54 @@ class _NotificationTile extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: isUnread ? const Color(0xFF1E293B) : AppTheme.surfaceCard,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: notification.read
-                ? AppTheme.cardBorder
-                : color.withValues(alpha: 0.4),
-            width: 1,
+            color: isUnread
+                ? AppTheme.danger.withValues(alpha: 0.7)
+                : AppTheme.cardBorder,
+            width: isUnread ? 1.5 : 1,
           ),
+          boxShadow: isUnread
+              ? [
+                  BoxShadow(
+                    color: AppTheme.danger.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(notificationIcon(notification.type),
-                  size: 18, color: color),
+            Stack(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(notificationIcon(notification.type),
+                      size: 20, color: color),
+                ),
+                if (isUnread)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: AppTheme.danger,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppTheme.surfaceCard, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -181,31 +223,44 @@ class _NotificationTile extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: notification.read
-                                ? FontWeight.w500
-                                : FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: isUnread
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                             color: AppTheme.textPrimary,
                           ),
                         ),
                       ),
-                      if (!notification.read)
+                      if (isUnread) ...[
+                        const SizedBox(width: 8),
                         Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.only(left: 6, top: 2),
-                          decoration:
-                              BoxDecoration(color: color, shape: BoxShape.circle),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.danger,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            'CHƯA ĐỌC',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     notification.body,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppTheme.textSecondary, height: 1.3),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isUnread ? Colors.white70 : AppTheme.textSecondary,
+                      height: 1.3,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(

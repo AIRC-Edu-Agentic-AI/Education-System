@@ -102,6 +102,8 @@ export function DashboardView() {
                 currentWeek={currentWeek}
                 onSelect={handleStudentSelect}
                 selectedId={useContextStore.getState().activeStudent?.id_student ?? null}
+                module={selectedModule}
+                presentation={selectedPresentation}
               />
               <Box className="dashboard-chart-column">
                 <TierDistributionChart students={students} numWeeks={numWeeks} currentWeek={currentWeek} />

@@ -163,7 +163,8 @@ async def get_student(student_id: int):
     db = get_db()
     if db is None:
         return MOCK_STUDENT
-    doc = await db.students.find_one({"student_id": student_id})
+    query = {"$or": [{"student_id": student_id}, {"student_id": str(student_id)}]}
+    doc = await db.students.find_one(query)
     if not doc:
         raise HTTPException(status_code=404, detail="Student not found")
 

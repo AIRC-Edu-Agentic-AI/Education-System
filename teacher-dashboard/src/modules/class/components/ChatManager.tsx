@@ -83,6 +83,12 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     activeChannelRef.current = activeChannel;
     if (activeChannel) {
       fetchMessages(activeChannel._id);
+      const pollTimer = setInterval(() => {
+        if (activeChannelRef.current?._id === activeChannel._id) {
+          fetchMessages(activeChannel._id);
+        }
+      }, 4000);
+      return () => clearInterval(pollTimer);
     }
   }, [activeChannel]);
 
@@ -109,10 +115,21 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     }
   }, [openNewChatDialog, courseCode]);
 
+  const getChannelDisplayName = (c: Channel) => {
+    if (c.type === 'private_message' && c.members) {
+      const studentId = c.members.find(m => String(m) !== TEACHER_ID);
+      if (studentId && !c.name.includes('#')) {
+        return `${c.name} (#${studentId})`;
+      }
+    }
+    return c.name;
+  };
+
   const handleStartPrivateChat = async (studentId: string | number, studentName: string) => {
+    const sidStr = String(studentId);
     const existing = channels.find(c => 
       c.type === 'private_message' && 
-      c.members?.includes(String(studentId))
+      c.members?.some(m => String(m) === sidStr)
     );
     if (existing) {
       setActiveChannel(existing);
@@ -121,19 +138,23 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     }
     
     try {
+      const displayName = `${studentName} (#${sidStr})`;
       const res = await fetch(`${BASE_URL}/realtime-chat/channels`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: studentName,
+          name: displayName,
           course_code: courseCode,
-          members: [TEACHER_ID, String(studentId)],
+          members: [TEACHER_ID, sidStr],
           type: 'private_message'
         })
       });
       if (res.ok) {
         const newChan = await res.json();
-        setChannels(prev => [newChan, ...prev]);
+        setChannels(prev => {
+          if (prev.some(c => c._id === newChan._id)) return prev;
+          return [newChan, ...prev];
+        });
         setActiveChannel(newChan);
         setOpenNewChatDialog(false);
       }
@@ -189,7 +210,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
             return prev;
           });
         } else if (data.type === 'channel_created') {
-          fetchChannels(); 
+          fetchChannels();
         }
       } catch (e) {
         console.error("WS Parse error", e);
@@ -207,10 +228,28 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     setLoadingChannels(true);
     try {
       const res = await fetch(`${BASE_URL}/realtime-chat/channels?user_id=${TEACHER_ID}&course_code=${courseCode}`);
-      const data = await res.json();
-      setChannels(data);
-      if (data.length > 0 && !activeChannel) {
-        setActiveChannel(data[0]);
+      const data: Channel[] = await res.json();
+      
+      const uniqueChannels: Channel[] = [];
+      const seenIds = new Set<string>();
+      const seenPrivateKeys = new Set<string>();
+      
+      for (const c of data) {
+        if (seenIds.has(c._id)) continue;
+        seenIds.add(c._id);
+        
+        if (c.type === 'private_message' || c.type === 'private_group') {
+          const memsKey = (c.members || []).map(String).sort().join('|');
+          if (memsKey && seenPrivateKeys.has(memsKey)) continue;
+          if (memsKey) seenPrivateKeys.add(memsKey);
+        }
+        
+        uniqueChannels.push(c);
+      }
+
+      setChannels(uniqueChannels);
+      if (uniqueChannels.length > 0 && !activeChannel) {
+        setActiveChannel(uniqueChannels[0]);
       }
     } catch (e) {
       console.error(e);
@@ -304,7 +343,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary={<Typography variant="subtitle2" fontWeight={activeChannel?._id === channel._id ? 700 : 500}>{channel.name}</Typography>}
+                    primary={<Typography variant="subtitle2" fontWeight={activeChannel?._id === channel._id ? 700 : 500}>{getChannelDisplayName(channel)}</Typography>}
                     secondary={<Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
                       {channel.type.replace('_', ' ')} • {channel.members ? `${channel.members.length} members` : 'Course Global'}
                     </Typography>}
@@ -326,7 +365,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
                 {getChannelIcon(activeChannel.type)}
               </Avatar>
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>{activeChannel.name}</Typography>
+                <Typography variant="subtitle1" fontWeight={700}>{getChannelDisplayName(activeChannel)}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
                   {activeChannel.type.replace('_', ' ')}
                 </Typography>

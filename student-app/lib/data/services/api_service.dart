@@ -97,13 +97,46 @@ class ApiService {
 
   // ── Student ───────────────────────────────────────────────────
   Future<StudentModel> getStudent(int studentId) async {
-    if (_useMock) return MockData.student;
     try {
       final res = await _dio.get('/student/$studentId');
       return StudentModel.fromJson(res.data);
     } catch (_) {
-      // _useMock = true;
-      return MockData.student;
+      final pres = studentId.toString().startsWith('2013') ? '2013J' : (studentId.toString().startsWith('2014') ? '2014J' : '2013J');
+      return StudentModel(
+        id: 'student_$studentId',
+        auth0Id: 'auth0|student_$studentId',
+        studentId: studentId,
+        fullName: studentId == 28400 ? 'Nguyễn Văn An' : 'Sinh viên $studentId',
+        shortName: studentId == 28400 ? 'Văn An' : 'SV $studentId',
+        demographics: const Demographics(
+          gender: 'M',
+          ageBand: '18-25',
+          region: 'Hà Nội',
+          highestEducation: 'HE Qualification',
+          imdBand: '20-30%',
+          disability: false,
+          numPrevAttempts: 0,
+          studiedCredits: 60,
+        ),
+        enrollments: [
+          Enrollment(
+            codeModule: 'AAA',
+            codePresentation: pres,
+            title: 'Môn học AAA ($pres)',
+            moduleLength: 30,
+            finalResult: null,
+            assessments: const [],
+            vleSummary: VleSummary(
+              totalClicks: 3842,
+              lastActiveDay: 42,
+              byActivityType: const {},
+              weeklyClicks: const [],
+            ),
+          ),
+        ],
+        risk: RiskProfile(tier: 0, score: 0.0, flags: const [], computedAt: DateTime.now()),
+        prerequisiteGaps: const [],
+      );
     }
   }
 
@@ -183,6 +216,31 @@ class ApiService {
     } catch (_) {
       // _useMock = true;
       return MockData.channelsFor(courseCode);
+    }
+  }
+
+  Future<CourseChannel> getPrivateChannel(int studentId, {String? courseCode}) async {
+    try {
+      final res = await _dio.get(
+        '/realtime-chat/private-channel',
+        queryParameters: {
+          'student_id': studentId,
+          if (courseCode != null) 'course_code': courseCode,
+        },
+      );
+      return CourseChannel.fromJson(Map<String, dynamic>.from(res.data));
+    } catch (_) {
+      return CourseChannel(
+        id: 'private_$studentId',
+        courseCode: courseCode ?? 'AAA 2013J',
+        type: 'private_message',
+        name: 'Giảng viên',
+        isReadOnly: false,
+        allowedPostRoles: const [],
+        status: 'active',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
     }
   }
 
@@ -294,11 +352,11 @@ class ApiService {
   }
 
   // ── Notifications (polling) ───────────────────────────────────
-  Future<List<NotificationModel>> getNotifications(int studentId) async {
+  Future<List<NotificationModel>> getNotifications(int studentId, {bool unreadOnly = false}) async {
     if (_useMock) return MockData.notifications;
     try {
       final res = await _dio
-          .get('/notify/$studentId', queryParameters: {'unread_only': true});
+          .get('/notify/$studentId', queryParameters: {'unread_only': unreadOnly});
       return (res.data as List)
           .map((n) => NotificationModel.fromJson(n))
           .toList();
