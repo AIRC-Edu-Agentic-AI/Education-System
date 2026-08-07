@@ -28,12 +28,16 @@ class ConnectionManager:
                 del self.active_connections[user_id]
 
     async def send_to_user(self, user_id: str, message: dict):
-        if user_id in self.active_connections:
-            for connection in self.active_connections[user_id]:
-                try:
-                    await connection.send_json(message)
-                except Exception:
-                    pass
+        if user_id not in self.active_connections:
+            return
+        msg_type = message.get("type", "unknown")
+        for connection in self.active_connections[user_id]:
+            try:
+                await connection.send_json(message)
+                print(f"[WS] ✓ Sent {msg_type} to user={user_id}")
+            except Exception as e:
+                print(f"[WS] ✗ Failed to send {msg_type} to user={user_id}: {e}")
+
 
     async def broadcast_to_channel(self, channel: dict, message: dict):
         if "members" in channel and channel["members"]:
