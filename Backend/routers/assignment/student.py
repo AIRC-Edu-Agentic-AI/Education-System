@@ -209,6 +209,8 @@ async def submit_assignment_file(
 ):
     """Submit assignment with PDF file."""
     db = get_db()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database unavailable; cannot save submission")
     
     # Validate file type
     if not file.filename.endswith('.pdf'):
@@ -232,27 +234,56 @@ async def submit_assignment_file(
     
     # Create submission record
     submission = {
-        "id": int(datetime.now().timestamp() * 1000),
         "student_id": student_id,
         "id_assessment": id_assessment,
         "file_name": file.filename,
         "file_url": f"/uploads/submissions/{file_name}",
         "file_type": "pdf",
-        "submitted_at": datetime.now().isoformat(),
-        "submitted_day": datetime.now().day,
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+        "submitted_day": datetime.now(timezone.utc).day,
         "status": "submitted"
     }
     
     # Save to database
-    if db is not None:
-        # Remove old submission if exists
-        await db.submissions.delete_many({
-            "student_id": student_id,
-            "id_assessment": id_assessment
-        })
-        await db.submissions.insert_one(submission)
-        submission["_id"] = str(submission["_id"])
+    await db.submissions.delete_many({
+        "student_id": student_id,
+        "id_assessment": id_assessment
+    })
+    result = await db.submissions.insert_one(submission)
+    submission["_id"] = str(result.inserted_id)
     
+    # Update student's enrollment to mark assessment as submitted
+    try:
+        student_doc = await db.students.find_one({"student_id": student_id})
+        enrollment_code = None
+        if student_doc:
+            for e in student_doc.get("enrollments", []):
+                for a in e.get("assessments", []):
+                    if a.get("id_assessment") == id_assessment:
+                        enrollment_code = e.get("code_module")
+                        break
+                if enrollment_code:
+                    break
+
+        if enrollment_code is not None:
+            # Also write file metadata into the student's assessment entry so
+            # client apps that re-load the `students` document see the submission
+            # immediately after a reset.
+            await db.students.update_one(
+                {"student_id": student_id},
+                {"$set": {
+                    "enrollments.$[e].assessments.$[a].submitted_date": submission.get("submitted_day"),
+                    "enrollments.$[e].assessments.$[a].file_url": submission.get("file_url"),
+                    "enrollments.$[e].assessments.$[a].file_name": submission.get("file_name"),
+                }},
+                array_filters=[
+                    {"e.code_module": enrollment_code},
+                    {"a.id_assessment": id_assessment},
+                ],
+            )
+    except Exception as e:
+        print(f"[submit-file] failed to update student enrollment: {e}")
+
     # Trigger assessment reaction
     try:
         from agent.assessment_reaction import react_to_assessment_change

@@ -8,7 +8,6 @@ import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/data/mock/mock_message_store.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:student_agent/models/instructor_feedback_model.dart';
 import 'package:student_agent/models/class_comment_model.dart';
 
@@ -53,9 +52,6 @@ class ApiService {
   };
 
   ApiService({String? token}) {
-    print('API_BASE_URL = ${EnvConfig.apiBaseUrl}');
-    print('USE_MOCK_DATA = ${EnvConfig.useMockData}');
-    
     _dio = Dio(BaseOptions(
       baseUrl: EnvConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 5),
@@ -132,9 +128,7 @@ class ApiService {
             Map<String, dynamic>.from(course),
           ))
           .toList();
-    } catch (e, s) {
-      print('GET COURSES ERROR = $e');
-      print(s);
+    } catch (_) {
       // _useMock = true;
       return MockData.courses;
     }
@@ -517,15 +511,14 @@ class ApiService {
       });
       
       final response = await _dio.post(
-        '/assignments/$idAssessment/submit-file',
+        '/student/$idAssessment/submit-file',
         data: formData,
       );
       
       final sub = Map<String, dynamic>.from(response.data['submission']);
       return AssignmentSubmission.fromJson(sub);
     } catch (e) {
-      // _useMock = true;
-      return _mockSubmit(idAssessment, studentId, file);
+      rethrow;
     }
   }
 
@@ -708,7 +701,6 @@ class ApiService {
       final res = await _dio.put('/schedule/$studentId/plan', data: {'sessions': sessions});
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
-      print('updateStudyPlan error: $e');
       return false;
     }
   }
