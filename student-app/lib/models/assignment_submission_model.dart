@@ -1,5 +1,5 @@
 class AssignmentSubmission {
-  final int id;
+  final String id;
   final int studentId;
   final int idAssessment;
   final String courseCode;
@@ -25,7 +25,7 @@ class AssignmentSubmission {
 
   factory AssignmentSubmission.fromJson(Map<String, dynamic> json) =>
       AssignmentSubmission(
-        id: json['id'] ?? 0,
+        id: (json['_id'] ?? json['id'] ?? '').toString(),
         studentId: json['student_id'] ?? 0,
         idAssessment: json['id_assessment'] ?? 0,
         courseCode: json['course_code'] ?? '',

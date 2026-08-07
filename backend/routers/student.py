@@ -107,6 +107,15 @@ async def _build_enrollments_payload(student_doc: dict, code_module: Optional[st
     """Attach assignments from the shared assignments collection into each enrollment."""
     db = get_db()
     enrollments = list(student_doc.get("enrollments", []) or [])
+    student_id = student_doc.get("student_id")
+
+    submission_by_assessment: dict = {}
+    if db is not None and student_id is not None:
+        submissions = await db.submissions.find({"student_id": student_id}).to_list(None)
+        for sub in submissions:
+            id_assessment = sub.get("id_assessment")
+            if id_assessment is not None:
+                submission_by_assessment[str(id_assessment)] = sub
 
     for enrollment in enrollments:
         module = enrollment.get("code_module")
@@ -138,16 +147,34 @@ async def _build_enrollments_payload(student_doc: dict, code_module: Optional[st
                     ),
                     None,
                 )
+                id_assessment = assignment_doc.get("id_assessment")
+                submission = submission_by_assessment.get(str(id_assessment))
+                if submission:
+                    fallback_assessment = dict(fallback_assessment or {})
+                    fallback_assessment["id_assessment"] = id_assessment
+                    fallback_assessment["submitted_date"] = (
+                        submission.get("submitted_day")
+                        or fallback_assessment.get("submitted_date")
+                    )
                 merged_assessments.append(
                     _build_assessment_payload(assignment_doc, module, presentation, fallback_assessment)
                 )
 
             enrollment["assessments"] = merged_assessments
         else:
-            enrollment["assessments"] = [
-                _build_assessment_payload(None, module, presentation, assessment)
-                for assessment in existing_assessments
-            ]
+            enrollment["assessments"] = []
+            for assessment in existing_assessments:
+                id_assessment = assessment.get("id_assessment")
+                submission = submission_by_assessment.get(str(id_assessment))
+                fallback = dict(assessment)
+                if submission:
+                    fallback["submitted_date"] = (
+                        submission.get("submitted_day")
+                        or fallback.get("submitted_date")
+                    )
+                enrollment["assessments"].append(
+                    _build_assessment_payload(None, module, presentation, fallback)
+                )
 
     return enrollments
 

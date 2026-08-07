@@ -31,6 +31,7 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import { useAuthStore } from '../../../shared/stores/authStore'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api'
+const FILE_BASE = API_BASE.replace(/\/api\/?$/, '')
 
 interface AssignmentManagerProps {
   module: string
@@ -57,7 +58,10 @@ interface SubmissionRecord {
   _id: string
   student_id: number
   id_assessment: number
-  content: string
+  content?: string
+  file_name?: string
+  file_url?: string
+  file_type?: string
   submitted_at: string
   submitted_day: number
   status: string
@@ -451,7 +455,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                   <TableCell>Status</TableCell>
                   <TableCell>Score</TableCell>
                   <TableCell>Feedback</TableCell>
-                  <TableCell>Content</TableCell>
+                  <TableCell>File / Content</TableCell>
                   <TableCell align="right">Grade</TableCell>
                 </TableRow>
               </TableHead>
@@ -464,7 +468,20 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                     <TableCell>{submission.score != null ? `${submission.score}%` : '—'}</TableCell>
                     <TableCell>{submission.feedback || '—'}</TableCell>
                     <TableCell sx={{ maxWidth: 280, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}>
-                      {submission.content}
+                      {submission.file_name ? (
+                        <Button
+                          component="a"
+                          href={`${FILE_BASE}${submission.file_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="small"
+                          variant="outlined"
+                        >
+                          {submission.file_name}
+                        </Button>
+                      ) : (
+                        submission.content || '—'
+                      )}
                     </TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 180 }}>

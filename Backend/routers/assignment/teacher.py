@@ -117,6 +117,74 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
     return doc
 
 
+# ── Teacher: Grading & Submissions (must be before /{module}/{presentation}) ─
+
+@router.get("/{id_assessment}/all-submissions")
+async def get_all_submissions_for_assessment(id_assessment: int):
+    """Get all submissions for an assessment across all students."""
+    db = get_db()
+    if db is None:
+        return []
+    docs = await db.submissions.find({"id_assessment": id_assessment}).to_list(None)
+    for d in docs:
+        d["_id"] = str(d.get("_id", ""))
+    return docs
+
+
+@router.post("/{id_assessment}/grade/{student_id}")
+async def grade_submission(id_assessment: int, student_id: int, payload: GradeSubmissionRequest):
+    """Grade a student's submission."""
+    db = get_db()
+    if db is None:
+        return {"ok": True, "mock": True}
+
+    if payload.score < 0 or payload.score > 100:
+        raise HTTPException(status_code=400, detail="Score must be between 0 and 100")
+
+    update = {
+        "score": payload.score,
+        "status": "graded",
+        "updated_at": datetime.now().isoformat(),
+    }
+    if payload.feedback is not None:
+        update["feedback"] = payload.feedback
+
+    result = await db.submissions.update_one(
+        {"id_assessment": id_assessment, "student_id": student_id},
+        {"$set": update},
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    await db.students.update_one(
+        {"student_id": student_id, "enrollments.assessments.id_assessment": id_assessment},
+        {"$set": {"enrollments.$[e].assessments.$[a].score": payload.score}},
+        array_filters=[{"a.id_assessment": id_assessment}],
+    )
+
+    await log_event(
+        None,
+        "assignment_graded",
+        actor_id=str(student_id),
+        target_id=str(id_assessment),
+        payload={"score": payload.score, "student_id": student_id},
+        source="assignments",
+    )
+    return {"ok": True, "student_id": student_id, "id_assessment": id_assessment, "score": payload.score}
+
+
+@router.get("/{id_assessment}/submission/{student_id}")
+async def get_student_submission_for_teacher(id_assessment: int, student_id: int):
+    db = get_db()
+    if db is None:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    doc = await db.submissions.find_one({"id_assessment": id_assessment, "student_id": student_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    doc["_id"] = str(doc.get("_id", ""))
+    return doc
+
+
 # ── Teacher: Assignment CRUD (Module/Presentation) ────────────────────────
 
 @router.get("")
@@ -349,71 +417,3 @@ async def delete_classroom_assignment(classroom_id: str, id_assessment: int):
     )
 
     return {"ok": True, "deleted": id_assessment}
-
-
-# ── Teacher: Grading & Submissions ──────────────────────────────────────────
-
-@router.get("/{id_assessment}/all-submissions")
-async def get_all_submissions_for_assessment(id_assessment: int):
-    """Get all submissions for an assessment across all students."""
-    db = get_db()
-    if db is None:
-        return []
-    docs = await db.submissions.find({"id_assessment": id_assessment}).to_list(None)
-    for d in docs:
-        d["_id"] = str(d.get("_id", ""))
-    return docs
-
-
-@router.post("/{id_assessment}/grade/{student_id}")
-async def grade_submission(id_assessment: int, student_id: int, payload: GradeSubmissionRequest):
-    """Grade a student's submission."""
-    db = get_db()
-    if db is None:
-        return {"ok": True, "mock": True}
-
-    if payload.score < 0 or payload.score > 100:
-        raise HTTPException(status_code=400, detail="Score must be between 0 and 100")
-
-    update = {
-        "score": payload.score,
-        "status": "graded",
-        "updated_at": datetime.now().isoformat(),
-    }
-    if payload.feedback is not None:
-        update["feedback"] = payload.feedback
-
-    result = await db.submissions.update_one(
-        {"id_assessment": id_assessment, "student_id": student_id},
-        {"$set": update},
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Submission not found")
-
-    await db.students.update_one(
-        {"student_id": student_id, "enrollments.assessments.id_assessment": id_assessment},
-        {"$set": {"enrollments.$[e].assessments.$[a].score": payload.score}},
-        array_filters=[{"a.id_assessment": id_assessment}],
-    )
-
-    await log_event(
-        None,
-        "assignment_graded",
-        actor_id=str(student_id),
-        target_id=str(id_assessment),
-        payload={"score": payload.score, "student_id": student_id},
-        source="assignments",
-    )
-    return {"ok": True, "student_id": student_id, "id_assessment": id_assessment, "score": payload.score}
-
-
-@router.get("/{id_assessment}/submission/{student_id}")
-async def get_student_submission_for_teacher(id_assessment: int, student_id: int):
-    db = get_db()
-    if db is None:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    doc = await db.submissions.find_one({"id_assessment": id_assessment, "student_id": student_id})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    doc["_id"] = str(doc.get("_id", ""))
-    return doc

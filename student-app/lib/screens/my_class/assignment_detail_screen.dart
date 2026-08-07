@@ -123,7 +123,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     }
   }
 
-  Future<void> _unsumbitAssignment(int submissionId) async {
+  Future<void> _unsumbitAssignment(String submissionId) async {
     setState(() => _submitting = true);
     try {
       final api = ref.read(apiServiceProvider);

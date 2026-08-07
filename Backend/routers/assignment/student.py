@@ -265,6 +265,11 @@ async def submit_assignment_file(
                 if enrollment_code:
                     break
 
+        if enrollment_code is None:
+            assignment_doc = await db.assignments.find_one({"id_assessment": id_assessment})
+            if assignment_doc:
+                enrollment_code = assignment_doc.get("code_module")
+
         if enrollment_code is not None:
             # Also write file metadata into the student's assessment entry so
             # client apps that re-load the `students` document see the submission
@@ -335,14 +340,18 @@ async def read_submission(id_assessment: int, student_id: int):
 
 
 @router.delete("/{id_assessment}/submissions/{submission_id}")
-async def delete_submission(id_assessment: int, submission_id: int):
+async def delete_submission(id_assessment: int, submission_id: str):
     """Delete a submission (unsubmit)."""
     db = get_db()
     if db is not None:
-        # Find the submission to get file path
+        try:
+            oid = ObjectId(submission_id)
+        except InvalidId:
+            raise HTTPException(status_code=400, detail="Invalid submission id")
+
         sub = await db.submissions.find_one({
-            "id": submission_id,
-            "id_assessment": id_assessment
+            "_id": oid,
+            "id_assessment": id_assessment,
         })
         
         if not sub:
@@ -359,7 +368,7 @@ async def delete_submission(id_assessment: int, submission_id: int):
                     print(f"[delete-submission] Failed to delete file: {e}")
         
         # Delete from database
-        await db.submissions.delete_one({"id": submission_id})
+        await db.submissions.delete_one({"_id": oid})
         return {"ok": True}
     
     return {"ok": True, "mock": True}

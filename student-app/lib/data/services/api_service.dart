@@ -451,7 +451,7 @@ class ApiService {
     if (_useMock) return MockData.milestonesFor(idAssessment);
     try {
       final res = await _dio.get(
-        '/assignments/$idAssessment/milestones',
+        '/student/$idAssessment/milestones',
         queryParameters: {'student_id': studentId},
       );
       return AssignmentMilestonesData.fromJson(
@@ -467,7 +467,7 @@ class ApiService {
     if (_useMock) return MockData.milestonesFor(idAssessment);
     try {
       final res = await _dio.post(
-        '/assignments/$idAssessment/breakdown',
+        '/student/$idAssessment/breakdown',
         queryParameters: {'student_id': studentId},
       );
       return AssignmentMilestonesData.fromJson(
@@ -486,7 +486,7 @@ class ApiService {
   }) async {
     if (_useMock) return;
     try {
-      await _dio.patch('/assignments/milestone/status', data: {
+      await _dio.patch('/student/milestone/status', data: {
         'student_id': studentId,
         'id_assessment': idAssessment,
         'milestone_id': milestoneId,
@@ -507,7 +507,7 @@ class ApiService {
     }
     try {
       final response = await _dio.get(
-        '/assignments/$assessmentId/submissions',
+        '/student/$assessmentId/submissions',
         queryParameters: {'student_id': studentId},
       );
       if (response.data['submissions'] != null) {
@@ -538,7 +538,7 @@ class ApiService {
     }
     try {
       final res = await _dio.get(
-        '/assignments/$idAssessment/submission',
+        '/student/$idAssessment/submission',
         queryParameters: {'student_id': studentId},
       );
       final data = Map<String, dynamic>.from(res.data);
@@ -581,13 +581,13 @@ class ApiService {
   }
 
   // Hủy nộp bài
-  Future<void> unsumbitAssignment(int assessmentId, int submissionId) async {
+  Future<void> unsumbitAssignment(int assessmentId, String submissionId) async {
     if (_useMock) {
       return _mockUnsubmit(assessmentId, submissionId);
     }
     try {
       await _dio.delete(
-        '/assignments/$assessmentId/submissions/$submissionId',
+        '/student/$assessmentId/submissions/$submissionId',
       );
     } catch (e) {
       // _useMock = true;
@@ -595,7 +595,7 @@ class ApiService {
     }
   }
 
-  void _mockUnsubmit(int assessmentId, int submissionId) {
+  void _mockUnsubmit(int assessmentId, String submissionId) {
     // Xóa khỏi mock storage
     _mockSubmissions.removeWhere((key, sub) => sub.id == submissionId);
   }
@@ -612,7 +612,7 @@ class ApiService {
     File file,
   ) {
     final sub = AssignmentSubmission(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       studentId: studentId,
       idAssessment: idAssessment,
       courseCode: 'MOCK_COURSE',
@@ -634,7 +634,7 @@ class ApiService {
     }
     try {
       final response = await _dio.get(
-        '/assignments/$assessmentId/feedbacks',
+        '/student/$assessmentId/feedbacks',
       );
       if (response.data['feedbacks'] != null) {
         return (response.data['feedbacks'] as List)
@@ -659,7 +659,7 @@ class ApiService {
     }
     try {
       final response = await _dio.get(
-        '/assignments/$assessmentId/comments',
+        '/student/$assessmentId/comments',
       );
       if (response.data['comments'] != null) {
         return (response.data['comments'] as List)
@@ -688,7 +688,7 @@ class ApiService {
     }
     try {
       final response = await _dio.post(
-        '/assignments/$assessmentId/comments',
+        '/student/$assessmentId/comments',
         data: {
           'student_id': studentId,
           'content': content,
