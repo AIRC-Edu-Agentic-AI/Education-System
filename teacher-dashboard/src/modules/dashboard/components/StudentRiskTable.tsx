@@ -23,6 +23,8 @@ interface Props {
   currentWeek: number
   onSelect: (s: LocalStudentProfile) => void
   selectedId: number | null
+  module?: string
+  presentation?: string
 }
 
 function riskTrend(s: LocalStudentProfile, week: number): 'up' | 'down' | 'flat' {
@@ -34,7 +36,7 @@ function riskTrend(s: LocalStudentProfile, week: number): 'up' | 'down' | 'flat'
   return 'flat'
 }
 
-export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }: Props) {
+export function StudentRiskTable({ students, currentWeek, onSelect, selectedId, module, presentation }: Props) {
   const [sortField, setSortField] = useState<'risk' | 'id' | 'imd' | 'name'>('risk')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
@@ -120,6 +122,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
     
     try {
       const studentName = warningStudent.name || `Student #${warningStudent.id_student}`
+      const courseCode = module && presentation ? `${module} ${presentation}` : (module || undefined)
 
       // Gửi tới /notify/broadcast — student app sẽ nhận được qua GET /notify/{student_id}
       const res = await fetch(`${BASE_URL}/notify/broadcast`, {
@@ -131,6 +134,7 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId }
           title: `Academic Warning for ${studentName}`,
           content: warningMessage,
           sender_role: 'instructor',
+          course_code: courseCode,
         })
       })
 

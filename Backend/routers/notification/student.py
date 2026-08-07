@@ -27,7 +27,7 @@ async def get_notifications(student_id: int, unread_only: bool = True) -> List[D
             notifs = [n for n in notifs if not n["read"]]
         return notifs
 
-    query: Dict[str, Any] = {"student_id": student_id}
+    query: Dict[str, Any] = {"student_id": student_id, "is_broadcast_log": {"$ne": True}}
     if unread_only:
         query["read"] = False
 

@@ -113,11 +113,12 @@ class CourseMessage {
   final String id;
   final String channelId;
   final String courseCode;
-  final int senderId;
+  final dynamic senderId;
   final String senderRole;
   final String content;
   final DateTime createdAt;
   final String? parentId;
+  final String? channelType;
   final List<CourseMessageReaction> reactions;
 
   CourseMessage({
@@ -129,20 +130,36 @@ class CourseMessage {
     required this.content,
     required this.createdAt,
     this.parentId,
+    this.channelType,
     this.reactions = const [],
   });
 
-  factory CourseMessage.fromJson(Map<String, dynamic> json) => CourseMessage(
-        id: json['_id']?.toString() ?? '',
-        channelId: json['channel_id']?.toString() ?? '',
-        courseCode: json['course_code'] ?? '',
-        senderId: json['sender_id'] ?? 0,
-        senderRole: json['sender_role'] ?? '',
-        content: json['content'] ?? '',
-        createdAt: parseServerTime(json['created_at']),
-        parentId: json['parent_id']?.toString(),
-        reactions: (json['reactions'] as List? ?? [])
-            .map((r) => CourseMessageReaction.fromJson(Map<String, dynamic>.from(r)))
-            .toList(),
-      );
+  factory CourseMessage.fromJson(Map<String, dynamic> json) {
+    final rawSenderId = json['sender_id'] ?? json['senderId'];
+    dynamic parsedSenderId = rawSenderId;
+    if (rawSenderId != null) {
+      if (rawSenderId is int) {
+        parsedSenderId = rawSenderId;
+      } else if (rawSenderId is String) {
+        parsedSenderId = int.tryParse(rawSenderId) ?? rawSenderId;
+      }
+    } else {
+      parsedSenderId = 0;
+    }
+
+    return CourseMessage(
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      channelId: json['channel_id']?.toString() ?? '',
+      courseCode: json['course_code'] ?? '',
+      senderId: parsedSenderId,
+      senderRole: json['sender_role'] ?? json['senderRole'] ?? '',
+      content: json['content'] ?? '',
+      createdAt: parseServerTime(json['created_at'] ?? json['createdAt']),
+      parentId: json['parent_id']?.toString(),
+      channelType: json['channel_type']?.toString(),
+      reactions: (json['reactions'] as List? ?? [])
+          .map((r) => CourseMessageReaction.fromJson(Map<String, dynamic>.from(r)))
+          .toList(),
+    );
+  }
 }

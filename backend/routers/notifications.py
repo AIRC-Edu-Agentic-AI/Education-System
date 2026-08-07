@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from db.mongodb import get_db
 from db.mock_data import MOCK_NOTIFICATIONS
+from db.event_logging import log_event
 
 router = APIRouter()
 
@@ -52,9 +53,9 @@ def _course_code_matches(stored_code: Optional[str], requested_code: Optional[st
         return False
     stored = re.sub(r"\s+", " ", str(stored_code).strip()).lower()
     requested = re.sub(r"\s+", " ", str(requested_code).strip()).lower()
-    if stored == requested:
+    if stored == requested or stored.startswith(requested) or requested.startswith(stored):
         return True
-    return stored.startswith(requested) or requested.startswith(stored)
+    return stored.split(' ')[0] == requested.split(' ')[0]
 
 
 def _build_notification_query(student_id: int | None, unread_only: bool, now_iso: str, course_code: str | None = None):
@@ -68,9 +69,11 @@ def _build_notification_query(student_id: int | None, unread_only: bool, now_iso
                 {"receiver_id": student_id},
                 {"recipient_id": student_id},
                 {"studentId": student_id},
-                {"receiverRole": {"$regex": "^(student|students|all)$", "$options": "i"}},
             ]
         })
+
+    # Always filter out teacher broadcast log documents
+    conditions.append({"is_broadcast_log": {"$ne": True}})
 
     if unread_only:
         conditions.append({
@@ -180,10 +183,26 @@ async def broadcast_notification(payload: BroadcastPayload) -> Dict[str, Any]:
 
     if db is None:
         # Mock mode — không persist, trả về danh sách mock
+        await log_event(
+            None,
+            "notification_broadcast",
+            actor_id=payload.sender_role,
+            target_id=payload.course_code or "broadcast",
+            payload={"student_ids": payload.student_ids, "type": payload.type, "count": len(docs), "mock": True},
+            source="notifications",
+        )
         return {"ok": True, "count": len(docs), "mock": True}
 
     if docs:
         result = await db["notifications"].insert_many(docs)
+        await log_event(
+            None,
+            "notification_broadcast",
+            actor_id=payload.sender_role,
+            target_id=payload.course_code or "broadcast",
+            payload={"student_ids": payload.student_ids, "type": payload.type, "count": len(result.inserted_ids)},
+            source="notifications",
+        )
         return {"ok": True, "count": len(result.inserted_ids)}
 
     return {"ok": True, "count": 0}

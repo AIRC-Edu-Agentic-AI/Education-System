@@ -243,6 +243,8 @@ class NotificationModel {
   final String body;
   final bool read;
   final DateTime createdAt;
+  final String? courseCode;
+  final String? senderRole;
   final List<NotificationAction> actionOptions;
 
   const NotificationModel({
@@ -253,6 +255,8 @@ class NotificationModel {
     required this.body,
     required this.read,
     required this.createdAt,
+    this.courseCode,
+    this.senderRole,
     this.actionOptions = const [],
   });
 
@@ -270,20 +274,30 @@ class NotificationModel {
       body: body.toString(),
       read: json['read'] ?? json['is_read'] ?? false,
       createdAt: parseServerTime(createdAtValue),
+      courseCode: json['course_code'] ?? json['courseCode'],
+      senderRole: json['sender_role'] ?? json['senderRole'],
       actionOptions: (json['action_options'] as List? ?? [])
           .map((a) => NotificationAction.fromJson(a))
           .toList(),
     );
   }
 
-  NotificationModel copyWith({bool? read}) => NotificationModel(
+  NotificationModel copyWith({
+    bool? read,
+    String? title,
+    String? body,
+    String? courseCode,
+    String? senderRole,
+  }) => NotificationModel(
         id: id,
         studentId: studentId,
         type: type,
-        title: title,
-        body: body,
+        title: title ?? this.title,
+        body: body ?? this.body,
         read: read ?? this.read,
         createdAt: createdAt,
+        courseCode: courseCode ?? this.courseCode,
+        senderRole: senderRole ?? this.senderRole,
         actionOptions: actionOptions,
       );
 }

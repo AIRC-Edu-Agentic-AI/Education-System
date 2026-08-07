@@ -9,6 +9,7 @@ import uuid
 from db.mongodb import get_db
 from db.mock_data import MOCK_MILESTONES
 from db.submissions import get_submission, submit_assignment
+from db.event_logging import log_event
 
 router = APIRouter()
 
@@ -156,7 +157,16 @@ async def submit_assignment_file(
         await react_to_assessment_change(student_id, summary, replan=True)
     except Exception as e:
         print(f"[submit-file] Reaction error: {e}")
-    
+
+    await log_event(
+        None,
+        "assignment_submitted",
+        actor_id=str(student_id),
+        target_id=str(id_assessment),
+        payload={"filename": file.filename, "file_type": "pdf", "student_id": student_id},
+        source="assignments",
+    )
+
     return {"submission": submission}
 
 # â”€â”€ NEW: Get all submissions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
