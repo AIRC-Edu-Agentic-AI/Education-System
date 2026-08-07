@@ -145,23 +145,30 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
                 newMessageStreamController.add(msg);
               }
               ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
+              ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$activeStudentId')));
+              ref.invalidate(notificationProvider);
             }
-          } catch (_) {}
+          } catch (e) {
+            print('[WS Data Parse Error] $e');
+          }
         },
-        onError: (_) {
+        onError: (e) {
+          print('[WS Connection Error] $e');
           if (!_isDisposed) {
-            Future.delayed(const Duration(seconds: 5), _connectWebSocket);
+            Future.delayed(const Duration(seconds: 3), _connectWebSocket);
           }
         },
         onDone: () {
+          print('[WS Connection Closed] Auto reconnecting...');
           if (!_isDisposed) {
-            Future.delayed(const Duration(seconds: 5), _connectWebSocket);
+            Future.delayed(const Duration(seconds: 3), _connectWebSocket);
           }
         },
       );
-    } catch (_) {
+    } catch (e) {
+      print('[WS Connect Catch] $e');
       if (!_isDisposed) {
-        Future.delayed(const Duration(seconds: 5), _connectWebSocket);
+        Future.delayed(const Duration(seconds: 3), _connectWebSocket);
       }
     }
   }

@@ -54,11 +54,15 @@ export function StudentRiskTable({ students, currentWeek, onSelect, selectedId, 
   const sorted = useMemo(() => {
     const filtered = students.filter((s) => {
       if (!search) return true
-      const searchLower = search.toLowerCase()
+      const searchLower = search.toLowerCase().trim()
+      const studentIdStr = String(s.id_student ?? '')
+      const imdStr = s.imd_band ? String(s.imd_band).toLowerCase() : ''
+      const nameStr = s.name ? String(s.name).toLowerCase() : ''
+      
       return (
-        String(s.id_student).includes(searchLower) || 
-        s.imd_band.toLowerCase().includes(searchLower) ||
-        (s.name && s.name.toLowerCase().includes(searchLower))
+        studentIdStr.toLowerCase().includes(searchLower) || 
+        imdStr.includes(searchLower) ||
+        nameStr.includes(searchLower)
       )
     })
 

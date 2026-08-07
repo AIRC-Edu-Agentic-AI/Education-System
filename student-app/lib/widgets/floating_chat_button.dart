@@ -57,6 +57,8 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     ),
   ];
 
+  Timer? _pollTimer;
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +77,19 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
           }
         });
       }
+      ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
+      if (_privateChannelId != null) {
+        ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: _privateChannelId!)));
+      }
+    });
+
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      if (_privateChannelId != null) {
+        ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: _privateChannelId!)));
+      }
+      final studentId = ref.read(activeStudentIdProvider);
+      ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$studentId')));
     });
   }
 
@@ -93,6 +108,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _msgSub?.cancel();
     _textController.dispose();
     _aiScrollController.dispose();
