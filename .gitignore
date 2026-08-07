@@ -63,3 +63,12 @@ student-app/macos/Flutter/GeneratedPluginRegistrant.swift
 student-app/windows/flutter/generated_plugin_registrant.cc
 student-app/windows/flutter/generated_plugin_registrant.h
 student-app/windows/flutter/generated_plugins.cmake
+Backend/uploads/analytics.db
+Backend/uploads/event_logs.jsonl
+student-app/linux/flutter/generated_plugin_registrant.cc
+student-app/linux/flutter/generated_plugin_registrant.h
+student-app/linux/flutter/generated_plugins.cmake
+student-app/macos/Flutter/GeneratedPluginRegistrant.swift
+student-app/windows/flutter/generated_plugin_registrant.cc
+student-app/windows/flutter/generated_plugin_registrant.h
+student-app/windows/flutter/generated_plugins.cmake
