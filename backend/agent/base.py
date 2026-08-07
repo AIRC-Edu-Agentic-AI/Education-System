@@ -382,18 +382,10 @@ def make_tools(student_id: int) -> list:
                 if a.get("id_assessment") == id_assessment:
                     module = enrollment.get("code_module", "")
                     title = f"{a.get('type', 'Assignment')} — {module}"
-        record = {
-            "student_id": student_id,
-            "id_assessment": id_assessment,
-            "module": module,
-            "title": title,
-            "milestones": milestones,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
         if db is not None:
-            await db.assignment_milestones.update_one(
-                {"student_id": student_id, "id_assessment": id_assessment},
-                {"$set": record},
+            await db.assignments.update_one(
+                {"id_assessment": id_assessment},
+                {"$set": {"milestones": milestones}},
                 upsert=True,
             )
             return json.dumps({"status": "ok", "count": len(milestones)})
@@ -404,12 +396,11 @@ def make_tools(student_id: int) -> list:
         """Retrieve the milestone list for a specific assessment."""
         db = get_db()
         if db is not None:
-            doc = await db.assignment_milestones.find_one(
-                {"student_id": student_id, "id_assessment": id_assessment}
+            doc = await db.assignments.find_one(
+                {"id_assessment": id_assessment}
             )
             if doc:
-                doc.pop("_id", None)
-                return json.dumps(doc, ensure_ascii=False, default=str)
+                return json.dumps({"id_assessment": id_assessment, "milestones": doc.get("milestones", [])}, ensure_ascii=False, default=str)
         # Mock fallback
         for m in MOCK_MILESTONES:
             if m["id_assessment"] == id_assessment:
@@ -421,8 +412,8 @@ def make_tools(student_id: int) -> list:
         """Update the status of a single milestone. status must be one of: pending | in_progress | done | skipped."""
         db = get_db()
         if db is not None:
-            await db.assignment_milestones.update_one(
-                {"student_id": student_id, "id_assessment": id_assessment, "milestones.id": milestone_id},
+            await db.assignments.update_one(
+                {"id_assessment": id_assessment, "milestones.id": milestone_id},
                 {"$set": {"milestones.$.status": status}},
             )
             return json.dumps({"status": "ok"})

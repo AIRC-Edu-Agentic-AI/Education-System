@@ -53,6 +53,105 @@ def _serialize_student(doc: dict) -> dict:
     return doc
 
 
+def _build_assessment_payload(assignment_doc: Optional[dict] = None, module: Optional[str] = None, presentation: Optional[str] = None, fallback_assessment: Optional[dict] = None) -> dict:
+    """Build a student-facing assessment payload from the shared assignments collection."""
+    source = dict(assignment_doc or {})
+    fallback = dict(fallback_assessment or {})
+
+    if not source and not fallback:
+        return {
+            "id_assessment": 0,
+            "type": "",
+            "due_date": 0,
+            "weight": 0.0,
+            "score": None,
+            "submitted_date": None,
+            "is_banked": False,
+        }
+
+    id_assessment = source.get("id_assessment") or fallback.get("id_assessment") or 0
+    assessment_type = source.get("type") or fallback.get("assessment_type") or fallback.get("type") or ""
+    due_date = source.get("due_date") or source.get("date_due") or fallback.get("date_due") or fallback.get("due_date") or 0
+    weight = source.get("weight") if source.get("weight") is not None else fallback.get("weight")
+    score = fallback.get("score")
+    submitted_date = fallback.get("date_submitted") or fallback.get("submitted_date")
+    is_banked = fallback.get("is_banked", False)
+
+    if isinstance(due_date, datetime):
+        due_date = int(due_date.timestamp())
+    elif isinstance(due_date, str):
+        try:
+            due_date = int(float(due_date))
+        except ValueError:
+            try:
+                due_date = int(datetime.fromisoformat(due_date.replace("Z", "+00:00")).timestamp())
+            except ValueError:
+                due_date = 0
+
+    return {
+        "id_assessment": id_assessment,
+        "code_module": module or source.get("code_module") or fallback.get("code_module"),
+        "code_presentation": presentation or source.get("code_presentation") or fallback.get("code_presentation"),
+        "type": assessment_type,
+        "due_date": due_date,
+        "weight": weight if weight is not None else 0.0,
+        "score": score,
+        "submitted_date": submitted_date,
+        "is_banked": is_banked,
+        "title": source.get("title") or fallback.get("title"),
+        "description": source.get("description") or fallback.get("description"),
+    }
+
+
+async def _build_enrollments_payload(student_doc: dict, code_module: Optional[str] = None) -> List[dict]:
+    """Attach assignments from the shared assignments collection into each enrollment."""
+    db = get_db()
+    enrollments = list(student_doc.get("enrollments", []) or [])
+
+    for enrollment in enrollments:
+        module = enrollment.get("code_module")
+        presentation = enrollment.get("code_presentation")
+        if code_module and module != code_module:
+            continue
+
+        existing_assessments = list(enrollment.get("assessments", []) or [])
+        if db is None:
+            enrollment["assessments"] = [
+                _build_assessment_payload(None, module, presentation, assessment)
+                for assessment in existing_assessments
+            ]
+            continue
+
+        assignment_filter = {"code_module": module}
+        if presentation:
+            assignment_filter["code_presentation"] = presentation
+
+        assignment_docs = await db.assignments.find(assignment_filter).to_list(None)
+        if assignment_docs:
+            merged_assessments: List[dict] = []
+
+            for assignment_doc in assignment_docs:
+                fallback_assessment = next(
+                    (
+                        a for a in existing_assessments
+                        if str(a.get("id_assessment")) == str(assignment_doc.get("id_assessment"))
+                    ),
+                    None,
+                )
+                merged_assessments.append(
+                    _build_assessment_payload(assignment_doc, module, presentation, fallback_assessment)
+                )
+
+            enrollment["assessments"] = merged_assessments
+        else:
+            enrollment["assessments"] = [
+                _build_assessment_payload(None, module, presentation, assessment)
+                for assessment in existing_assessments
+            ]
+
+    return enrollments
+
+
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.get("/{student_id}")
@@ -67,6 +166,8 @@ async def get_student(student_id: int):
     doc = await db.students.find_one({"student_id": student_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Student not found")
+
+    doc["enrollments"] = await _build_enrollments_payload(doc)
     return _serialize_student(doc)
 
 
@@ -129,6 +230,8 @@ async def get_student_enrollments(student_id: int):
     )
     if not doc:
         raise HTTPException(status_code=404, detail="Student not found")
+
+    doc["enrollments"] = await _build_enrollments_payload(doc)
     return doc.get("enrollments", [])
 
 

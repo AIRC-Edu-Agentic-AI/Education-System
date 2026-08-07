@@ -12,6 +12,7 @@ from db.mongodb import get_db
 from db.mock_data import MOCK_STUDENT, MOCK_KNOWLEDGE_STATES, MOCK_RISK_HISTORY, MOCK_MILESTONES
 from db.submissions import get_submission, submit_assignment
 from db.event_logging import log_event
+from routers.student import _build_enrollments_payload
 
 router = APIRouter()
 
@@ -63,21 +64,18 @@ async def get_student_assignments(student_id: int, code_module: Optional[str] = 
     if not doc:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    enrollments = doc.get("enrollments", [])
+    enrollments = await _build_enrollments_payload(doc, code_module)
     result: List[Dict[str, Any]] = []
 
     for enrollment in enrollments:
         module = enrollment.get("code_module")
-        if code_module and module != code_module:
-            continue
-
         assessments = enrollment.get("assessments", [])
         for a in assessments:
             id_assessment = a.get("id_assessment")
             milestone_doc = None
             if id_assessment:
-                milestone_doc = await db.assignment_milestones.find_one(
-                    {"student_id": student_id, "id_assessment": id_assessment}
+                milestone_doc = await db.assignments.find_one(
+                    {"id_assessment": id_assessment}
                 )
 
             submission_doc = None
@@ -91,11 +89,11 @@ async def get_student_assignments(student_id: int, code_module: Optional[str] = 
                 "code_module": module,
                 "code_presentation": enrollment.get("code_presentation"),
                 "course_title": enrollment.get("title"),
-                "type": a.get("assessment_type") or a.get("type"),
-                "due_date": a.get("date_due") or a.get("due_date"),
+                "type": a.get("type") or a.get("assessment_type"),
+                "due_date": a.get("due_date"),
                 "weight": a.get("weight"),
                 "score": a.get("score"),
-                "date_submitted": a.get("date_submitted") or a.get("submitted_date"),
+                "date_submitted": a.get("submitted_date"),
                 "is_banked": a.get("is_banked", False),
                 "milestones": milestone_doc.get("milestones", []) if milestone_doc else [],
                 "submission": {
@@ -138,19 +136,19 @@ async def get_student_assignment_submission(student_id: int, id_assessment: int)
 
 @router.get("/{id_assessment}/milestones")
 async def get_milestones(id_assessment: int, student_id: int):
-    """Return milestone list for an assessment. Empty list if none generated yet."""
+    """Return milestone list for an assignment. Empty list if none generated yet."""
     db = get_db()
     if db is not None:
-        doc = await db.assignment_milestones.find_one(
-            {"student_id": student_id, "id_assessment": id_assessment}
+        doc = await db.assignments.find_one(
+            {"id_assessment": id_assessment}
         )
         if doc:
             doc["_id"] = str(doc["_id"])
-            return doc
+            return {"id_assessment": id_assessment, "milestones": doc.get("milestones", [])}
         return {"id_assessment": id_assessment, "milestones": []}
     # Mock fallback
     for m in MOCK_MILESTONES:
-        if m["id_assessment"] == id_assessment and m["student_id"] == student_id:
+        if m["id_assessment"] == id_assessment:
             return {k: v for k, v in m.items() if k != "_id"}
     return {"id_assessment": id_assessment, "milestones": []}
 
@@ -161,15 +159,14 @@ async def trigger_breakdown(id_assessment: int, student_id: int):
     db = get_db()
     # Return existing if already generated
     if db is not None:
-        existing = await db.assignment_milestones.find_one(
-            {"student_id": student_id, "id_assessment": id_assessment}
+        existing = await db.assignments.find_one(
+            {"id_assessment": id_assessment}
         )
-        if existing:
-            existing["_id"] = str(existing["_id"])
-            return existing
+        if existing and existing.get("milestones"):
+            return {"id_assessment": id_assessment, "milestones": existing.get("milestones", [])}
     else:
         for m in MOCK_MILESTONES:
-            if m["id_assessment"] == id_assessment and m["student_id"] == student_id:
+            if m["id_assessment"] == id_assessment:
                 return {k: v for k, v in m.items() if k != "_id"}
 
     # Generate via agent
@@ -178,12 +175,11 @@ async def trigger_breakdown(id_assessment: int, student_id: int):
 
     # Return newly created milestones
     if db is not None:
-        doc = await db.assignment_milestones.find_one(
-            {"student_id": student_id, "id_assessment": id_assessment}
+        doc = await db.assignments.find_one(
+            {"id_assessment": id_assessment}
         )
         if doc:
-            doc["_id"] = str(doc["_id"])
-            return doc
+            return {"id_assessment": id_assessment, "milestones": doc.get("milestones", [])}
     return {"id_assessment": id_assessment, "milestones": [], "status": "processing"}
 
 
@@ -193,9 +189,8 @@ async def update_milestone_status(body: MilestoneUpdateRequest):
     db = get_db()
     if db is None:
         return {"ok": True, "mock": True}
-    await db.assignment_milestones.update_one(
+    await db.assignments.update_one(
         {
-            "student_id": body.student_id,
             "id_assessment": body.id_assessment,
             "milestones.id": body.milestone_id,
         },

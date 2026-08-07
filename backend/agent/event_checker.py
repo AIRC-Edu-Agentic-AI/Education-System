@@ -126,10 +126,10 @@ async def run_event_check(student_id: int) -> None:
     # ── 4. Milestone overdue check ─────────────────────────────────────────────
     milestone_docs = []
     if db is not None:
-        cursor = db.assignment_milestones.find({"student_id": student_id})
+        cursor = db.assignments.find({"milestones": {"$exists": True, "$ne": []}})
         milestone_docs = await cursor.to_list(length=20)
     else:
-        milestone_docs = [m for m in MOCK_MILESTONES if m["student_id"] == student_id]
+        milestone_docs = [m for m in MOCK_MILESTONES if m.get("milestones")]
 
     # Build due_date lookup from assessments
     due_dates: dict[int, int] = {}
@@ -219,10 +219,10 @@ async def run_progress_check(student_id: int) -> None:
 
     # Milestone progress lookup by assessment id
     if db is not None:
-        cursor = db.assignment_milestones.find({"student_id": student_id})
+        cursor = db.assignments.find({"milestones": {"$exists": True, "$ne": []}})
         ms_docs = await cursor.to_list(length=50)
     else:
-        ms_docs = [m for m in MOCK_MILESTONES if m["student_id"] == student_id]
+        ms_docs = [m for m in MOCK_MILESTONES if m.get("milestones")]
     ms_by_assessment = {m.get("id_assessment"): m.get("milestones", []) for m in ms_docs}
 
     # Collect candidate nudges, then emit ONE prioritised check-in (behind wins,

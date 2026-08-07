@@ -6,7 +6,6 @@ import 'package:student_agent/models/assignment_submission_model.dart';
 import 'package:student_agent/models/student_model.dart';
 import 'package:student_agent/providers/providers.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:pdfx/pdfx.dart';
 import 'dart:io';
 import 'package:student_agent/models/instructor_feedback_model.dart';
 import 'package:student_agent/models/class_comment_model.dart';
@@ -107,6 +106,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         _submitting = false;
       });
       
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đã nộp bài thành công'),
@@ -116,6 +116,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Không thể nộp bài: $e')),
       );
@@ -136,6 +137,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         _submitting = false;
       });
       
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đã hủy nộp bài'),
@@ -145,6 +147,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Không thể hủy nộp bài: $e')),
       );
@@ -165,11 +168,13 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         content: comment,
       );
       
+      if (!mounted) return;
       setState(() {
         _classComments = [newComment, ..._classComments];
         _commentController.clear();
       });
       
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đã thêm nhận xét'),
@@ -177,6 +182,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: $e')),
       );
@@ -233,7 +239,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Header card
               _HeaderCard(
                 assessment: assessment,
                 isSubmitted: isSubmitted,
@@ -241,42 +246,13 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                 isUnsubmitting: _submitting,
               ),
               const SizedBox(height: 16),
-
-              // Hướng dẫn
-              const Text(
-                'Hướng dẫn',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceCard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.cardBorder),
-                ),
-                child: const Text(
-                  'Nộp bài dưới dạng file PDF. Bạn có thể nộp nhiều lần, mỗi lần nộp sẽ thay thế bài trước đó.',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
-                    height: 1.45,
-                  ),
-                ),
-              ),
+              _buildAssignmentMetadata(assessment),
               const SizedBox(height: 16),
-
-              // Phần nộp bài mới
-              if (!isSubmitted) ...[
-                _buildFileUploadSection(),
-              ],
-
-              // Hiển thị bài đã nộp
+              _buildDescriptionSection(assessment.description),
+              const SizedBox(height: 16),
+              _buildUploadGuidance(assessment),
+              const SizedBox(height: 16),
+              if (!isSubmitted) _buildFileUploadSection(),
               if (isSubmitted) ...[
                 const Text(
                   'Bài đã nộp',
@@ -290,8 +266,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                 ..._submissions.map((submission) => _buildSubmittedFileCard(submission)),
               ],
               const SizedBox(height: 24),
-
-              // Nhận xét từ giảng viên
               if (_feedbacks.isNotEmpty) ...[
                 const Text(
                   'Nhận xét từ giảng viên',
@@ -305,8 +279,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                 ..._feedbacks.map((feedback) => _buildFeedbackCard(feedback)),
                 const SizedBox(height: 16),
               ],
-
-              // Nhận xét lớp học
               const Text(
                 'Nhận xét lớp học',
                 style: TextStyle(
@@ -327,121 +299,320 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     );
   }
 
-  Widget _buildFileUploadSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceCard,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.cardBorder),
+  Widget _buildUploadGuidance(Assessment assessment) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Thông tin nộp bài',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 10),
+          Text(
+            'Định dạng: ${assessment.allowedFormats.isEmpty ? 'PDF' : assessment.allowedFormats.join(', ').toUpperCase()}',
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Dung lượng tối đa: ${assessment.maxFileSizeMb} MB',
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Lưu ý: Nộp đúng định dạng và nội dung theo đề bài. File sẽ được ghi nhận vào hệ thống và có thể được chấm điểm bởi giảng viên.',
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.45),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssignmentMetadata(Assessment assessment) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              const Text(
-                'Chọn file PDF',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.backgroundDark,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.cardBorder),
-                      ),
-                      child: Text(
-                        _selectedFile != null
-                            ? _selectedFile!.path.split('/').last
-                            : 'Chưa có file nào được chọn',
-                        style: TextStyle(
-                          color: _selectedFile != null
-                              ? AppTheme.textPrimary
-                              : AppTheme.textMuted,
-                          fontSize: 13,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: _pickFile,
-                    icon: const Icon(Icons.attach_file_rounded, size: 18),
-                    label: const Text('Chọn file'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryBlue,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (_selectedFile != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.backgroundDark,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.picture_as_pdf_rounded,
-                          size: 20, color: AppTheme.danger),
-                      SizedBox(width: 8),
-                      Text(
-                        'File PDF sẵn sàng để nộp',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+              Expanded(
+                child: Text(
+                  assessment.title.isNotEmpty ? assessment.title : '${assessment.type} · ${assessment.weight.round()}% trọng số',
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _submitting ? null : _submitAssignment,
-                  icon: _submitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.upload_rounded),
-                  label: Text(_submitting ? 'Đang nộp...' : 'Thêm bài nộp'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.accentGreen,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: assessment.status.toLowerCase() == 'active'
+                      ? AppTheme.accentGreen.withAlpha(30)
+                      : AppTheme.warning.withAlpha(30),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  assessment.statusLabel,
+                  style: TextStyle(
+                    color: assessment.status.toLowerCase() == 'active'
+                        ? AppTheme.accentGreen
+                        : AppTheme.warning,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Wrap(
+            runSpacing: 10,
+            spacing: 10,
+            children: [
+              _buildInfoChip('Loại', assessment.type),
+              _buildInfoChip('Trọng số', '${assessment.weight.round()}%'),
+              _buildInfoChip('Hạn nộp', assessment.dueDateLabel),
+              if (assessment.teacherId.isNotEmpty) _buildInfoChip('Giảng viên', assessment.teacherId),
+            ],
+          ),
+          if (assessment.createdAt != null || assessment.updatedAt != null) ...[
+            const SizedBox(height: 12),
+            if (assessment.createdAt != null)
+              _buildInfoLine('Tạo lúc', _formatTime(assessment.createdAt!)),
+            if (assessment.updatedAt != null)
+              _buildInfoLine('Cập nhật', _formatTime(assessment.updatedAt!)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionSection(String description) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mô tả bài tập',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            description.isNotEmpty ? description : 'Chưa có mô tả cho bài tập này.',
+            style: const TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundDark,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Text(
+        '$label: $value',
+        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+      ),
+    );
+  }
+
+  Widget _buildInfoLine(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileUploadSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Nộp bài',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.backgroundDark,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.cardBorder),
+                  ),
+                  child: Text(
+                    _selectedFile != null
+                        ? _selectedFile!.path.split('/').last
+                        : 'Chưa có file nào được chọn',
+                    style: TextStyle(
+                      color: _selectedFile != null
+                          ? AppTheme.textPrimary
+                          : AppTheme.textMuted,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: _pickFile,
+                icon: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4CAFEC), Color(0xFF2B6DFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(36),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.attach_file_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+                label: const Text('Chọn file'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          ),
+          if (_selectedFile != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundDark,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.picture_as_pdf_rounded,
+                      size: 20, color: AppTheme.danger),
+                  SizedBox(width: 8),
+                  Text(
+                    'File PDF sẵn sàng để nộp',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _submitting ? null : _submitAssignment,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.upload_rounded),
+              label: Text(_submitting ? 'Đang nộp...' : 'Thêm bài nộp'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.accentGreen,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
