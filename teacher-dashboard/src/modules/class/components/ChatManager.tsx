@@ -84,10 +84,11 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     if (activeChannel) {
       fetchMessages(activeChannel._id);
       const pollTimer = setInterval(() => {
-        if (activeChannelRef.current?._id === activeChannel._id) {
+        // Only fetch if WebSocket is not connected/open
+        if (activeChannelRef.current?._id === activeChannel._id && ws.current?.readyState !== WebSocket.OPEN) {
           fetchMessages(activeChannel._id);
         }
-      }, 4000);
+      }, 10000);
       return () => clearInterval(pollTimer);
     }
   }, [activeChannel]);

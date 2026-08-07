@@ -62,6 +62,43 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+@app.middleware("http")
+async def auto_event_logging_middleware(request, call_next):
+    path = request.url.path
+    if path in {"/docs", "/openapi.json", "/redoc", "/health", "/uploads"} or "/messages" in path or "/realtime-chat" in path:
+        return await call_next(request)
+
+    payload = {
+        "method": request.method,
+        "path": path,
+        "query_params": dict(request.query_params),
+        "user_agent": request.headers.get("user-agent"),
+        "client_ip": request.headers.get("x-forwarded-for") or request.client.host if request.client else None,
+    }
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        from db.event_logging import log_event
+        await log_event(
+            None,
+            "http_error",
+            target_id=path,
+            payload={**payload, "error": str(exc)},
+            source="http_middleware",
+        )
+        raise
+
+    from db.event_logging import log_event
+    await log_event(
+        None,
+        "http_request",
+        target_id=path,
+        payload={**payload, "status_code": response.status_code},
+        source="http_middleware",
+    )
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -83,13 +83,11 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
       }
     });
 
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _pollTimer = Timer.periodic(const Duration(seconds: 12), (_) {
       if (!mounted) return;
       if (_privateChannelId != null) {
         ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: _privateChannelId!)));
       }
-      final studentId = ref.read(activeStudentIdProvider);
-      ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$studentId')));
     });
   }
 
