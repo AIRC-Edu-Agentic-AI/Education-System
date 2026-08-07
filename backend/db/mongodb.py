@@ -8,12 +8,21 @@ async def connect_db():
     db_name = os.getenv("MONGODB_DB", "student_agent_db")
     use_mock = os.getenv("USE_MOCK_DATA", "true").strip().lower() == "true"
 
+    # Debug: print minimal info about environment (do not leak credentials)
+    try:
+        uri_set = bool(uri)
+        contains_placeholder = "placeholder" in uri.lower()
+    except Exception:
+        uri_set = False
+        contains_placeholder = False
+    print(f"[DB] ENV DEBUG -> USE_MOCK_DATA={use_mock}, MONGODB_URI_set={uri_set}, MONGODB_URI_contains_placeholder={contains_placeholder}, MONGODB_DB={db_name}")
+
     if use_mock:
         print("[DB] USE_MOCK_DATA=true -> running in mock mode (no MongoDB)")
         db_state["connected"] = False
         return
 
-    if not uri or "placeholder" in uri:
+    if not uri or "placeholder" in uri.lower():
         print("[DB] MONGODB_URI missing or placeholder -> mock mode")
         db_state["connected"] = False
         return
