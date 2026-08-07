@@ -8,9 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import student, chat, schedule, notifications, auth, assignments, admin, teacher_dashboard, teacher_schedule, teacher_notification, realtime_chat
+from routers import student, chat, schedule, notifications, auth, admin, teacher_dashboard, teacher_schedule, teacher_notification, realtime_chat
 from routers import study_groups
 from routers import teacher_risk, teacher_classrooms
+from routers.assignment import student as assignment_student, teacher as assignment_teacher
 from db.mongodb import connect_db, close_db, db_state
 from scheduler import setup_scheduler, teardown_scheduler
 from agent.llm_pool import init_pool, get_pool
@@ -117,7 +118,9 @@ app.include_router(teacher_notification.router, prefix="/notify", tags=["teacher
 # Student endpoints (BR01-BR18)
 app.include_router(student.router, prefix="/student", tags=["student"])
 app.include_router(schedule.student_router, prefix="/schedule", tags=["schedule-student"])
-app.include_router(assignments.router, prefix="/assignments", tags=["assignments"])
+app.include_router(assignment_student.router, prefix="/student", tags=["student-assignments"])
+app.include_router(assignment_teacher.router, prefix="/assignments", tags=["assignments"])
+app.include_router(assignment_teacher.router, prefix="/api/assignments", tags=["assignments"])
 app.include_router(notifications.router, prefix="/notify", tags=["notifications"])
 
 # Course Communication (channels, messages, courses)

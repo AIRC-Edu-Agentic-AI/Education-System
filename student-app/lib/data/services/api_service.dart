@@ -16,11 +16,42 @@ class ApiService {
   late final Dio _dio;
   bool _useMock = false;
   static final Map<String, AssignmentSubmission> _mockSubmissions = {};
+  static final Map<int, List<InstructorFeedback>> _mockFeedbacks = {
+    1753: [
+      InstructorFeedback(
+        id: 1,
+        assessmentId: 1753,
+        content: 'Bài làm tốt, cần cải thiện phần lập luận và trình bày rõ ràng hơn.',
+        score: 7.5,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        instructorName: 'TS. Nguyễn Văn A',
+      ),
+    ],
+  };
+  static final Map<int, List<ClassComment>> _mockClassComments = {
+    1753: [
+      ClassComment(
+        id: 1,
+        assessmentId: 1753,
+        studentId: 101,
+        studentName: 'Trần Thị B',
+        content: 'Mọi người làm bài đến đâu rồi ạ?',
+        isInstructor: false,
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      ClassComment(
+        id: 2,
+        assessmentId: 1753,
+        studentId: 0,
+        studentName: 'Giảng viên',
+        content: 'Các em lưu ý deadline là 23:59 ngày mai nhé.',
+        isInstructor: true,
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+    ],
+  };
 
   ApiService({String? token}) {
-    print('API_BASE_URL = ${EnvConfig.apiBaseUrl}');
-    print('USE_MOCK_DATA = ${EnvConfig.useMockData}');
-    
     _dio = Dio(BaseOptions(
       baseUrl: EnvConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 5),
@@ -130,9 +161,7 @@ class ApiService {
             Map<String, dynamic>.from(course),
           ))
           .toList();
-    } catch (e, s) {
-      print('GET COURSES ERROR = $e');
-      print(s);
+    } catch (_) {
       // _useMock = true;
       return MockData.courses;
     }
@@ -540,15 +569,14 @@ class ApiService {
       });
       
       final response = await _dio.post(
-        '/assignments/$idAssessment/submit-file',
+        '/student/$idAssessment/submit-file',
         data: formData,
       );
       
       final sub = Map<String, dynamic>.from(response.data['submission']);
       return AssignmentSubmission.fromJson(sub);
     } catch (e) {
-      // _useMock = true;
-      return _mockSubmit(idAssessment, studentId, file);
+      rethrow;
     }
   }
 
@@ -621,16 +649,7 @@ class ApiService {
   }
 
   List<InstructorFeedback> _mockGetFeedbacks(int assessmentId) {
-    return [
-      InstructorFeedback(
-        id: 1,
-        assessmentId: assessmentId,
-        content: 'Bài làm tốt, cần cải thiện phần lập luận và trình bày rõ ràng hơn.',
-        score: 7.5,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        instructorName: 'TS. Nguyễn Văn A',
-      ),
-    ];
+    return _mockFeedbacks[assessmentId] ?? [];
   }
 
   // ── Class Comments ────────────────────────────────────────────
@@ -655,26 +674,7 @@ class ApiService {
   }
 
   List<ClassComment> _mockGetClassComments(int assessmentId) {
-    return [
-      ClassComment(
-        id: 1,
-        assessmentId: assessmentId,
-        studentId: 101,
-        studentName: 'Trần Thị B',
-        content: 'Mọi người làm bài đến đâu rồi ạ?',
-        isInstructor: false,
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      ),
-      ClassComment(
-        id: 2,
-        assessmentId: assessmentId,
-        studentId: 0,
-        studentName: 'Giảng viên',
-        content: 'Các em lưu ý deadline là 23:59 ngày mai nhé.',
-        isInstructor: true,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-    ];
+    return _mockClassComments[assessmentId] ?? [];
   }
 
   // Thêm comment lớp học
@@ -759,7 +759,6 @@ class ApiService {
       final res = await _dio.put('/schedule/$studentId/plan', data: {'sessions': sessions});
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
-      print('updateStudyPlan error: $e');
       return false;
     }
   }

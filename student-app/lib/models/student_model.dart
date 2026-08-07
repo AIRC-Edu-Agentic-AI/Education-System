@@ -123,33 +123,77 @@ class Enrollment {
 class Assessment {
   final int idAssessment;
   final String type;
+  final String title;
+  final String description;
+  final List<String> allowedFormats;
+  final int maxFileSizeMb;
+  final String status;
+  final String teacherId;
+  final String codePresentation;
   final int dueDate;
   final double weight;
   final double? score;
   final int? submittedDate;
   final bool isBanked;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   const Assessment({
     required this.idAssessment,
     required this.type,
+    this.title = '',
+    this.description = '',
+    this.allowedFormats = const [],
+    this.maxFileSizeMb = 0,
+    this.status = '',
+    this.teacherId = '',
+    this.codePresentation = '',
     required this.dueDate,
     required this.weight,
     this.score,
     this.submittedDate,
     required this.isBanked,
+    this.createdAt,
+    this.updatedAt,
   });
 
   bool get isSubmitted => submittedDate != null;
   bool get isLate => submittedDate != null && submittedDate! > dueDate;
 
+  DateTime? get dueDateTime {
+    if (dueDate > 100000000) {
+      return DateTime.fromMillisecondsSinceEpoch(dueDate * 1000, isUtc: true).toLocal();
+    }
+    return null;
+  }
+
+  String get dueDateLabel {
+    final date = dueDateTime;
+    if (date != null) {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+    return 'Ngày $dueDate';
+  }
+
+  String get statusLabel => status.isNotEmpty ? status[0].toUpperCase() + status.substring(1) : 'Không xác định';
+
   factory Assessment.fromJson(Map<String, dynamic> json) => Assessment(
         idAssessment: json['id_assessment'] ?? 0,
         type: json['type'] ?? '',
+        title: json['title'] ?? '',
+        description: json['description'] ?? '',
+        allowedFormats: List<String>.from(json['allowed_formats'] ?? []),
+        maxFileSizeMb: json['max_file_size_mb'] ?? 0,
+        status: json['status'] ?? '',
+        teacherId: json['teacher_id'] ?? '',
+        codePresentation: json['code_presentation'] ?? '',
         dueDate: json['due_date'] ?? 0,
         weight: (json['weight'] ?? 0).toDouble(),
-        score: json['score']?.toDouble(),
+        score: json['score'] != null ? (json['score'] as num).toDouble() : null,
         submittedDate: json['submitted_date'],
         isBanked: json['is_banked'] ?? false,
+        createdAt: json['created_at'] != null ? parseServerTime(json['created_at']) : null,
+        updatedAt: json['updated_at'] != null ? parseServerTime(json['updated_at']) : null,
       );
 }
 

@@ -97,6 +97,10 @@ class LLMPool:
         if no endpoint declares that role. Blocks until one is free."""
         role_supported = any(role in e.spec.roles for e in self._eps)
 
+        # If no endpoints are configured/reachable, fail fast instead of blocking
+        if not self._eps:
+            raise RuntimeError("No LLM endpoints configured or reachable")
+
         async with self._cond:
             while True:
                 candidates = [
@@ -152,8 +156,12 @@ class LLMPool:
             print(f"[llm_pool] No local LLM reachable — falling back to Anthropic "
                   f"({anthropic.model}) x{cap}")
         else:
+            # No local endpoints reachable and no cloud fallback: clear list so
+            # callers fail fast instead of attempting network calls that will
+            # raise connection errors later.
+            self._eps = []
             print("[llm_pool] WARNING: no local endpoint reachable and no "
-                  "ANTHROPIC_API_KEY set — keeping configured list")
+                  "ANTHROPIC_API_KEY set — cleared endpoint list (no LLM available)")
 
 
 # ── Config parsing ─────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
 import ChatManager from '../components/ChatManager';
+import AssignmentManager from '../components/AssignmentManager';
 import { useContextStore } from '../../../shared/stores/contextStore';
 
 export const ClassView = () => {
@@ -31,6 +32,7 @@ export const ClassView = () => {
         >
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Overview" />
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Communication" />
+          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Assignments" />
         </Tabs>
       </Box>
 
@@ -51,6 +53,11 @@ export const ClassView = () => {
                 <ChatManager module={selectedModule} presentation={selectedPresentation} />
              </Grid>
           </Grid>
+        )}
+        {activeTab === 2 && (
+          <Box sx={{ height: 'calc(100vh - 180px)' }}>
+            <AssignmentManager module={selectedModule} presentation={selectedPresentation} />
+          </Box>
         )}
       </Box>
     </Box>
