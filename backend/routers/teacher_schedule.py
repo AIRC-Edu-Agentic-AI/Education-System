@@ -140,21 +140,19 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
                     "is_broadcast_log": False,
                 }
                 print(f"[SCHEDULE] Pushing WS notification for {source}: title={title!r}, "
-                      f"active_ws={list(rtc_manager.active_connections.keys())}")
+                      f"target_sids={target_sids}")
 
                 # 1. Send to teacher dashboard
                 await rtc_manager.send_to_user("teacher_admin", {
                     "type": "new_notification",
                     "notification": {**instant_noti, "is_broadcast_log": True},
                 })
-                # 2. Broadcast to ALL connected clients (same pattern as
-                #    teacher_notification.py — handles ID format mismatches)
-                for client_id in list(rtc_manager.active_connections.keys()):
-                    if client_id != "teacher_admin":
-                        await rtc_manager.send_to_user(client_id, {
-                            "type": "new_notification",
-                            "notification": instant_noti,
-                        })
+                # 2. Send only to enrolled students for this module/presentation
+                for sid in target_sids:
+                    await rtc_manager.send_to_user(str(sid), {
+                        "type": "new_notification",
+                        "notification": {**instant_noti, "student_id": sid},
+                    })
             except Exception:
                 print(f"[SCHEDULE] Failed to push realtime notifications for {source}")
                 traceback.print_exc()
@@ -283,17 +281,16 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
                                     "is_broadcast_log": False,
                                 }
                                 print(f"[SCHEDULE] Pushing WS notification for update: "
-                                      f"active_ws={list(rtc_manager.active_connections.keys())}")
+                                      f"target_sids={target_sids}")
                                 await rtc_manager.send_to_user("teacher_admin", {
                                     "type": "new_notification",
                                     "notification": {**instant_noti, "is_broadcast_log": True},
                                 })
-                                for client_id in list(rtc_manager.active_connections.keys()):
-                                    if client_id != "teacher_admin":
-                                        await rtc_manager.send_to_user(client_id, {
-                                            "type": "new_notification",
-                                            "notification": instant_noti,
-                                        })
+                                for sid in target_sids:
+                                    await rtc_manager.send_to_user(str(sid), {
+                                        "type": "new_notification",
+                                        "notification": {**instant_noti, "student_id": sid},
+                                    })
                             except Exception:
                                 print("[SCHEDULE] Failed to push realtime notifications for update")
                                 traceback.print_exc()
