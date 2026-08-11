@@ -93,7 +93,6 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
 
   const teacherId = authUser?.email || authUser?.name || 'teacher_admin'
   const courseCode = `${module} ${presentation}`
-  const studentId = authUser?.student_id || 0
 
   useEffect(() => {
     if (!module || !presentation) {
@@ -106,11 +105,11 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
       setError(null)
       try {
         const res = await fetch(`${API_BASE}/assignments/${encodeURIComponent(module)}/${encodeURIComponent(presentation)}`)
-        if (!res.ok) throw new Error('Không thể tải assignments')
+        if (!res.ok) throw new Error('Failed to load assignments')
         const data = await res.json()
         setAssignments(Array.isArray(data) ? data : [])
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Lỗi tải bài tập')
+        setError(err instanceof Error ? err.message : 'Error loading assignments')
       } finally {
         setLoading(false)
       }
@@ -121,7 +120,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
 
   const handleSaveAssignment = async () => {
     if (!title.trim() || !description.trim()) {
-      setError('Vui lòng nhập tiêu đề và nội dung bài tập.')
+      setError('Please enter assignment title and description.')
       return
     }
 
@@ -148,7 +147,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.detail || 'Không thể tạo bài tập')
+        throw new Error(body.detail || 'Failed to create assignment')
       }
 
       setType('TMA')
@@ -160,7 +159,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
       setAllowedFormats('pdf, docx')
       await fetchAssignments()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tạo assignment')
+      setError(err instanceof Error ? err.message : 'Error creating assignment')
     } finally {
       setSaving(false)
     }
@@ -169,11 +168,11 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
   const fetchAssignments = async () => {
     try {
       const res = await fetch(`${API_BASE}/assignments/${encodeURIComponent(module)}/${encodeURIComponent(presentation)}`)
-      if (!res.ok) throw new Error('Không thể tải assignments')
+      if (!res.ok) throw new Error('Failed to load assignments')
       const data = await res.json()
       setAssignments(Array.isArray(data) ? data : [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải assignments')
+      setError(err instanceof Error ? err.message : 'Error loading assignments')
     }
   }
 
@@ -182,11 +181,11 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
     setError(null)
     try {
       const res = await fetch(`${API_BASE}/assignments/${assignmentId}/all-submissions`)
-      if (!res.ok) throw new Error('Không thể tải danh sách nộp bài')
+      if (!res.ok) throw new Error('Failed to load submission list')
       const data = await res.json()
       setSubmissions(Array.isArray(data) ? data : [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải submissions')
+      setError(err instanceof Error ? err.message : 'Error loading submissions')
       setSubmissions([])
     } finally {
       setSubmissionLoading(false)
@@ -209,7 +208,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
 
   const handleGradeSubmission = async (submission: SubmissionRecord) => {
     if (gradeScore === '' || Number(gradeScore) < 0 || Number(gradeScore) > 100) {
-      setError('Score phải từ 0 đến 100')
+      setError('Score must be between 0 and 100')
       return
     }
     setGrading(true)
@@ -222,13 +221,13 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.detail || 'Không thể chấm điểm')
+        throw new Error(body.detail || 'Failed to submit grade')
       }
       await fetchSubmissions(submission.id_assessment)
       setGradeScore('')
       setGradeFeedback('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi chấm điểm')
+      setError(err instanceof Error ? err.message : 'Error submitting grade')
     } finally {
       setGrading(false)
     }
@@ -243,11 +242,11 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.detail || 'Không thể xóa bài tập')
+        throw new Error(body.detail || 'Failed to delete assignment')
       }
       await fetchAssignments()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi xóa bài tập')
+      setError(err instanceof Error ? err.message : 'Error deleting assignment')
     } finally {
       setSaving(false)
     }
@@ -256,7 +255,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
   if (!module || !presentation) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="info">Chọn môn và học phần để xem assignments.</Alert>
+        <Alert severity="info">Select module and presentation to view assignments.</Alert>
       </Box>
     )
   }
@@ -268,7 +267,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
           Assignments
         </Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 680 }}>
-          Quản lý assignment cho {courseCode}. Nhập tiêu đề và nội dung bài tập, rồi tạo bài tập cho học phần này.
+          Manage assignments for {courseCode}. Enter assignment title and description to create an assignment for this presentation.
         </Typography>
       </Box>
 
@@ -391,7 +390,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
             <CircularProgress />
           </Box>
         ) : assignments.length === 0 ? (
-          <Alert severity="info">Không có assignment nào cho lớp này.</Alert>
+          <Alert severity="info">No assignments found for this class.</Alert>
         ) : (
           <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table size="small">
@@ -445,7 +444,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
               <CircularProgress />
             </Box>
           ) : submissions.length === 0 ? (
-            <Alert severity="info">Không có bài nộp cho bài tập này.</Alert>
+            <Alert severity="info">No submissions found for this assignment.</Alert>
           ) : (
             <Table size="small">
               <TableHead>

@@ -75,7 +75,7 @@ class GroupCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${group.totalMembers ?? 0} thành viên',  // ⭐ Thêm ?? 0
+                            '${group.totalMembers ?? 0} members',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary,
@@ -92,7 +92,7 @@ class GroupCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              'Mã: ${group.groupCode}',
+                              'Code: ${group.groupCode}',
                               style: const TextStyle(
                                 fontSize: 10,
                                 color: AppTheme.primaryBlue,
@@ -139,7 +139,7 @@ class GroupCard extends StatelessWidget {
                                 color: AppTheme.danger,
                               ),
                               title: const Text(
-                                'Rời nhóm',
+                                'Leave group',
                                 style: TextStyle(color: AppTheme.danger),
                               ),
                               onTap: () {
@@ -160,7 +160,7 @@ class GroupCard extends StatelessWidget {
             Text(
               group.description.isNotEmpty
                   ? group.description
-                  : 'Nhóm học tập ${group.name}',
+                  : 'Study group ${group.name}',
               style: const TextStyle(
                 fontSize: 13,
                 color: AppTheme.textSecondary,

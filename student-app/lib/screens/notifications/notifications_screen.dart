@@ -30,10 +30,10 @@ IconData notificationIcon(String type) => switch (type) {
 
 String relativeTime(DateTime t) {
   final d = DateTime.now().difference(t);
-  if (d.inMinutes < 1) return 'Vừa xong';
-  if (d.inMinutes < 60) return '${d.inMinutes} phút trước';
-  if (d.inHours < 24) return '${d.inHours} giờ trước';
-  return '${d.inDays} ngày trước';
+  if (d.inMinutes < 1) return 'Just now';
+  if (d.inMinutes < 60) return '${d.inMinutes} mins ago';
+  if (d.inHours < 24) return '${d.inHours} hrs ago';
+  return '${d.inDays} days ago';
 }
 
 /// Shared action handler used by both the list detail sheet and the dashboard.
@@ -63,12 +63,12 @@ void handleNotificationAction(
         );
         ref.invalidate(assignmentMilestonesProvider(idAssessment));
         final msg = status == 'done'
-            ? 'Đã đánh dấu hoàn thành ✓'
+            ? 'Marked as completed ✓'
             : status == 'in_progress'
-                ? 'Đang làm ▶'
+                ? 'In progress ▶'
                 : status == 'pending'
-                    ? 'Đã đặt: chưa bắt đầu'
-                    : 'Đã cập nhật tiến độ';
+                    ? 'Set to not started'
+                    : 'Updated progress';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
         );
@@ -88,7 +88,7 @@ class NotificationsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        title: const Text('Thông báo'),
+        title: const Text('Notifications'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               size: 18, color: AppTheme.textSecondary),
@@ -103,7 +103,7 @@ class NotificationsScreen extends ConsumerWidget {
               },
               icon: const Icon(Icons.done_all_rounded, size: 16, color: AppTheme.primaryBlue),
               label: const Text(
-                'Đọc tất cả',
+                'Mark all read',
                 style: TextStyle(color: AppTheme.primaryBlue, fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
@@ -113,7 +113,7 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) => Center(
-            child: Text('Lỗi: $e',
+            child: Text('Error: $e',
                 style: const TextStyle(color: AppTheme.danger))),
         data: (notifs) {
           if (notifs.isEmpty) {
@@ -124,7 +124,7 @@ class NotificationsScreen extends ConsumerWidget {
                   Icon(Icons.notifications_none_rounded,
                       size: 48, color: AppTheme.textMuted),
                   SizedBox(height: 12),
-                  Text('Không có thông báo',
+                  Text('No notifications',
                       style: TextStyle(color: AppTheme.textSecondary)),
                 ],
               ),
@@ -240,7 +240,7 @@ class _NotificationTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Text(
-                            'CHƯA ĐỌC',
+                            'UNREAD',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 9,

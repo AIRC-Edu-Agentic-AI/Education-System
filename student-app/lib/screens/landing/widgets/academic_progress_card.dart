@@ -46,7 +46,7 @@ class AcademicProgressCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Tiến độ học kỳ',
+                'Semester Progress',
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -70,7 +70,7 @@ class AcademicProgressCard extends StatelessWidget {
                         size: 14, color: AppTheme.warning),
                     const SizedBox(width: 4),
                     Text(
-                      '${s.streakDays} ngày',
+                      '${s.streakDays}-day streak',
                       style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -102,7 +102,7 @@ class AcademicProgressCard extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 13, color: AppTheme.textSecondary),
                   children: [
-                    const TextSpan(text: 'Tuần '),
+                    const TextSpan(text: 'Week '),
                     TextSpan(
                       text: '${s.currentWeek}',
                       style: const TextStyle(
@@ -115,7 +115,7 @@ class AcademicProgressCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '${(progress * 100).round()}% hoàn thành',
+                '${(progress * 100).round()}% completed',
                 style: const TextStyle(
                     fontSize: 12, color: AppTheme.textSecondary),
               ),

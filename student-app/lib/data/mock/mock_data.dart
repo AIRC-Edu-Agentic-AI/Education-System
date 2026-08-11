@@ -9,12 +9,12 @@ class MockData {
     id: 'mock_student_001',
     auth0Id: 'auth0|mock_student_001',
     studentId: 28400,
-    fullName: 'Nguyễn Văn An',
-    shortName: 'Văn An',
+    fullName: 'Nguyen Van An',
+    shortName: 'Van An',
     demographics: const Demographics(
       gender: 'M',
       ageBand: '25-35',
-      region: 'Hà Nội',
+      region: 'Hanoi',
       highestEducation: 'HE Qualification',
       imdBand: '20-30%',
       disability: false,
@@ -26,7 +26,7 @@ class MockData {
       const Enrollment(
         codeModule: 'DATA201',
         codePresentation: '2024A',
-        title: 'Phân tích Dữ liệu & Thống kê',
+        title: 'Data Analysis & Statistics',
         moduleLength: 30,
         finalResult: null,
         assessments: [
@@ -61,11 +61,11 @@ class MockData {
           ],
         ),
       ),
-      // Đại số Tuyến tính — mixed
+      // Linear Algebra — mixed
       const Enrollment(
         codeModule: 'MATH102',
         codePresentation: '2024A',
-        title: 'Đại số Tuyến tính',
+        title: 'Linear Algebra',
         moduleLength: 30,
         finalResult: null,
         assessments: [
@@ -95,11 +95,11 @@ class MockData {
           ],
         ),
       ),
-      // Lập trình Python — strong
+      // Python Programming — strong
       const Enrollment(
         codeModule: 'COMP101',
         codePresentation: '2024A',
-        title: 'Lập trình Python',
+        title: 'Python Programming',
         moduleLength: 30,
         finalResult: null,
         assessments: [
@@ -130,11 +130,11 @@ class MockData {
           ],
         ),
       ),
-      // Xác suất & Thống kê — on track
+      // Inferential Statistics — on track
       const Enrollment(
         codeModule: 'STAT110',
         codePresentation: '2024A',
-        title: 'Xác suất & Thống kê Suy luận',
+        title: 'Inferential Statistics & Probability',
         moduleLength: 30,
         finalResult: null,
         assessments: [
@@ -171,7 +171,7 @@ class MockData {
       flags: const ['low_vle_engagement', 'assessment_due_soon', 'assessment_shock'],
       computedAt: DateTime.now().subtract(const Duration(hours: 6)),
     ),
-    prerequisiteGaps: const ['Thống kê cơ bản', 'Đại số tuyến tính'],
+    prerequisiteGaps: const ['Basic Statistics', 'Linear Algebra'],
   );
 
   static final WeeklySchedule weeklySchedule = WeeklySchedule(
@@ -180,49 +180,49 @@ class MockData {
     streakDays: 12,
     lectures: [
       WeekItem(
-        title: 'Phân tích Dữ liệu & Thống kê',
-        subtitle: 'Thứ 2, 08:00',
+        title: 'Data Analysis & Statistics',
+        subtitle: 'Mon, 08:00',
         dateTime: DateTime.now().add(const Duration(days: 1)),
         isCompleted: false,
       ),
       WeekItem(
-        title: 'Đại số Tuyến tính',
-        subtitle: 'Thứ 4, 10:00',
+        title: 'Linear Algebra',
+        subtitle: 'Wed, 10:00',
         dateTime: DateTime.now().add(const Duration(days: 3)),
         isCompleted: false,
       ),
       WeekItem(
-        title: 'Kiểm định giả thuyết',
-        subtitle: 'Thứ 6, 14:00',
+        title: 'Hypothesis Testing',
+        subtitle: 'Fri, 14:00',
         dateTime: DateTime.now().add(const Duration(days: 5)),
         isCompleted: false,
       ),
     ],
     classes: [
       WeekItem(
-        title: 'Lab Lập trình Python',
-        subtitle: 'Thứ 3, 13:00 · Phòng B204',
+        title: 'Python Programming Lab',
+        subtitle: 'Tue, 13:00 · Room B204',
         dateTime: DateTime.now().add(const Duration(days: 2)),
         isCompleted: false,
       ),
       WeekItem(
-        title: 'Xác suất & Thống kê Suy luận',
-        subtitle: 'Thứ 5, 09:00 · Online',
+        title: 'Inferential Statistics & Probability',
+        subtitle: 'Thu, 09:00 · Online',
         dateTime: DateTime.now().add(const Duration(days: 4)),
         isCompleted: false,
       ),
     ],
     assignments: [
       WeekItem(
-        title: 'TMA-02 — Phân tích hồi quy',
-        subtitle: 'Nộp trước Thứ 6',
+        title: 'TMA-02 — Regression Analysis',
+        subtitle: 'Due before Friday',
         dateTime: DateTime.now().add(const Duration(days: 5)),
         isCompleted: false,
         isUrgent: true,
       ),
       WeekItem(
-        title: 'CMA — Đại số Tuyến tính',
-        subtitle: 'Nộp trước Thứ 7',
+        title: 'CMA — Linear Algebra',
+        subtitle: 'Due before Saturday',
         dateTime: DateTime.now().add(const Duration(days: 6)),
         isCompleted: false,
         isUrgent: false,
@@ -236,18 +236,18 @@ class MockData {
       id: 'notif_001',
       studentId: 28400,
       type: 'deadline_warning',
-      title: 'TMA-02 — Phân tích Dữ liệu sắp đến hạn',
-      body: 'Còn 3 ngày (đến ngày 49). Hãy bắt đầu sớm.',
+      title: 'TMA-02 — Data Analysis due soon',
+      body: '3 days remaining (due day 49). Please start early.',
       read: false,
       createdAt: DateTime.now().subtract(const Duration(hours: 2)),
       actionOptions: [
         const NotificationAction(
-          label: 'Lên kế hoạch',
+          label: 'Plan study',
           action: 'open_chat',
-          payload: {'message': 'Giúp tôi lên kế hoạch hoàn thành TMA-02 môn Phân tích Dữ liệu'},
+          payload: {'message': 'Help me create a study plan to complete TMA-02 for Data Analysis'},
         ),
         const NotificationAction(
-          label: 'Nhắc lại sau',
+          label: 'Remind later',
           action: 'snooze',
           payload: {},
         ),
@@ -257,15 +257,15 @@ class MockData {
       id: 'notif_002',
       studentId: 28400,
       type: 'reminder',
-      title: 'Ôn tập hôm nay',
-      body: 'Bạn có 4 thẻ flashcard cần ôn tập theo lịch SM-2.',
+      title: 'Daily Review',
+      body: 'You have 4 flashcards due for review under the SM-2 schedule.',
       read: false,
       createdAt: DateTime.now().subtract(const Duration(hours: 5)),
       actionOptions: [
         const NotificationAction(
-          label: 'Hỏi trợ lý',
+          label: 'Ask Assistant',
           action: 'open_chat',
-          payload: {'message': 'Hôm nay tôi nên ôn tập gì?'},
+          payload: {'message': 'What should I review today?'},
         ),
       ],
     ),
@@ -273,64 +273,64 @@ class MockData {
 
   static final List<Map<String, dynamic>> studyPlanSessions = [
     {
-      'subject': 'Ôn tập Tuần 6 — Phân tích Dữ liệu',
+      'subject': 'Week 6 Review — Data Analysis',
       'type': 'review',
       'duration': 45,
-      'day': 'Thứ 2',
+      'day': 'Mon',
       'time': '19:00',
       'sm2_interval': 3,
     },
     {
-      'subject': 'Đọc tài liệu Tuần 7',
+      'subject': 'Week 7 Reading Material',
       'type': 'new',
       'duration': 60,
-      'day': 'Thứ 3',
+      'day': 'Tue',
       'time': '20:00',
       'sm2_interval': null,
     },
     {
-      'subject': 'Luyện tập TMA-02',
+      'subject': 'TMA-02 Practice',
       'type': 'practice',
       'duration': 90,
-      'day': 'Thứ 4',
+      'day': 'Wed',
       'time': '19:30',
       'sm2_interval': null,
     },
     {
-      'subject': 'Flashcard Tuần 5–6',
+      'subject': 'Week 5–6 Flashcards',
       'type': 'spaced_rep',
       'duration': 20,
-      'day': 'Thứ 5',
+      'day': 'Thu',
       'time': '08:00',
       'sm2_interval': 7,
     },
     {
-      'subject': 'Hoàn thiện TMA-02',
+      'subject': 'Finalize TMA-02',
       'type': 'assignment',
       'duration': 120,
-      'day': 'Thứ 6',
+      'day': 'Fri',
       'time': '19:00',
       'sm2_interval': null,
     },
   ];
 
   static final Map<String, dynamic> knowledgeState = {
-    'Thống kê cơ bản': {
+    'Basic Statistics': {
       'mastery': 0.35,
       'last_updated': '2025-01-10',
       'evidence_count': 2,
     },
-    'Đại số tuyến tính': {
+    'Linear Algebra': {
       'mastery': 0.28,
       'last_updated': '2025-01-12',
       'evidence_count': 1,
     },
-    'Hồi quy tuyến tính': {
+    'Linear Regression': {
       'mastery': 0.55,
       'last_updated': '2025-01-18',
       'evidence_count': 3,
     },
-    'Kiểm định giả thuyết': {
+    'Hypothesis Testing': {
       'mastery': 0.42,
       'last_updated': '2025-01-20',
       'evidence_count': 2,
@@ -352,29 +352,29 @@ class MockData {
       return const AssignmentMilestonesData(
         idAssessment: 1753,
         module: 'DATA201',
-        title: 'TMA-02 — Phân tích hồi quy',
+        title: 'TMA-02 — Regression Analysis',
         milestones: [
           MilestoneModel(
             id: 'm1',
-            title: 'Đọc đề bài & tài liệu tham khảo',
+            title: 'Read prompt & reference materials',
             status: MilestoneStatus.done,
             dueOffsetDays: -14,
           ),
           MilestoneModel(
             id: 'm2',
-            title: 'Phân tích dữ liệu ban đầu',
+            title: 'Perform initial data analysis',
             status: MilestoneStatus.inProgress,
             dueOffsetDays: -7,
           ),
           MilestoneModel(
             id: 'm3',
-            title: 'Viết báo cáo nháp',
+            title: 'Write draft report',
             status: MilestoneStatus.pending,
             dueOffsetDays: -3,
           ),
           MilestoneModel(
             id: 'm4',
-            title: 'Nộp bài chính thức',
+            title: 'Final submission',
             status: MilestoneStatus.pending,
             dueOffsetDays: 0,
           ),
@@ -391,28 +391,28 @@ class MockData {
 
   static final List<Map<String, dynamic>> resources = [
     {
-      'title': 'Slide Tuần 7 — Kiểm định giả thuyết',
+      'title': 'Week 7 Slides — Hypothesis Testing',
       'module': 'DATA201',
       'type': 'slide',
       'url': 'https://example.com/data201-w7-slides.pdf',
       'bookmarked': true,
     },
     {
-      'title': 'Tài liệu đọc thêm — Hồi quy tuyến tính',
+      'title': 'Supplementary Reading — Linear Regression',
       'module': 'DATA201',
       'type': 'document',
       'url': 'https://example.com/linear-regression.pdf',
       'bookmarked': false,
     },
     {
-      'title': 'Video hướng dẫn Python pandas',
+      'title': 'Python pandas Tutorial Video',
       'module': 'COMP101',
       'type': 'video',
       'url': 'https://example.com/pandas-tutorial',
       'bookmarked': true,
     },
     {
-      'title': 'Quiz tự luyện — Đại số tuyến tính',
+      'title': 'Practice Quiz — Linear Algebra',
       'module': 'MATH102',
       'type': 'quiz',
       'url': 'https://example.com/linear-algebra-quiz',
@@ -459,7 +459,7 @@ class MockData {
         id: 'mock_${courseCode}_discussion',
         courseCode: courseCode,
         type: 'discussion',
-        name: 'Discuss',
+        name: 'General Discussion',
         isReadOnly: false,
         allowedPostRoles: const ['student', 'instructor', 'class_rep'],
         status: 'active',
@@ -473,7 +473,7 @@ class MockData {
     final now = DateTime.now();
     final courseCode = MockMessageStore.courseCodeFromChannelId(channelId);
 
-    // ── Kênh thông báo ──
+    // ── Announcement channel ──
     if (channelId.endsWith('_announcement')) {
       const rootId = 'mock_ann_root_1';
       return [
@@ -483,7 +483,7 @@ class MockData {
           courseCode: courseCode,
           senderId: 10001,
           senderRole: 'instructor',
-          content: 'Nhắc nhở: TMA-02 nộp trước ngày 49. Mọi người kiểm tra rubric trên LMS.',
+          content: 'Reminder: TMA-02 is due by day 49. Please check the rubric on LMS.',
           createdAt: now.subtract(const Duration(hours: 5)),
         ),
         CourseMessage(
@@ -492,7 +492,7 @@ class MockData {
           courseCode: courseCode,
           senderId: 28400,
           senderRole: 'student',
-          content: 'Em xin hỏi có được nộp muộn 1 ngày không ạ?',
+          content: 'May I submit 1 day late?',
           createdAt: now.subtract(const Duration(hours: 4)),
           parentId: rootId,
         ),
@@ -502,14 +502,14 @@ class MockData {
           courseCode: courseCode,
           senderId: 28501,
           senderRole: 'class_rep',
-          content: 'Theo quy định lớp thì không nộp muộn. Nếu có lý do đặc biệt, nhắn GV qua email.',
+          content: 'Per class policy, late submissions are not allowed. If you have special circumstances, email the instructor.',
           createdAt: now.subtract(const Duration(hours: 3)),
           parentId: rootId,
         ),
       ];
     }
 
-    // ── Kênh thảo luận ──
+    // ── Discussion channel ──
     if (channelId.endsWith('_discussion')) {
       return [
         CourseMessage(
@@ -518,7 +518,7 @@ class MockData {
           courseCode: courseCode,
           senderId: 28400,
           senderRole: 'student',
-          content: 'Tuần này phần hồi quy tuyến tính ai có slide bài giảng không?',
+          content: 'Does anyone have the lecture slides for linear regression this week?',
           createdAt: now.subtract(const Duration(hours: 6)),
         ),
         CourseMessage(
@@ -527,7 +527,7 @@ class MockData {
           courseCode: courseCode,
           senderId: 28501,
           senderRole: 'class_rep',
-          content: 'Slide tuần 7 có trên Resource Center, mục DATA201.',
+          content: 'Week 7 slides are available in the Resource Center under DATA201.',
           createdAt: now.subtract(const Duration(hours: 5)),
         ),
       ];

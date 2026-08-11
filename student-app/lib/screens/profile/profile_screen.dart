@@ -28,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) =>
-            Center(child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+            Center(child: Text('Error: $e', style: const TextStyle(color: AppTheme.danger))),
         data: (student) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -61,7 +61,7 @@ class ProfileScreen extends ConsumerWidget {
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.textPrimary)),
-                  Text('MSV ${student.studentId}',
+                  Text('Student ID: ${student.studentId}',
                       style: const TextStyle(
                           fontSize: 13, color: AppTheme.textSecondary)),
                 ],
@@ -70,41 +70,41 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             _Section(
-              title: 'Thông tin cá nhân',
+              title: 'PERSONAL INFORMATION',
               children: [
                 _InfoRow(
-                    label: 'Giới tính',
-                    value: student.demographics.gender == 'M' ? 'Nam' : 'Nữ'),
+                    label: 'Gender',
+                    value: student.demographics.gender == 'M' ? 'Male' : 'Female'),
                 _InfoRow(
-                    label: 'Độ tuổi', value: student.demographics.ageBand),
+                    label: 'Age band', value: student.demographics.ageBand),
                 _InfoRow(
-                    label: 'Khu vực', value: student.demographics.region),
+                    label: 'Region', value: student.demographics.region),
                 _InfoRow(
-                    label: 'Trình độ',
+                    label: 'Education',
                     value: student.demographics.highestEducation),
                 _InfoRow(
-                    label: 'Số lần thử trước',
+                    label: 'Prev. attempts',
                     value: '${student.demographics.numPrevAttempts}'),
               ],
             ),
             const SizedBox(height: 14),
 
             const _Section(
-              title: 'Tùy chỉnh học tập',
+              title: 'LEARNING PREFERENCES',
               children: [
-                _ToggleRow(label: 'Nhắc nhở hàng ngày', value: true),
-                _ToggleRow(label: 'Thông báo từ giảng viên', value: true),
-                _ToggleRow(label: 'Chế độ tập trung', value: false),
+                _ToggleRow(label: 'Daily reminder', value: true),
+                _ToggleRow(label: 'Instructor notifications', value: true),
+                _ToggleRow(label: 'Focus mode', value: false),
               ],
             ),
             const SizedBox(height: 14),
 
             _Section(
-              title: 'Cài đặt',
+              title: 'SETTINGS',
               children: [
-                const _InfoRow(label: 'Ngôn ngữ', value: 'Tiếng Việt'),
+                const _InfoRow(label: 'Language', value: 'English'),
                 _InfoRow(
-                    label: 'Tài khoản',
+                    label: 'Account',
                     value: 'Auth0 · ${student.auth0Id.substring(0, 14)}...'),
               ],
             ),
@@ -245,7 +245,7 @@ class _MasterySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'NĂNG LỰC HỌC TẬP',
+          'LEARNING MASTERY',
           style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,

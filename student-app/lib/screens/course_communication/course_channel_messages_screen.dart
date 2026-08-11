@@ -92,7 +92,8 @@ extends ConsumerState<CourseChannelMessagesScreen> {
   bool get _isAnnouncement =>
     widget.channelType == 'announcement' ||
     widget.channelId.contains('announcement') ||
-    (widget.channelName?.toLowerCase().contains('thông báo') ?? false);
+    (widget.channelName?.toLowerCase().contains('thông báo') ?? false) ||
+    (widget.channelName?.toLowerCase().contains('announcement') ?? false);
 
   bool get _canPostRoot {
     if (!_isAnnouncement) return true;
@@ -107,7 +108,7 @@ extends ConsumerState<CourseChannelMessagesScreen> {
     if (!_canPostRoot && _replyToMessageId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Kênh thông báo: chỉ được trả lời trong thread.'),
+          content: Text('Announcement channel: replies only within thread.'),
         ),
       );
       return;
@@ -131,7 +132,7 @@ extends ConsumerState<CourseChannelMessagesScreen> {
       setState(() => _sending = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Không gửi được tin nhắn. Vui lòng kiểm tra kết nối backend.'),
+          content: Text('Unable to send message. Please check backend connection.'),
         ),
       );
       return;
@@ -168,17 +169,17 @@ extends ConsumerState<CourseChannelMessagesScreen> {
   String _senderLabel(CourseMessage msg) {
     final activeIdStr = ref.read(activeStudentIdProvider).toString();
     final senderIdStr = msg.senderId.toString();
-    if (senderIdStr == activeIdStr) return 'Bạn';
+    if (senderIdStr == activeIdStr) return 'You';
     if (msg.senderRole == 'instructor' || senderIdStr == 'teacher_admin' || senderIdStr == '0') {
-      return 'Giảng viên';
+      return 'Instructor';
     }
     switch (msg.senderRole) {
       case 'instructor':
-        return 'Giảng viên';
+        return 'Instructor';
       case 'class_rep':
-        return 'Lớp trưởng';
+        return 'Class Monitor';
       default:
-        return 'SV $senderIdStr';
+        return 'Student $senderIdStr';
     }
   }
 
@@ -250,12 +251,12 @@ extends ConsumerState<CourseChannelMessagesScreen> {
             child: _isAnnouncement
                 ? ref.watch(courseNotificationsProvider(widget.courseCode)).when(
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Center(child: Text('Lỗi: $e')),
+                    error: (e, _) => Center(child: Text('Error: $e')),
                     data: (notifications) {
                       if (notifications.isEmpty) {
                         return const Center(
                           child: Text(
-                            'Chưa có thông báo nào',
+                            'No announcements yet',
                             style: TextStyle(color: AppTheme.textSecondary),
                           ),
                         );
@@ -274,12 +275,12 @@ extends ConsumerState<CourseChannelMessagesScreen> {
                   )
                 : rootsAsync!.when(
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Center(child: Text('Lỗi: $e')),
+                    error: (e, _) => Center(child: Text('Error: $e')),
                     data: (roots) {
                       if (roots.isEmpty) {
                         return const Center(
                           child: Text(
-                            'Chưa có tin nhắn',
+                            'No messages yet',
                             style: TextStyle(color: AppTheme.textSecondary),
                           ),
                         );
@@ -326,7 +327,7 @@ extends ConsumerState<CourseChannelMessagesScreen> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Đang trả lời thread',
+                      'Replying to thread',
                       style: TextStyle(color: AppTheme.textSecondary),
                     ),
                   ),
@@ -342,8 +343,8 @@ extends ConsumerState<CourseChannelMessagesScreen> {
             sending: _sending,
             enabled: _canPostRoot || _replyToMessageId != null,
             hint: _canPostRoot
-                ? 'Nhập tin nhắn...'
-                : 'Trả lời thông báo...',
+                ? 'Type a message...'
+                : 'Reply to announcement...',
             onSend: _send,
           ),
         ],
@@ -423,13 +424,13 @@ class _MessageThread extends ConsumerWidget {
                   onPressed: onToggleThread,
                   child: Text(
                     expanded
-                        ? 'Ẩn $replyCount phản hồi'
-                        : '$replyCount phản hồi',
+                        ? 'Hide $replyCount replies'
+                        : '$replyCount replies',
                   ),
                 ),
               TextButton(
                 onPressed: onReply,
-                child: const Text('Trả lời'),
+                child: const Text('Reply'),
               ),
             ],
           ),
@@ -440,7 +441,7 @@ class _MessageThread extends ConsumerWidget {
               padding: EdgeInsets.only(left: 24, bottom: 12),
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            error: (e, _) => Text('Lỗi thread: $e'),
+            error: (e, _) => Text('Thread error: $e'),
             data: (replies) => Column(
               children: replies
                   .map(
@@ -448,7 +449,7 @@ class _MessageThread extends ConsumerWidget {
                       padding: const EdgeInsets.only(left: 24, bottom: 8),
                       child: _MessageBubble(
                         message: r,
-                        senderLabel: r.senderId == 28400 ? 'Bạn' : 'SV ${r.senderId}',
+                        senderLabel: r.senderId == 28400 ? 'You' : 'Student ${r.senderId}',
                       ),
                     ),
                   )
@@ -610,7 +611,7 @@ class _NotificationBubble extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               const Text(
-                'Thông báo từ Giảng viên',
+                'Instructor Announcement',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,

@@ -463,7 +463,7 @@ export default function NotificationManager({ module, presentation }: Notificati
                       <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="caption" sx={{ color: noti.senderRole === 'Admin' ? 'error.main' : 'primary.main', fontWeight: 600, mb: 0.25 }}>
                           [{noti.type}] From: {noti.senderRole}
-                          {noti.receiverName && ` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ ${noti.receiverName}`}
+                          {noti.receiverName && ` → ${noti.receiverName}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {noti.content}

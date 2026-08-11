@@ -2,10 +2,10 @@ enum MilestoneStatus { pending, inProgress, done, skipped }
 
 extension MilestoneStatusX on MilestoneStatus {
   String get label => switch (this) {
-        MilestoneStatus.pending => 'Chưa bắt đầu',
-        MilestoneStatus.inProgress => 'Đang làm',
-        MilestoneStatus.done => 'Hoàn thành',
-        MilestoneStatus.skipped => 'Bỏ qua',
+        MilestoneStatus.pending => 'Not started',
+        MilestoneStatus.inProgress => 'In progress',
+        MilestoneStatus.done => 'Completed',
+        MilestoneStatus.skipped => 'Skipped',
       };
 
   String get apiValue => switch (this) {

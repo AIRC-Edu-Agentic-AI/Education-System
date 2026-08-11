@@ -21,7 +21,7 @@ class ClassComment {
         id: json['id'] ?? 0,
         assessmentId: json['assessment_id'] ?? 0,
         studentId: json['student_id'] ?? 0,
-        studentName: json['student_name'] ?? 'Học sinh',
+        studentName: json['student_name'] ?? 'Student',
         content: json['content'] ?? '',
         isInstructor: json['is_instructor'] ?? false,
         createdAt: json['created_at'] != null

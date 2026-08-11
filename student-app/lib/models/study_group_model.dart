@@ -110,13 +110,13 @@ extension GroupResourceTypeExt on GroupResourceType {
   String get label {
     switch (this) {
       case GroupResourceType.link:
-        return 'Liên kết';
+        return 'Link';
       case GroupResourceType.image:
-        return 'Hình ảnh';
+        return 'Image';
       case GroupResourceType.video:
         return 'Video';
       default:
-        return 'Tài liệu';
+        return 'Document';
     }
   }
 }

@@ -109,7 +109,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         color: AppTheme.textPrimary),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const Text('Luôn trực tuyến',
+                  const Text('Always online',
                       style: TextStyle(
                           fontSize: 11, color: AppTheme.accentGreen)),
                 ],
@@ -122,13 +122,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             icon: const Icon(Icons.add_comment_outlined,
                 size: 20, color: AppTheme.textSecondary),
             onPressed: () => ref.read(chatProvider.notifier).newConversation(),
-            tooltip: 'Cuộc hội thoại mới',
+            tooltip: 'New conversation',
           ),
           IconButton(
             icon: const Icon(Icons.forum_outlined,
                 size: 20, color: AppTheme.textSecondary),
             onPressed: () => _showConversationSheet(context, chatState),
-            tooltip: 'Danh sách hội thoại',
+            tooltip: 'Conversation list',
           ),
         ],
       ),
@@ -196,7 +196,7 @@ class _ConversationSheet extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
           child: Row(
             children: [
-              const Text('Hội thoại',
+              const Text('Conversations',
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -205,7 +205,7 @@ class _ConversationSheet extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.add, size: 20, color: AppTheme.primaryBlue),
                 onPressed: onNew,
-                tooltip: 'Cuộc hội thoại mới',
+                tooltip: 'New conversation',
               ),
             ],
           ),
@@ -218,7 +218,7 @@ class _ConversationSheet extends StatelessWidget {
           child: conversations.isEmpty
               ? const Padding(
                   padding: EdgeInsets.all(24),
-                  child: Text('Chưa có hội thoại nào',
+                  child: Text('No conversations yet',
                       style: TextStyle(
                           fontSize: 13, color: AppTheme.textSecondary)),
                 )
@@ -465,7 +465,7 @@ class _ReasoningBlock extends StatelessWidget {
                         size: 13, color: AppTheme.textSecondary),
                   const SizedBox(width: 6),
                   Text(
-                    isThinkingDone ? 'Đã suy nghĩ' : 'Đang suy nghĩ...',
+                    isThinkingDone ? 'Thought finished' : 'Thinking...',
                     style: const TextStyle(
                         fontSize: 12, color: AppTheme.textSecondary),
                   ),
@@ -557,10 +557,10 @@ class _SuggestedPrompts extends StatelessWidget {
   const _SuggestedPrompts({required this.onTap});
 
   static const _prompts = [
-    'Tóm tắt tuần này',
-    'Tôi cần ôn gì cho TMA?',
-    'Giải thích khái niệm khó',
-    'Lên kế hoạch học cuối tuần',
+    'Summarize this week',
+    'What should I review for TMA?',
+    'Explain difficult concepts',
+    'Plan weekend study',
   ];
 
   @override
@@ -621,7 +621,7 @@ class _ChatInput extends StatelessWidget {
             child: TextField(
               controller: controller,
               decoration: const InputDecoration(
-                hintText: 'Nhập câu hỏi...',
+                hintText: 'Ask a question...',
               ),
               style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
               onSubmitted: enabled ? (_) => onSend() : null,
@@ -686,7 +686,7 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text('Hỏi về bài học, lịch học, hoặc bài nộp',
+          const Text('Ask about lectures, schedule, or submissions',
               style: TextStyle(
                   fontSize: 13, color: AppTheme.textSecondary)),
         ],

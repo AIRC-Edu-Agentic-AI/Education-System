@@ -22,20 +22,20 @@ class StudyGroupsScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               size: 18, color: AppTheme.textSecondary),
           onPressed: () => context.go('/more'),
-          tooltip: 'Quay lại',
+          tooltip: 'Back',
         ),
-        title: const Text('Nhóm học tập'),
+        title: const Text('Study Groups'),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded, color: AppTheme.primaryBlue),
             onPressed: () => _showCreateGroupDialog(context, ref),
-            tooltip: 'Tạo nhóm mới',
+            tooltip: 'Create new group',
           ),
           IconButton(
             icon: const Icon(Icons.login_rounded, color: AppTheme.primaryBlue),
             onPressed: () => _showJoinGroupDialog(context, ref),
-            tooltip: 'Tham gia nhóm',
+            tooltip: 'Join group',
           ),
         ],
       ),
@@ -141,17 +141,17 @@ class StudyGroupsScreen extends ConsumerWidget {
           side: const BorderSide(color: AppTheme.cardBorder),
         ),
         title: const Text(
-          'Rời nhóm?',
+          'Leave group?',
           style: TextStyle(color: AppTheme.textPrimary),
         ),
         content: Text(
-          'Bạn có chắc chắn muốn rời nhóm "${group.name}"?',
+          'Are you sure you want to leave group "${group.name}"?',
           style: const TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -161,14 +161,14 @@ class StudyGroupsScreen extends ConsumerWidget {
                 ref.invalidate(myGroupsProvider);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã rời nhóm')),
+                    const SnackBar(content: Text('Left group')),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Lỗi: $e'),
+                      content: Text('Error: $e'),
                       backgroundColor: AppTheme.danger,
                     ),
                   );
@@ -179,7 +179,7 @@ class StudyGroupsScreen extends ConsumerWidget {
               backgroundColor: AppTheme.danger,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Rời nhóm'),
+            child: const Text('Leave group'),
           ),
         ],
       ),
@@ -216,7 +216,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Chưa có nhóm học tập',
+              'No study groups yet',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -225,7 +225,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Tạo nhóm mới hoặc tham gia bằng mã',
+              'Create a new group or join with a code',
               style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
@@ -239,7 +239,7 @@ class _EmptyState extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onCreate,
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Tạo nhóm'),
+                  label: const Text('Create group'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,
                     foregroundColor: Colors.white,
@@ -256,7 +256,7 @@ class _EmptyState extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onJoin,
                   icon: const Icon(Icons.login_rounded),
-                  label: const Text('Tham gia'),
+                  label: const Text('Join group'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.textPrimary,
                     side: const BorderSide(color: AppTheme.cardBorder),

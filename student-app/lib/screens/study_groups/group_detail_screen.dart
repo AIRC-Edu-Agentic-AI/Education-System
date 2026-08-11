@@ -11,17 +11,16 @@ class GroupDetailScreen extends ConsumerWidget {
 
   // ⭐ Hàm lấy tên giả theo memberId
   String _getMemberName(String memberId) {
-    // Tạo tên giả dựa trên ID
     final names = {
-      '28400': 'Nguyễn Văn An',
-      '28401': 'Trần Thị Bình',
-      '28402': 'Lê Văn Cường',
-      '28405': 'Phạm Thị Dung',
-      '28410': 'Hoàng Văn Em',
-      '28411': 'Ngô Thị Phương',
-      '28412': 'Đỗ Văn Giang',
+      '28400': 'Alex Johnson',
+      '28401': 'Brian Smith',
+      '28402': 'Chloe Davis',
+      '28405': 'Daniel Evans',
+      '28410': 'Emily Wilson',
+      '28411': 'Fiona Martinez',
+      '28412': 'George Taylor',
     };
-    return names[memberId] ?? 'Thành viên ${memberId.substring(memberId.length - 3)}';
+    return names[memberId] ?? 'Member ${memberId.substring(memberId.length - 3)}';
   }
 
   @override
@@ -31,7 +30,7 @@ class GroupDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        title: const Text('Chi tiết nhóm'),
+        title: const Text('Group Details'),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -45,7 +44,7 @@ class GroupDetailScreen extends ConsumerWidget {
         ),
         error: (e, _) => Center(
           child: Text(
-            'Lỗi: $e',
+            'Error: $e',
             style: const TextStyle(color: AppTheme.danger),
           ),
         ),
@@ -73,7 +72,7 @@ class GroupDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Mã: ${group.groupCode}',
+                    'Code: ${group.groupCode}',
                     style: const TextStyle(
                       fontSize: 13,
                       color: AppTheme.textSecondary,
@@ -99,7 +98,7 @@ class GroupDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${group.totalMembers} thành viên',
+                        '${group.totalMembers} members',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
@@ -114,7 +113,7 @@ class GroupDetailScreen extends ConsumerWidget {
 
             // Members list
             const Text(
-              'Thành viên',
+              'Members',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -180,7 +179,7 @@ class GroupDetailScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text(
-                              'Chủ nhóm',
+                              'Owner',
                               style: TextStyle(
                                 fontSize: 10,
                                 color: AppTheme.primaryBlue,

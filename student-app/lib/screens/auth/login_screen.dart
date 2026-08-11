@@ -139,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'Đăng nhập để tiếp tục',
+                          'Sign in to continue',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -176,20 +176,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     style: const TextStyle(
                                         color: AppTheme.textPrimary),
                                     decoration: const InputDecoration(
-                                      labelText: 'Mã sinh viên',
+                                      labelText: 'Student ID',
                                       labelStyle: TextStyle(
                                           color: AppTheme.textSecondary),
-                                      hintText: 'Nhập mã sinh viên',
+                                      hintText: 'Enter Student ID',
                                       prefixIcon: Icon(Icons.badge_outlined,
                                           size: 20,
                                           color: AppTheme.textMuted),
                                     ),
                                     validator: (v) {
                                       if (v == null || v.trim().isEmpty) {
-                                        return 'Vui lòng nhập mã sinh viên';
+                                        return 'Please enter Student ID';
                                       }
                                       if (int.tryParse(v.trim()) == null) {
-                                        return 'Mã sinh viên phải là số';
+                                        return 'Student ID must be a number';
                                       }
                                       return null;
                                     },
@@ -205,10 +205,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     style: const TextStyle(
                                         color: AppTheme.textPrimary),
                                     decoration: InputDecoration(
-                                      labelText: 'Mật khẩu',
+                                      labelText: 'Password',
                                       labelStyle: const TextStyle(
                                           color: AppTheme.textSecondary),
-                                      hintText: 'Nhập mật khẩu',
+                                      hintText: 'Enter password',
                                       prefixIcon: const Icon(
                                           Icons.lock_outline_rounded,
                                           size: 20,
@@ -228,7 +228,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                     validator: (v) {
                                       if (v == null || v.isEmpty) {
-                                        return 'Vui lòng nhập mật khẩu';
+                                        return 'Please enter password';
                                       }
                                       return null;
                                     },
@@ -308,7 +308,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               ),
                                             )
                                           : const Text(
-                                              'Đăng nhập',
+                                              'Sign In',
                                               style: TextStyle(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -342,7 +342,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Demo: nhập mã sinh viên bất kỳ (VD: 28400) và mật khẩu bất kỳ.',
+                                  'Demo: enter any Student ID (e.g. 28400) and any password.',
                                   style: TextStyle(
                                       fontSize: 12, color: AppTheme.warning),
                                 ),

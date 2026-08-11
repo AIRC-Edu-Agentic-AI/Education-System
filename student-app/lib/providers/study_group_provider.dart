@@ -90,7 +90,7 @@ final createGroupProvider = FutureProvider.family<StudyGroup, Map<String, dynami
     return result;
   } catch (e) {
     print('❌ Error in createGroupProvider: $e');
-    throw Exception('Không thể tạo nhóm: $e');
+    throw Exception('Unable to create study group: $e');
   }
 });
 

@@ -20,7 +20,7 @@ class ResourceCenterScreen extends ConsumerWidget {
             padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Tìm kiếm tài liệu...',
+                hintText: 'Search resources...',
                 prefixIcon: Icon(Icons.search_rounded,
                     size: 18, color: AppTheme.textMuted),
                 isDense: true,
@@ -33,7 +33,7 @@ class ResourceCenterScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) =>
-            Center(child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+            Center(child: Text('Error: $e', style: const TextStyle(color: AppTheme.danger))),
         data: (resources) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: resources.length,

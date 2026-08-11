@@ -21,7 +21,7 @@ class MyClassScreen extends ConsumerWidget {
         ),
         error: (e, _) => Center(
           child: Text(
-            'Lỗi tại lớp học: $e',
+            'Error loading class: $e',
             style: const TextStyle(color: AppTheme.danger),
           ),
         ),
@@ -29,7 +29,7 @@ class MyClassScreen extends ConsumerWidget {
           if (student.enrollments.isEmpty) {
             return const Center(
               child: Text(
-                'Chưa có lớp học',
+                'No classes available',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
             );
@@ -39,7 +39,7 @@ class MyClassScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             children: [
               Text(
-                '${student.enrollments.length} lớp đang học',
+                '${student.enrollments.length} enrolled classes',
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 13,
@@ -133,7 +133,7 @@ class _ClassCard extends StatelessWidget {
                       Expanded(
                         child: _InfoChip(
                           icon: Icons.assignment_turned_in_outlined,
-                          label: '$submitted/$total bài đã nộp',
+                          label: '$submitted/$total submitted',
                           color: AppTheme.accentGreen,
                         ),
                       ),
@@ -141,7 +141,7 @@ class _ClassCard extends StatelessWidget {
                       Expanded(
                         child: _InfoChip(
                           icon: Icons.touch_app_outlined,
-                          label: '${enrollment.vleSummary.totalClicks} lượt VLE',
+                          label: '${enrollment.vleSummary.totalClicks} VLE clicks',
                           color: AppTheme.primaryBlue,
                         ),
                       ),
@@ -165,8 +165,8 @@ class _ClassCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           next == null
-                              ? 'Tất cả bài tập đã được nộp'
-                              : 'Sắp tới: ${next.type} - ngày ${next.dueDate}',
+                              ? 'All assignments submitted'
+                              : 'Upcoming: ${next.type} - Day ${next.dueDate}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

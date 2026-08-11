@@ -31,7 +31,7 @@ class MoreScreen extends ConsumerWidget {
     ),
     _QuickAction(
       icon: Icons.group_rounded,
-      label: 'Nhóm học',
+      label: 'Study Groups',
       route: '/study-groups',
       color: Color(0xFF8B5CF6),
     ),
@@ -40,22 +40,22 @@ class MoreScreen extends ConsumerWidget {
   static const List<_RecentItem> _recentActivities = [
     _RecentItem(
       icon: Icons.book_rounded,
-      title: 'Đã xem: Slide Tuần 7',
-      time: '2 giờ trước',
+      title: 'Viewed: Week 7 Slides',
+      time: '2 hours ago',
       color: Color(0xFF3B82F6),
       isUrgent: false,
     ),
     _RecentItem(
       icon: Icons.chat_rounded,
-      title: 'Tin nhắn mới từ nhóm DATA201',
-      time: '5 phút trước',
+      title: 'New message from DATA201 group',
+      time: '5 mins ago',
       color: Color(0xFF10B981),
       isUrgent: false,
     ),
     _RecentItem(
       icon: Icons.assignment_rounded,
-      title: 'TMA-02 sắp đến hạn',
-      time: '3 ngày nữa',
+      title: 'TMA-02 due soon',
+      time: 'In 3 days',
       color: Color(0xFFEF4444),
       isUrgent: true,
     ),
@@ -65,7 +65,7 @@ class MoreScreen extends ConsumerWidget {
     _SettingItem(
       icon: Icons.language_rounded,
       label: 'Language',
-      value: 'Tiếng Việt',
+      value: 'English',
       route: null,
     ),
     _SettingItem(
@@ -117,7 +117,7 @@ class MoreScreen extends ConsumerWidget {
         ),
         error: (_, __) => const Center(
           child: Text(
-            'Không thể tải thông tin',
+            'Unable to load profile',
             style: TextStyle(color: AppTheme.danger),
           ),
         ),
@@ -253,7 +253,7 @@ class _BannerCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Tiếp tục hành trình học tập của bạn',
+                      'Continue your learning journey',
                       style: TextStyle(
                         fontSize: 13,
                         color: AppTheme.textSecondary.withValues(alpha: 0.8),
@@ -287,19 +287,19 @@ class _BannerCard extends StatelessWidget {
             children: [
               _StatItem(
                 value: '${student.enrollments.length}',
-                label: 'Môn học',
+                label: 'Modules',
                 icon: Icons.school_rounded,
                 color: AppTheme.primaryBlue,
               ),
               _StatItem(
                 value: '${student.demographics.studiedCredits}',
-                label: 'Tín chỉ',
+                label: 'Credits',
                 icon: Icons.credit_card_rounded,
                 color: AppTheme.accentGreen,
               ),
               _StatItem(
                 value: '12',
-                label: 'Ngày học',
+                label: 'Study Days',
                 icon: Icons.local_fire_department_rounded,
                 color: const Color(0xFFF59E0B),
               ),
@@ -315,7 +315,7 @@ class _BannerCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Tiến độ học tập',
+                'Academic Progress',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -550,7 +550,7 @@ class _RecentActivitySection extends StatelessWidget {
             GestureDetector(
               onTap: () {},
               child: Text(
-                'Xem tất cả',
+                'View all',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.primaryBlue.withValues(alpha: 0.8),
@@ -810,18 +810,18 @@ class _LogoutButton extends StatelessWidget {
               side: const BorderSide(color: AppTheme.cardBorder),
             ),
             title: const Text(
-              'Đăng xuất',
+              'Log out',
               style: TextStyle(color: AppTheme.textPrimary),
             ),
             content: const Text(
-              'Bạn có chắc chắn muốn đăng xuất?',
+              'Are you sure you want to log out?',
               style: TextStyle(color: AppTheme.textSecondary),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
                 child: const Text(
-                  'Hủy',
+                  'Cancel',
                   style: TextStyle(color: AppTheme.textSecondary),
                 ),
               ),
@@ -830,7 +830,7 @@ class _LogoutButton extends StatelessWidget {
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.danger,
                 ),
-                child: const Text('Đăng xuất'),
+                child: const Text('Log out'),
               ),
             ],
           ),
@@ -859,7 +859,7 @@ class _LogoutButton extends StatelessWidget {
             ),
             SizedBox(width: 10),
             Text(
-              'Đăng xuất',
+              'Log out',
               style: TextStyle(
                 color: AppTheme.danger,
                 fontSize: 14,

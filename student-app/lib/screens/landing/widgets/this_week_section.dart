@@ -7,10 +7,10 @@ enum _EventType { lecture, klass, assignment, exam }
 
 extension _EventTypeMeta on _EventType {
   String get label => switch (this) {
-        _EventType.lecture => 'Bài giảng',
-        _EventType.klass => 'Lớp học',
-        _EventType.assignment => 'Bài nộp',
-        _EventType.exam => 'Thi',
+        _EventType.lecture => 'Lecture',
+        _EventType.klass => 'Class',
+        _EventType.assignment => 'Submission',
+        _EventType.exam => 'Exam',
       };
 
   Color get color => switch (this) {
@@ -60,7 +60,7 @@ class ThisWeekSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Tuần này',
+              'This Week',
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -69,7 +69,7 @@ class ThisWeekSection extends StatelessWidget {
             GestureDetector(
               onTap: () => context.go('/timetable'),
               child: const Text(
-                'Xem lịch đầy đủ',
+                'View Full Timetable',
                 style: TextStyle(fontSize: 12, color: AppTheme.primaryBlue),
               ),
             ),
@@ -239,7 +239,7 @@ class _EmptyWeek extends StatelessWidget {
         border: Border.all(color: AppTheme.cardBorder, width: 1),
       ),
       child: const Text(
-        'Tuần này không có sự kiện',
+        'No events scheduled for this week',
         style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
       ),
     );

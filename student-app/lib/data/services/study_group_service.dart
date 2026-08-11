@@ -52,7 +52,7 @@ class StudyGroupService {
       return StudyGroup.fromJson(response.data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        throw Exception('Không tìm thấy nhóm với mã này');
+        throw Exception('No study group found with this code');
       }
       throw _handleError(e);
     }
@@ -130,7 +130,7 @@ Future<GroupMessage> sendMessage({
     );
     return GroupMessage.fromJson(response.data);
   } on DioException catch (e) {
-    throw Exception('Không thể gửi tin nhắn: ${e.message}');
+    throw Exception('Unable to send message: ${e.message}');
   }
 }
 
@@ -226,11 +226,11 @@ Future<GroupMessage> sendMessage({
       );
       return Map<String, dynamic>.from(response.data);
     } on DioException catch (e) {
-      throw Exception('Không thể upload file: ${e.message}');
+      throw Exception('Unable to upload file: ${e.message}');
     }
   }
 
-  // ── Gửi tin nhắn với file ──
+  // ── Send message with file ──
 
   Future<GroupMessage> sendMessageWithFile({
     required String groupId,
@@ -257,11 +257,11 @@ Future<GroupMessage> sendMessage({
       );
       return GroupMessage.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception('Không thể gửi tin nhắn: ${e.message}');
+      throw Exception('Unable to send message: ${e.message}');
     }
   }
 
-  // ── Lấy danh sách file trong nhóm ──
+  // ── Fetch group files ──
 
   Future<List<Map<String, dynamic>>> getGroupFiles({
     required String groupId,
@@ -278,7 +278,7 @@ Future<GroupMessage> sendMessage({
     }
   }
 
-  // ── Tải file xuống ──
+  // ── Download file ──
 
   Future<String> downloadFile({
     required String fileId,
@@ -292,14 +292,13 @@ Future<GroupMessage> sendMessage({
         options: Options(responseType: ResponseType.bytes),
       );
       
-      // ⭐ SỬA: Sử dụng getApplicationDocumentsDirectory thay vì getDownloadsDirectory
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/$fileId';
       final file = File(filePath);
       await file.writeAsBytes(response.data as List<int>);
       return filePath;
     } on DioException catch (e) {
-      throw Exception('Không thể tải file: ${e.message}');
+      throw Exception('Unable to download file: ${e.message}');
     }
   }
 

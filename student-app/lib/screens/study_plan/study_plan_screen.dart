@@ -17,7 +17,7 @@ class StudyPlanScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) =>
-            Center(child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+            Center(child: Text('Error: $e', style: const TextStyle(color: AppTheme.danger))),
         data: (sessions) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -40,12 +40,12 @@ class StudyPlanScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Lịch SM-2 đang hoạt động',
+                        Text('Active SM-2 Spaced Repetition Schedule',
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: AppTheme.accentGreen)),
-                        Text('4 thẻ flashcard cần ôn hôm nay',
+                        Text('4 flashcards due for review today',
                             style: TextStyle(
                                 fontSize: 12, color: AppTheme.textSecondary)),
                       ],
@@ -54,7 +54,7 @@ class StudyPlanScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const Text('Kế hoạch tuần này',
+            const Text('This Week\'s Study Plan',
                 style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
@@ -106,7 +106,7 @@ class StudyPlanScreen extends ConsumerWidget {
                                   fontWeight: FontWeight.w500,
                                   color: AppTheme.textPrimary)),
                           Text(
-                              '${s['day']} · ${s['time']} · ${s['duration']} phút',
+                              '${s['day']} · ${s['time']} · ${s['duration']} mins',
                               style: const TextStyle(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary)),

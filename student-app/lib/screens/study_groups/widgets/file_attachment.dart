@@ -98,7 +98,7 @@ class FileAttachment extends StatelessWidget {
                   size: 18, color: AppTheme.textSecondary),
               SizedBox(width: 8),
               Text(
-                'Đính kèm file',
+                'Attach file',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.textSecondary,
