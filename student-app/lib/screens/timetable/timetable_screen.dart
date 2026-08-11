@@ -7,7 +7,7 @@ import 'package:student_agent/providers/providers.dart';
 const _kLectureMin = 120;
 const _kClassMin = 90;
 
-const _days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 enum BlockKind { lecture, classes, study, exam }
 
@@ -67,8 +67,7 @@ class _MiniCalendarState extends State<_MiniCalendar> {
     final startWeekday = first.weekday % 7; // convert Mon(1)..Sun(7) to 1..0
     final totalDays = last.day;
     final today = DateTime.now();
-
-    final dayLabels = ['Cn', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    final dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     final cells = <int?>[];
     for (int i = 0; i < startWeekday; i++) cells.add(null);
@@ -88,7 +87,7 @@ class _MiniCalendarState extends State<_MiniCalendar> {
             children: [
               Expanded(
                 child: Text(
-                  'Tháng ${_visible.month}, ${_visible.year}',
+                  'Month ${_visible.month}, ${_visible.year}',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -98,54 +97,62 @@ class _MiniCalendarState extends State<_MiniCalendar> {
           ),
           const SizedBox(height: 4),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: dayLabels
-                .map((l) => Expanded(
-                      child: Center(
-                        child: Text(l, style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                .map(
+                  (lbl) => Expanded(
+                    child: Center(
+                      child: Text(
+                        lbl,
+                        style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: ((cells.length / 7).ceil()) * 7,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: cells.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
               childAspectRatio: 1.2,
             ),
-            itemBuilder: (context, index) {
-              final v = index < cells.length ? cells[index] : null;
-              final isToday = v != null && _visible.month == today.month && _visible.year == today.year && v == today.day;
-              return Center(
-                child: v == null
-                    ? const SizedBox.shrink()
-                    : InkWell(
-                        onTap: () {
-                          final dt = DateTime(_visible.year, _visible.month, v);
-                          widget.onDaySelected?.call(dt);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: isToday ? AppTheme.primaryBlue : Colors.grey.withOpacity(0.08),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '$v',
-                              style: TextStyle(
-                                color: isToday ? Colors.white : AppTheme.textPrimary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
+            itemBuilder: (context, idx) {
+              final val = cells[idx];
+              if (val == null) return const SizedBox.shrink();
+              final isToday = today.year == _visible.year &&
+                  today.month == _visible.month &&
+                  today.day == val;
+              return InkWell(
+                onTap: () {
+                  if (widget.onDaySelected != null) {
+                    widget.onDaySelected!(
+                      DateTime(_visible.year, _visible.month, val),
+                    );
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: isToday ? AppTheme.primaryBlueGlow : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                    border: isToday
+                        ? Border.all(color: AppTheme.primaryBlue, width: 1)
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$val',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                        color: isToday ? AppTheme.primaryBlue : AppTheme.textPrimary,
                       ),
+                    ),
+                  ),
+                ),
               );
             },
           ),
@@ -163,7 +170,7 @@ String _fmt(int min) {
   return '$h:$m';
 }
 
-String? _matchDay(String s) => RegExp(r'(Thứ [2-7]|CN)').firstMatch(s)?.group(1);
+String? _matchDay(String s) => RegExp(r'(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Thứ [2-7]|CN)').firstMatch(s)?.group(1);
 int? _matchTime(String s) {
   final m = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(s);
   if (m == null) return null;
@@ -190,25 +197,15 @@ IconData _kindIcon(BlockKind k) => switch (k) {
     };
 
 String _kindLabel(BlockKind k) => switch (k) {
-      BlockKind.lecture => 'Bài giảng',
-      BlockKind.classes => 'Lớp / Lab',
-      BlockKind.study => 'Tự học',
-      BlockKind.exam => 'Thi',
+      BlockKind.lecture => 'Lecture',
+      BlockKind.classes => 'Class / Lab',
+      BlockKind.study => 'Self-study',
+      BlockKind.exam => 'Exam',
     };
 
 String _todayLabel() {
   final now = DateTime.now();
-  final weekday = now.weekday;
-  final index = switch (weekday) {
-    2 => 0,
-    3 => 1,
-    4 => 2,
-    5 => 3,
-    6 => 4,
-    7 => 5,
-    1 => 6,
-    _ => 6,
-  };
+  final index = (now.weekday - 1) % 7;
   return _days[index];
 }
 
@@ -232,8 +229,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
         title: scheduleAsync.maybeWhen(
-          data: (s) => Text('Tuần ${s.currentWeek} / ${s.totalWeeks}'),
-          orElse: () => const Text('Lịch học'),
+          data: (s) => Text('Week ${s.currentWeek} / ${s.totalWeeks}'),
+          orElse: () => const Text('Timetable'),
         ),
         actions: [
           IconButton(
@@ -246,7 +243,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) => Center(
-            child: Text('Lỗi: $e',
+            child: Text('Error: $e',
                 style: const TextStyle(color: AppTheme.danger))),
         data: (schedule) {
           final sessions = planAsync.asData?.value ?? const [];
@@ -348,7 +345,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         startMin: start,
         endMin: start + dur,
         title: (s['subject'] ?? '').toString(),
-        sub: '$dur phút${type.isNotEmpty ? ' · $type' : ''}',
+        sub: '$dur mins${type.isNotEmpty ? ' · $type' : ''}',
         kind: BlockKind.study,
       ));
     }
@@ -373,21 +370,21 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: AppTheme.surfaceDark,
-              title: const Text('Tạo lịch mới'),
+              title: const Text('Create New Schedule'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: titleController,
                     decoration: const InputDecoration(
-                      labelText: 'Tên lịch',
+                      labelText: 'Schedule Title',
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Ngày'),
+                    title: const Text('Date'),
                     subtitle: Text('${selectedDate.day}/${selectedDate.month}/${selectedDate.year} ($selectedDay)'),
                     trailing: const Icon(Icons.calendar_month),
                     onTap: () async {
@@ -409,7 +406,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                   DropdownButtonFormField<String>(
                     value: selectedDay,
                     decoration: const InputDecoration(
-                      labelText: 'Thứ trong tuần',
+                      labelText: 'Day of week',
                       border: OutlineInputBorder(),
                     ),
                     items: _days
@@ -424,7 +421,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Thời gian bắt đầu'),
+                    title: const Text('Start time'),
                     subtitle: Text(selectedTime.format(context)),
                     trailing: const Icon(Icons.access_time),
                     onTap: () async {
@@ -442,7 +439,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Huỷ'),
+                  child: const Text('Cancel'),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -456,7 +453,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                       'editingId': editingBlock?.id,
                     });
                   },
-                  child: Text(editingBlock == null ? 'Thêm lịch' : 'Cập nhật'),
+                  child: Text(editingBlock == null ? 'Add Schedule' : 'Update'),
                 ),
               ],
             );
@@ -479,14 +476,13 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               startMin: startMin,
               endMin: startMin + 60,
               title: result['title'] as String,
-              sub: 'Lịch mới · ${result['time'].format(context)}',
+              sub: 'New Schedule · ${result['time'].format(context)}',
               kind: BlockKind.study,
               date: eventDate,
               isCustom: true,
             );
             return;
           }
-          // editing a standard block -> create a custom replacement and hide original
           _removedStdIds.add(existingId);
         }
         _addedBlocks.add(_Block(
@@ -495,13 +491,12 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
           startMin: startMin,
           endMin: startMin + 60,
           title: result['title'] as String,
-          sub: 'Lịch mới · ${result['time'].format(context)}',
+          sub: 'New Schedule · ${result['time'].format(context)}',
           kind: BlockKind.study,
           date: eventDate,
           isCustom: true,
         ));
       });
-      // Sync study-plan with backend (adds custom sessions, hides removed standard ones)
       _syncStudyPlanWithBackend();
     }
   }
@@ -514,7 +509,6 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       final current = await api.getStudyPlan(studentId);
       final mutable = List<Map<String, dynamic>>.from(current);
 
-      // Remove sessions that match removed standard IDs
       for (final rid in _removedStdIds) {
         final m = RegExp(r'std-study-(.+?)-(\d+)-(\d+)-(.+)').firstMatch(rid);
         if (m != null) {
@@ -530,7 +524,6 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         }
       }
 
-      // Add custom added blocks as study sessions
       for (final b in _addedBlocks.where((b) => b.isCustom && b.kind == BlockKind.study)) {
         mutable.add({
           'subject': b.title,
@@ -544,7 +537,6 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 
       final ok = await api.updateStudyPlan(studentId, mutable);
       if (!ok) {
-        // Optionally show toast — keep silent for now
         print('Failed to sync study plan');
       }
     } catch (e, s) {
@@ -556,20 +548,20 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   String _labelFromDate(DateTime d) {
     switch (d.weekday) {
       case DateTime.monday:
-        return 'Thứ 2';
+        return 'Mon';
       case DateTime.tuesday:
-        return 'Thứ 3';
+        return 'Tue';
       case DateTime.wednesday:
-        return 'Thứ 4';
+        return 'Wed';
       case DateTime.thursday:
-        return 'Thứ 5';
+        return 'Thu';
       case DateTime.friday:
-        return 'Thứ 6';
+        return 'Fri';
       case DateTime.saturday:
-        return 'Thứ 7';
+        return 'Sat';
       case DateTime.sunday:
       default:
-        return 'CN';
+        return 'Sun';
     }
   }
 
@@ -592,7 +584,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text('Công việc ${label} — ${date.day}/${date.month}/${date.year}', style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(child: Text('Tasks ${label} — ${date.day}/${date.month}/${date.year}', style: const TextStyle(fontWeight: FontWeight.w700))),
                     IconButton(onPressed: () => Navigator.of(ctx).pop(), icon: const Icon(Icons.close)),
                   ],
                 ),
@@ -603,14 +595,14 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Không có công việc cho ngày này'),
+                              const Text('No tasks for this day'),
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () {
                                   Navigator.of(ctx).pop();
                                   _showAddEventDialog(date);
                                 },
-                                child: const Text('Tạo lịch mới'),
+                                child: const Text('Create New Schedule'),
                               ),
                             ],
                           ),
@@ -663,7 +655,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               ],
               if (block.date != null) ...[
                 const SizedBox(height: 8),
-                Text('Ngày: ${block.date!.day}/${block.date!.month}/${block.date!.year}', style: const TextStyle(color: AppTheme.textMuted)),
+                Text('Date: ${block.date!.day}/${block.date!.month}/${block.date!.year}', style: const TextStyle(color: AppTheme.textMuted)),
               ],
               const SizedBox(height: 16),
               Row(
@@ -676,7 +668,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                           final pre = block.date ?? _dateForBlock(block);
                           _showAddEventDialog(pre, block);
                         },
-                        child: const Text('Sửa'),
+                        child: const Text('Edit'),
                       ),
                     ),
                   if (allowEdit) const SizedBox(width: 12),
@@ -697,7 +689,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                         }
                       },
                       style: FilledButton.styleFrom(backgroundColor: (block.isCustom || block.kind == BlockKind.study) ? AppTheme.danger : AppTheme.surfaceCard),
-                      child: Text((block.isCustom || block.kind == BlockKind.study) ? 'Xóa' : 'Đóng'),
+                      child: Text((block.isCustom || block.kind == BlockKind.study) ? 'Delete' : 'Close'),
                     ),
                   ),
                 ],
@@ -713,29 +705,29 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     final now = DateTime.now();
     int targetWeekday;
     switch (b.day) {
-      case 'Thứ 2':
+      case 'Mon':
         targetWeekday = DateTime.monday;
         break;
-      case 'Thứ 3':
+      case 'Tue':
         targetWeekday = DateTime.tuesday;
         break;
-      case 'Thứ 4':
+      case 'Wed':
         targetWeekday = DateTime.wednesday;
         break;
-      case 'Thứ 5':
+      case 'Thu':
         targetWeekday = DateTime.thursday;
         break;
-      case 'Thứ 6':
+      case 'Fri':
         targetWeekday = DateTime.friday;
         break;
-      case 'Thứ 7':
+      case 'Sat':
         targetWeekday = DateTime.saturday;
         break;
-      case 'CN':
+      case 'Sun':
       default:
         targetWeekday = DateTime.sunday;
     }
-    final delta = (targetWeekday - now.weekday + 7) % 7; // next occurrence (0..6)
+    final delta = (targetWeekday - now.weekday + 7) % 7;
     final date = DateTime(now.year, now.month, now.day).add(Duration(days: delta));
     final hour = b.startMin ~/ 60;
     final minute = b.startMin % 60;
@@ -757,7 +749,7 @@ class _WeekHeader extends StatelessWidget {
           children: [
             const Expanded(
               child: Text(
-                'Lịch học tuần này',
+                'Weekly Timetable',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -768,7 +760,7 @@ class _WeekHeader extends StatelessWidget {
             TextButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Tạo lịch'),
+              label: const Text('Create Schedule'),
             ),
           ],
         ),
@@ -784,7 +776,7 @@ class _WeekHeader extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Hôm nay · $currentDay',
+                'Today · $currentDay',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -793,7 +785,7 @@ class _WeekHeader extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                'Giao diện dạng lịch tổng quan',
+                'Weekly Overview Calendar',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.textMuted,
@@ -866,7 +858,7 @@ class _DayColumn extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${blocks.length} lịch',
+            '${blocks.length} events',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.textMuted,
@@ -877,7 +869,7 @@ class _DayColumn extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 4),
               child: Text(
-                'Không có lịch trong ngày',
+                'No schedule for this day',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.textMuted,
@@ -956,5 +948,5 @@ class _MiniEventCard extends StatelessWidget {
         ),
       ),
     );
-}
+  }
 }

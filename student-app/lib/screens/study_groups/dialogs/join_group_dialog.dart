@@ -26,7 +26,7 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
     final code = _codeController.text.trim().toUpperCase();
     if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mã nhóm')),
+        const SnackBar(content: Text('Please enter group code')),
       );
       return;
     }
@@ -40,14 +40,14 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
         Navigator.pop(context);
         widget.onJoined();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã tham gia nhóm thành công!')),
+          const SnackBar(content: Text('Joined group successfully!')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Không tìm thấy nhóm. Vui lòng kiểm tra mã.'),
+            content: Text('Group not found. Please check the code.'),
             backgroundColor: AppTheme.danger,
           ),
         );
@@ -66,14 +66,14 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
         side: const BorderSide(color: AppTheme.cardBorder),
       ),
       title: const Text(
-        'Tham gia nhóm',
+        'Join Group',
         style: TextStyle(color: AppTheme.textPrimary),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Nhập mã nhóm để tham gia',
+            'Enter group code to join',
             style: TextStyle(color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
@@ -85,9 +85,9 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
               fontWeight: FontWeight.w600,
             ),
             decoration: const InputDecoration(
-              labelText: 'Mã nhóm',
+              labelText: 'Group Code',
               labelStyle: TextStyle(color: AppTheme.textSecondary),
-              hintText: 'VD: GRP-ABC123',
+              hintText: 'e.g. GRP-ABC123',
               hintStyle: TextStyle(color: AppTheme.textMuted),
               prefixIcon: Icon(Icons.code_rounded, color: AppTheme.textMuted),
             ),
@@ -95,7 +95,7 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Mã nhóm có định dạng GRP-XXXXXX',
+            'Group code format: GRP-XXXXXX',
             style: TextStyle(
               fontSize: 11,
               color: AppTheme.textMuted,
@@ -106,7 +106,7 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
       actions: [
         TextButton(
           onPressed: _loading ? null : () => Navigator.pop(context),
-          child: const Text('Hủy'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: _loading ? null : _joinGroup,
@@ -126,7 +126,7 @@ class _JoinGroupDialogState extends ConsumerState<JoinGroupDialog> {
                     color: Colors.white,
                   ),
                 )
-              : const Text('Tham gia'),
+              : const Text('Join Group'),
         ),
       ],
     );

@@ -172,10 +172,11 @@ class Assessment {
     if (date != null) {
       return '${date.day}/${date.month}/${date.year}';
     }
-    return 'Ngày $dueDate';
+    return 'Day $dueDate';
   }
 
-  String get statusLabel => status.isNotEmpty ? status[0].toUpperCase() + status.substring(1) : 'Không xác định';
+  String get statusLabel => status.isNotEmpty ? status[0].toUpperCase() + status.substring(1) : 'Unknown';
+
 
   factory Assessment.fromJson(Map<String, dynamic> json) => Assessment(
         idAssessment: json['id_assessment'] ?? 0,
@@ -239,10 +240,10 @@ class RiskProfile {
       );
 
   String get tierLabel => switch (tier) {
-        1 => 'Tier 1 — Đúng tiến độ',
-        2 => 'Tier 2 — Cần hỗ trợ',
-        3 => 'Tier 3 — Can thiệp ngay',
-        _ => 'Không xác định',
+        1 => 'Tier 1 — On track',
+        2 => 'Tier 2 — Needs support',
+        3 => 'Tier 3 — Urgent intervention',
+        _ => 'Unknown',
       };
 }
 

@@ -24,7 +24,7 @@ class InstructorFeedback {
         createdAt: json['created_at'] != null
             ? DateTime.parse(json['created_at'])
             : DateTime.now(),
-        instructorName: json['instructor_name'] ?? 'Giảng viên',
+        instructorName: json['instructor_name'] ?? 'Instructor',
       );
 
   Map<String, dynamic> toJson() => {

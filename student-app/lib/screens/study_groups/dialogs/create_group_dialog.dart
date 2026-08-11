@@ -51,7 +51,7 @@ Future<void> _createGroup() async {
       Navigator.pop(context);
       widget.onCreated();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã tạo nhóm thành công!')),
+        const SnackBar(content: Text('Group created successfully!')),
       );
     }
   } catch (e) {
@@ -59,7 +59,7 @@ Future<void> _createGroup() async {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi: $e'),
+          content: Text('Error: $e'),
           backgroundColor: AppTheme.danger,
         ),
       );
@@ -78,7 +78,7 @@ Future<void> _createGroup() async {
         side: const BorderSide(color: AppTheme.cardBorder),
       ),
       title: const Text(
-        'Tạo nhóm mới',
+        'Create New Group',
         style: TextStyle(color: AppTheme.textPrimary),
       ),
       content: Form(
@@ -90,13 +90,13 @@ Future<void> _createGroup() async {
               controller: _nameController,
               style: const TextStyle(color: AppTheme.textPrimary),
               decoration: const InputDecoration(
-                labelText: 'Tên nhóm',
+                labelText: 'Group Name',
                 labelStyle: TextStyle(color: AppTheme.textSecondary),
-                hintText: 'Nhập tên nhóm học tập',
+                hintText: 'Enter study group name',
               ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
-                  return 'Vui lòng nhập tên nhóm';
+                  return 'Please enter group name';
                 }
                 return null;
               },
@@ -106,9 +106,9 @@ Future<void> _createGroup() async {
               controller: _descController,
               style: const TextStyle(color: AppTheme.textPrimary),
               decoration: const InputDecoration(
-                labelText: 'Mô tả (không bắt buộc)',
+                labelText: 'Description (optional)',
                 labelStyle: TextStyle(color: AppTheme.textSecondary),
-                hintText: 'Mô tả về nhóm học tập',
+                hintText: 'Description of the study group',
               ),
               maxLines: 3,
             ),
@@ -118,7 +118,7 @@ Future<void> _createGroup() async {
       actions: [
         TextButton(
           onPressed: _loading ? null : () => Navigator.pop(context),
-          child: const Text('Hủy'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: _loading ? null : _createGroup,
@@ -138,7 +138,7 @@ Future<void> _createGroup() async {
                     color: Colors.white,
                   ),
                 )
-              : const Text('Tạo nhóm'),
+              : const Text('Create Group'),
         ),
       ],
     );

@@ -126,7 +126,7 @@ class DashboardScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) => Center(
-          child: Text('Lỗi tải dữ liệu: $e',
+          child: Text('Error loading data: $e',
               style: const TextStyle(color: AppTheme.danger)),
         ),
         data: (student) => CustomScrollView(
@@ -154,7 +154,7 @@ class DashboardScreen extends ConsumerWidget {
                               size: 14, color: AppTheme.warning),
                           SizedBox(width: 6),
                           Text(
-                            'Demo — dữ liệu mẫu',
+                            'Demo — sample data',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.warning,
@@ -242,9 +242,9 @@ class _WelcomeSection extends StatelessWidget {
 
   String get _greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Chào buổi sáng';
-    if (h < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
   }
 
   @override
@@ -306,10 +306,10 @@ class _RiskBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, label) = switch (tier) {
-      1 => (AppTheme.successGlow, AppTheme.success, 'Đúng tiến độ'),
-      2 => (AppTheme.warningGlow, AppTheme.warning, 'Cần hỗ trợ'),
-      3 => (AppTheme.dangerGlow, AppTheme.danger, 'Cần can thiệp'),
-      _ => (AppTheme.surfaceCard, AppTheme.textSecondary, 'Không rõ'),
+      1 => (AppTheme.successGlow, AppTheme.success, 'On track'),
+      2 => (AppTheme.warningGlow, AppTheme.warning, 'Needs support'),
+      3 => (AppTheme.dangerGlow, AppTheme.danger, 'Urgent action'),
+      _ => (AppTheme.surfaceCard, AppTheme.textSecondary, 'Unknown'),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -372,7 +372,7 @@ class _RiskCard extends StatelessWidget {
                         color: AppTheme.textPrimary)),
                 const SizedBox(height: 2),
                 Text(
-                  'Điểm rủi ro: ${(student.risk.score * 100).round()}%',
+                  'Risk score: ${(student.risk.score * 100).round()}%',
                   style: const TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary),
                 ),
@@ -457,7 +457,7 @@ class _PriorityCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Uu tien hom nay',
+                  'Today\'s Priority',
                   style: TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -478,7 +478,7 @@ class _PriorityCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   urgent?.subtitle ??
-                      'Diem rui ro: ${(risk.score * 100).round()}%',
+                      'Risk score: ${(risk.score * 100).round()}%',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -491,7 +491,7 @@ class _PriorityCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => context.go('/study-plan'),
-            child: const Text('Mở kế hoạch'),
+            child: const Text('Open Plan'),
           ),
         ],
       ),
@@ -528,7 +528,7 @@ class _LearningHealthSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Sức khỏe học tập',
+          'Learning Health',
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 14,
@@ -539,7 +539,7 @@ class _LearningHealthSection extends StatelessWidget {
         Row(
           children: [
             _HealthMetric(
-              label: 'Rui ro',
+              label: 'Risk',
               value: '${(student.risk.score * 100).round()}%',
               color: student.risk.tier >= 3
                   ? AppTheme.danger
@@ -550,14 +550,14 @@ class _LearningHealthSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _HealthMetric(
-              label: 'Đã nộp',
+              label: 'Submitted',
               value: '$submittedRatio%',
               color: AppTheme.accentGreen,
               icon: Icons.assignment_turned_in_outlined,
             ),
             const SizedBox(width: 8),
             _HealthMetric(
-              label: 'Cần ôn',
+              label: 'To Review',
               value: '${student.prerequisiteGaps.length}',
               color: AppTheme.primaryBlue,
               icon: Icons.psychology_outlined,
@@ -636,7 +636,7 @@ class _ContinueLearningSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Tiếp tục học',
+              'Continue Learning',
               style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 14,
@@ -646,7 +646,7 @@ class _ContinueLearningSection extends StatelessWidget {
             GestureDetector(
               onTap: () => context.go('/study-plan'),
               child: const Text(
-                'Xem kế hoạch',
+                'View Plan',
                 style: TextStyle(
                   color: AppTheme.primaryBlue,
                   fontSize: 12,
@@ -725,7 +725,7 @@ class _StudySessionTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${session['day']} - ${session['time']} - ${session['duration']} phut',
+                  '${session['day']} · ${session['time']} · ${session['duration']} mins',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -759,14 +759,14 @@ class _NotificationsSection extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Thông báo (${notifications.length})',
+            Text('Notifications (${notifications.length})',
                 style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: AppTheme.textSecondary)),
             GestureDetector(
               onTap: () => context.push('/notifications'),
-              child: const Text('Xem tất cả',
+              child: const Text('View All',
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -803,7 +803,7 @@ class _NotificationsSection extends ConsumerWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         alignment: Alignment.center,
-                        child: Text('+ $extra thông báo khác',
+                        child: Text('+ $extra more notifications',
                             style: const TextStyle(
                                 fontSize: 12, color: AppTheme.textMuted)),
                       ),
@@ -886,7 +886,7 @@ class _FlagsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Cảnh báo',
+          const Text('Risk Flags',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -923,7 +923,7 @@ class _GapsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Kiến thức cần củng cố',
+          const Text('Prerequisite Gaps',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -965,7 +965,7 @@ class _EnrollmentsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Môn học đang học',
+        const Text('Enrolled Modules',
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -1019,7 +1019,7 @@ class _EnrollmentsSection extends StatelessWidget {
                                             fontWeight: FontWeight.w500,
                                             color: AppTheme.textPrimary)),
                                     Text(
-                                      '${entry.value.assessments.where((a) => a.isSubmitted).length}/${entry.value.assessments.length} bài đã nộp',
+                                      '${entry.value.assessments.where((a) => a.isSubmitted).length}/${entry.value.assessments.length} assignments submitted',
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: AppTheme.textSecondary),

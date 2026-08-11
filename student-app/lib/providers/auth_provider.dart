@@ -33,7 +33,7 @@ class AuthNotifier extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (_) {
-      _error = 'Đã xảy ra lỗi. Vui lòng thử lại.';
+      _error = 'An error occurred. Please try again.';
       notifyListeners();
       return false;
     }

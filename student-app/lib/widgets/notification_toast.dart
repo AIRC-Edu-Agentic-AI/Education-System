@@ -102,7 +102,7 @@ class NotificationToast {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
-                                'Mới',
+                                'New',
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.white,
@@ -242,7 +242,7 @@ class ChatMessageToast {
                                 Row(
                                   children: [
                                     Text(
-                                      'Giảng viên',
+                                      'Instructor',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -310,7 +310,7 @@ class ChatMessageToast {
                               controller: controller,
                               style: const TextStyle(fontSize: 12, color: Colors.white),
                               decoration: const InputDecoration(
-                                hintText: 'Viết phản hồi nhanh...',
+                                hintText: 'Write quick reply...',
                                 hintStyle: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                                 border: InputBorder.none,
                                 isDense: true,
@@ -357,7 +357,7 @@ class ChatMessageToast {
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
-                                            content: Text('Đã gửi phản hồi tới Giảng viên!'),
+                                            content: Text('Reply sent to instructor!'),
                                             backgroundColor: Color(0xFF10B981),
                                             duration: Duration(seconds: 2),
                                           ),

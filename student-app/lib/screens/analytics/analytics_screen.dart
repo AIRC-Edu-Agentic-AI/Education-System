@@ -21,7 +21,7 @@ class AnalyticsScreen extends ConsumerWidget {
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) => Center(
             child:
-                Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+                Text('Error: $e', style: const TextStyle(color: AppTheme.danger))),
         data: (student) {
           final enrollment =
               student.enrollments.isNotEmpty ? student.enrollments.first : null;
@@ -34,14 +34,14 @@ class AnalyticsScreen extends ConsumerWidget {
               Row(
                 children: [
                   _MetricCard(
-                    label: 'Tổng lượt xem',
+                    label: 'Total VLE Clicks',
                     value: '${vle?.totalClicks ?? 0}',
                     icon: Icons.mouse_outlined,
                     color: AppTheme.primaryBlue,
                   ),
                   const SizedBox(width: 8),
                   _MetricCard(
-                    label: 'Điểm rủi ro',
+                    label: 'Risk Score',
                     value: '${(student.risk.score * 100).round()}%',
                     icon: Icons.warning_amber_rounded,
                     color: student.risk.score > 0.7
@@ -56,7 +56,7 @@ class AnalyticsScreen extends ConsumerWidget {
               Row(
                 children: [
                   _MetricCard(
-                    label: 'Tỉ lệ nộp bài',
+                    label: 'Submission Rate',
                     value: enrollment != null && enrollment.assessments.isNotEmpty
                         ? '${((enrollment.assessments.where((a) => a.isSubmitted).length / enrollment.assessments.length) * 100).round()}%'
                         : '—',
@@ -65,8 +65,8 @@ class AnalyticsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   _MetricCard(
-                    label: 'Ngày học gần nhất',
-                    value: 'N${vle?.lastActiveDay ?? 0}',
+                    label: 'Last Active Day',
+                    value: 'Day ${vle?.lastActiveDay ?? 0}',
                     icon: Icons.calendar_today_outlined,
                     color: AppTheme.accentGreen,
                   ),
@@ -90,14 +90,14 @@ class AnalyticsScreen extends ConsumerWidget {
               const SizedBox(height: 20),
 
               // ── Assessment grades per module ───────────────────────────
-              const _SectionHeader('Điểm thành phần'),
+              const _SectionHeader('Assessment Grades'),
               const SizedBox(height: 10),
               ...student.enrollments.map((e) => _ModuleGrades(enrollment: e)),
               const SizedBox(height: 8),
 
               // ── VLE activity by type (existing) ────────────────────────
               if (vle != null && vle.byActivityType.isNotEmpty) ...[
-                const _SectionHeader('Hoạt động theo loại'),
+                const _SectionHeader('Activity by Type'),
                 const SizedBox(height: 10),
                 _ActivityByType(byType: vle.byActivityType),
               ],
@@ -156,7 +156,7 @@ class _RiskEngagementChart extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(left: 8),
-            child: Text('Rủi ro & Tương tác (theo tuần)',
+            child: Text('Risk Score & Engagement (Weekly)',
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -165,7 +165,7 @@ class _RiskEngagementChart extends StatelessWidget {
           const SizedBox(height: 4),
           const Padding(
             padding: EdgeInsets.only(left: 8),
-            child: Text('Tương tác giảm → rủi ro tăng',
+            child: Text('Engagement drops → risk increases',
                 style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
           ),
           const SizedBox(height: 16),
@@ -233,7 +233,7 @@ class _RiskEngagementChart extends StatelessWidget {
                       interval: 1,
                       getTitlesWidget: (value, _) => Padding(
                         padding: const EdgeInsets.only(top: 6),
-                        child: Text('T${value.toInt()}',
+                        child: Text('W${value.toInt()}',
                             style: const TextStyle(
                                 fontSize: 10, color: AppTheme.textMuted)),
                       ),
@@ -279,10 +279,10 @@ class _RiskEngagementChart extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _LegendDot(color: AppTheme.danger, label: 'Điểm rủi ro (trái)'),
+              _LegendDot(color: AppTheme.danger, label: 'Risk Score (left)'),
               SizedBox(width: 16),
               _LegendDot(
-                  color: AppTheme.primaryBlue, label: 'Lượt xem VLE (phải)'),
+                  color: AppTheme.primaryBlue, label: 'VLE Clicks (right)'),
             ],
           ),
         ],
@@ -428,7 +428,7 @@ class _ModuleGrades extends StatelessWidget {
             children: [
               Expanded(
                 child: _SummaryStat(
-                  label: 'Điểm TB hiện tại',
+                  label: 'Current Grade',
                   value: gradedWeight > 0
                       ? '${currentAvg.round()}%'
                       : '—',
@@ -439,15 +439,15 @@ class _ModuleGrades extends StatelessWidget {
               ),
               Expanded(
                 child: _SummaryStat(
-                  label: 'Đã chấm',
-                  value: '${gradedWeight.toInt()}% trọng số',
+                  label: 'Graded Weight',
+                  value: '${gradedWeight.toInt()}% weight',
                   color: AppTheme.textSecondary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          const Text('Đường nét đứt = vạch qua môn (40%)',
+          const Text('Dashed line = passing mark (40%)',
               style: TextStyle(fontSize: 10, color: AppTheme.textMuted)),
         ],
       ),

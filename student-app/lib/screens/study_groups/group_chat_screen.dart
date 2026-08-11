@@ -68,7 +68,7 @@ class _GroupChatScreenState extends ConsumerState<GroupChatScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi chọn file: $e'),
+            content: Text('File selection error: $e'),
             backgroundColor: AppTheme.danger,
           ),
         );
@@ -107,7 +107,7 @@ Future<void> _sendMessageWithFile() async {
         fileName = result['name']?.toString() ?? _selectedFileName;
         fileSize = result['size'] is int ? result['size'] as int : _selectedFileSize;
       } else {
-        throw Exception('Upload response không đúng định dạng: ${result.runtimeType}');
+        throw Exception('Upload response format invalid: ${result.runtimeType}');
       }
       fileType = _selectedFile?.path.split('.').last;
     }
@@ -119,7 +119,7 @@ Future<void> _sendMessageWithFile() async {
     await ref.read(
       sendGroupMessageProvider({
         'groupId': widget.groupId,
-        'content': text.isEmpty ? 'Đã gửi file: $fileName' : text,
+        'content': text.isEmpty ? 'Sent file: $fileName' : text,
         'fileUrl': fileUrl,
         'fileName': fileName,
         'fileSize': fileSize,
@@ -141,7 +141,7 @@ Future<void> _sendMessageWithFile() async {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi gửi tin nhắn: $e'),
+          content: Text('Error sending message: $e'),
           backgroundColor: AppTheme.danger,
         ),
       );
@@ -169,7 +169,7 @@ Future<void> _sendMessageWithFile() async {
           ),
         ),
         error: (e, _) => AppBar(
-          title: const Text('Lỗi'),
+          title: const Text('Error'),
           backgroundColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -196,7 +196,7 @@ Future<void> _sendMessageWithFile() async {
                 ),
               ),
               Text(
-                '${group.totalMembers} thành viên',
+                '${group.totalMembers} members',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppTheme.textSecondary,
@@ -209,7 +209,7 @@ Future<void> _sendMessageWithFile() async {
               icon: const Icon(Icons.attach_file_rounded,
                   color: AppTheme.textSecondary),
               onPressed: _selectFile,
-              tooltip: 'Đính kèm file',
+              tooltip: 'Attach file',
             ),
             IconButton(
               icon: const Icon(Icons.info_outline_rounded,
@@ -236,7 +236,7 @@ Future<void> _sendMessageWithFile() async {
                         size: 48, color: AppTheme.danger),
                     const SizedBox(height: 12),
                     const Text(
-                      'Lỗi tải tin nhắn',
+                      'Failed to load messages',
                       style: TextStyle(color: AppTheme.textSecondary),
                     ),
                     const SizedBox(height: 8),
@@ -244,7 +244,7 @@ Future<void> _sendMessageWithFile() async {
                       onPressed: () {
                         ref.invalidate(groupMessagesProvider(widget.groupId));
                       },
-                      child: const Text('Thử lại'),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
@@ -259,14 +259,14 @@ Future<void> _sendMessageWithFile() async {
                             size: 48, color: AppTheme.textMuted),
                         SizedBox(height: 12),
                         Text(
-                          'Chưa có tin nhắn',
+                          'No messages yet',
                           style: TextStyle(
                             color: AppTheme.textSecondary,
                             fontSize: 14,
                           ),
                         ),
                         Text(
-                          'Hãy bắt đầu cuộc trò chuyện nào!',
+                          'Start the conversation now!',
                           style: TextStyle(
                             color: AppTheme.textMuted,
                             fontSize: 12,
@@ -362,13 +362,13 @@ class _ChatInput extends StatelessWidget {
             icon: const Icon(Icons.attach_file_rounded,
                 color: AppTheme.textSecondary, size: 24),
             onPressed: isLoading ? null : onAttachFile,
-            tooltip: 'Đính kèm file',
+            tooltip: 'Attach file',
           ),
           Expanded(
             child: TextField(
               controller: controller,
               decoration: const InputDecoration(
-                hintText: 'Nhập tin nhắn...',
+                hintText: 'Type a message...',
                 hintStyle: TextStyle(color: AppTheme.textMuted),
                 border: InputBorder.none,
               ),

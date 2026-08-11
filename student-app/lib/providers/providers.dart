@@ -536,7 +536,7 @@ class ChatNotifier extends Notifier<ChatState> {
             assistantMsg = assistantMsg.copyWith(isLoading: false);
           case 'error':
             assistantMsg = assistantMsg.copyWith(
-              content: 'Không thể kết nối đến AI. Vui lòng thử lại.',
+              content: 'Unable to connect to AI. Please try again.',
               isLoading: false,
             );
         }
@@ -549,7 +549,7 @@ class ChatNotifier extends Notifier<ChatState> {
       }
     } catch (_) {
       assistantMsg = assistantMsg.copyWith(
-        content: 'Không thể kết nối đến AI. Vui lòng thử lại.',
+        content: 'Unable to connect to AI. Please try again.',
         isLoading: false,
       );
       updateMsg();

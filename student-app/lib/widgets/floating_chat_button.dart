@@ -52,8 +52,8 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   final List<InstructorInfo> _instructors = const [
     InstructorInfo(
       id: 'teacher_admin',
-      name: 'Giảng viên Quản lý',
-      title: 'Phụ trách môn học & Lớp AAA 2013J',
+      name: 'Course Instructor',
+      title: 'Instructor for AAA 2013J',
     ),
   ];
 
@@ -190,7 +190,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                             IconButton(
                               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
                               onPressed: () => setState(() => _selectedInstructor = null),
-                              tooltip: 'Danh sách giảng viên',
+                              tooltip: 'Instructor list',
                             ),
                           Expanded(
                             child: Container(
@@ -219,7 +219,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                             Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Colors.white),
                                             SizedBox(width: 4),
                                             Text(
-                                              'Nhắn tin',
+                                              'Messages',
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.bold,
@@ -246,7 +246,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                             Icon(Icons.auto_awesome_rounded, size: 14, color: Colors.white),
                                             SizedBox(width: 4),
                                             Text(
-                                              'Hỏi AI',
+                                              'Ask AI',
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.bold,
@@ -265,7 +265,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                           if (_activeTab == 1)
                             IconButton(
                               icon: const Icon(Icons.open_in_new_rounded, color: Color(0xFF94A3B8), size: 18),
-                              tooltip: 'Mở toàn màn hình AI',
+                              tooltip: 'Open AI Fullscreen',
                               onPressed: () {
                                 setState(() => _isExpanded = false);
                                 context.push('/chat');
@@ -311,8 +311,8 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                   onSubmitted: (_) => _handleSend(),
                                   decoration: InputDecoration(
                                     hintText: _activeTab == 0
-                                        ? 'Nhắn cho ${_selectedInstructor?.name ?? "Giảng viên"}...'
-                                        : 'Hỏi Trợ lý AI bài học...',
+                                        ? 'Message ${_selectedInstructor?.name ?? "Instructor"}...'
+                                        : 'Ask AI Learning Assistant...',
                                     hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                                     border: InputBorder.none,
                                     isDense: true,
@@ -364,7 +364,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                   onTap: () {
                     setState(() {
                       _isExpanded = true;
-                      _activeTab = 0; // Tab Nhắn tin
+                      _activeTab = 0; // Messages tab
                       _selectedInstructor = _instructors.first; // Open instructor thread
                       _unreadCount = 0;
                     });
@@ -391,7 +391,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                         const Row(
                           children: [
                             Text(
-                              'Giảng viên nhắn:',
+                              'Instructor message:',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -485,7 +485,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
         const Padding(
           padding: EdgeInsets.fromLTRB(14, 12, 14, 8),
           child: Text(
-            'Danh sách Giảng viên',
+            'Instructor List',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -567,14 +567,14 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
 
     return messagesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8), strokeWidth: 2)),
-      error: (e, _) => const Center(child: Text('Chưa có tin nhắn riêng', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))),
+      error: (e, _) => const Center(child: Text('No private messages yet', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))),
       data: (messages) {
         if (messages.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Nhắn tin riêng cho ${_selectedInstructor?.name ?? "Giảng viên"}.\nBạn có thể gửi thắc mắc học tập ở đây.',
+                'Private message to ${_selectedInstructor?.name ?? "Instructor"}.\nYou can send academic queries here.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
               ),
@@ -616,7 +616,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                   children: [
                     if (!isMe)
                       Text(
-                        isTeacher ? (_selectedInstructor?.name ?? 'Giảng viên') : 'Sinh viên',
+                        isTeacher ? (_selectedInstructor?.name ?? 'Instructor') : 'Student',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -652,12 +652,12 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                 Icon(Icons.auto_awesome_rounded, size: 32, color: Color(0xFF10B981)),
                 SizedBox(height: 8),
                 Text(
-                  'Trợ lý AI Học tập',
+                  'AI Learning Assistant',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Hỏi AI tóm tắt bài giảng, giải bài tập hoặc thắc mắc học tập.',
+                  'Ask AI to summarize lectures, solve exercises, or answer study questions.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                 ),
@@ -669,9 +669,9 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _aiChip('Tóm tắt bài học'),
-              _aiChip('Giải thích khái niệm'),
-              _aiChip('Lập kế hoạch ôn thi'),
+              _aiChip('Summarize lecture'),
+              _aiChip('Explain concept'),
+              _aiChip('Study plan for exam'),
             ],
           ),
         ],

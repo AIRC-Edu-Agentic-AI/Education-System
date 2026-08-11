@@ -27,11 +27,11 @@ export const AIAdvisorView = () => {
       if (data.reply) {
         setChat([...newChat, { role: 'ai', content: data.reply }]);
       } else {
-        setChat([...newChat, { role: 'ai', content: 'Lỗi: Không nhận được phản hồi từ AI.' }]);
+        setChat([...newChat, { role: 'ai', content: 'Error: No response received from AI.' }]);
       }
     } catch (err) {
       console.error(err);
-      setChat([...newChat, { role: 'ai', content: 'Lỗi kết nối đến Backend Server.' }]);
+      setChat([...newChat, { role: 'ai', content: 'Error connecting to Backend Server.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -39,13 +39,13 @@ export const AIAdvisorView = () => {
 
   return (
     <div className="flex flex-col h-[80vh] p-6 bg-gray-50">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">AI Advisor - Tư vấn học tập</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">AI Advisor - Academic Consultation</h2>
       
-      {/* Khung hiển thị chat */}
+      {/* Chat Display Window */}
       <div className="flex-1 overflow-y-auto mb-4 p-4 border rounded-lg bg-white shadow-inner">
         {chat.length === 0 && (
           <div className="text-center text-gray-400 mt-10">
-            Hãy đặt câu hỏi về lộ trình học hoặc tình trạng của học sinh...
+            Ask a question about student learning paths or academic status...
           </div>
         )}
         
@@ -60,13 +60,13 @@ export const AIAdvisorView = () => {
         {isLoading && (
           <div className="flex justify-start mb-4">
             <div className="bg-gray-200 text-gray-800 p-3 rounded-lg rounded-bl-none animate-pulse">
-              AI đang phân tích dữ liệu...
+              AI is analyzing data...
             </div>
           </div>
         )}
       </div>
       
-      {/* Khung nhập liệu */}
+      {/* Input Box */}
       <div className="flex gap-2">
         <input
           type="text"
@@ -74,7 +74,7 @@ export const AIAdvisorView = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Ví dụ: Lên lộ trình ôn tập môn Python cho học sinh yếu..."
+          placeholder="Example: Create a Python revision path for struggling students..."
           disabled={isLoading}
         />
         <button 
@@ -82,7 +82,7 @@ export const AIAdvisorView = () => {
           onClick={handleSend}
           disabled={isLoading}
         >
-          Gửi
+          Send
         </button>
       </div>
     </div>

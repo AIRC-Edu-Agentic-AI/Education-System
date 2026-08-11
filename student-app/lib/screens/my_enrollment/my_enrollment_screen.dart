@@ -19,19 +19,19 @@ class MyEnrollmentScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBlue)),
         error: (e, _) =>
-            Center(child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger))),
+            Center(child: Text('Error: $e', style: const TextStyle(color: AppTheme.danger))),
         data: (student) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Row(
               children: [
                 _StatChip(
-                    label: 'Môn đang học',
+                    label: 'Enrolled Modules',
                     value: '${student.enrollments.length}',
                     color: AppTheme.primaryBlue),
                 const SizedBox(width: 8),
                 _StatChip(
-                    label: 'Tín chỉ',
+                    label: 'Credits',
                     value: '${student.demographics.studiedCredits}',
                     color: AppTheme.accentGreen),
               ],
@@ -135,7 +135,7 @@ class _EnrollmentCardState extends ConsumerState<_EnrollmentCard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '$submitted/$total bài đã nộp · ${e.moduleLength} tuần',
+                    '$submitted/$total submitted · ${e.moduleLength} weeks',
                     style: const TextStyle(
                         fontSize: 12, color: AppTheme.textSecondary),
                   ),
@@ -189,8 +189,8 @@ class _AssessmentRow extends ConsumerWidget {
               ),
               Text(
                 assessment.isSubmitted
-                    ? 'Đã nộp'
-                    : 'Ngày ${assessment.dueDate}',
+                    ? 'Submitted'
+                    : 'Day ${assessment.dueDate}',
                 style: TextStyle(
                   fontSize: 12,
                   color: assessment.isSubmitted
@@ -237,7 +237,7 @@ class _AssessmentRow extends ConsumerWidget {
                         Icon(Icons.auto_awesome_rounded,
                             size: 14, color: AppTheme.primaryBlue),
                         SizedBox(width: 6),
-                        Text('Lên kế hoạch chi tiết',
+                        Text('Plan detailed milestones',
                             style: TextStyle(
                                 fontSize: 12, color: AppTheme.primaryBlue)),
                       ],

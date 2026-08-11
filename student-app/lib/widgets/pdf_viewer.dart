@@ -50,7 +50,7 @@ class _PdfViewerState extends State<PdfViewer> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi tải PDF: $e'),
+            content: Text('PDF load error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -98,7 +98,7 @@ class _PdfViewerState extends State<PdfViewer> {
                   color: AppTheme.primaryBlue,
                 ),
                 Text(
-                  'Trang $_currentPage / $_totalPages',
+                  'Page $_currentPage / $_totalPages',
                   style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 14,

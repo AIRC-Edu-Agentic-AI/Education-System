@@ -36,7 +36,7 @@ class AuthService {
     } on DioException catch (e) {
       final status = e.response?.statusCode;
       if (status == 401 || status == 404) {
-        throw const AuthException('Mã sinh viên hoặc mật khẩu không đúng.');
+        throw const AuthException('Invalid Student ID or password.');
       }
       // Backend unreachable — allow demo login
       return _saveSession(studentId, 'demo_$studentId');
