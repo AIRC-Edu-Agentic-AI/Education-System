@@ -54,7 +54,9 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
         async def notify_students(item: Dict[str, Any], original: Dict[str, Any] | None = None, source: str = "schedule:create"):
             module = item.get("module")
             presentation = item.get("presentation")
+            print(f"[SCHEDULE] notify_students called: source={source}, module={module!r}, presentation={presentation!r}")
             if not module or not presentation:
+                print(f"[SCHEDULE] SKIP: module or presentation missing. item keys={list(item.keys())}")
                 return
 
             students = await db["students"].find(
@@ -62,7 +64,9 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
                 {"_id": 0, "student_id": 1}
             ).to_list(None)
             target_sids = [s.get("student_id") for s in students if "student_id" in s]
+            print(f"[SCHEDULE] Found {len(target_sids)} enrolled students for {module}/{presentation}")
             if not target_sids:
+                print(f"[SCHEDULE] SKIP: no enrolled students found")
                 return
 
             from datetime import datetime, timezone
@@ -114,27 +118,54 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
             if not docs:
                 return
             await db["notifications"].insert_many(docs)
+            # ── Realtime WebSocket push (mirrors teacher_notification.py) ──
             try:
-                for d in docs:
-                    sid = d.get("student_id")
-                    if sid is None:
-                        continue
-                    msg = {
-                        "type": "notification",
-                        "source": source,
-                        "payload": d.get("payload", {}),
-                        "created_at": d.get("created_at"),
-                    }
-                    try:
-                        await rtc_manager.send_to_user(str(sid), msg)
-                    except Exception:
-                        pass
+                from bson import ObjectId as _OID
+                # Build a single notification object in the same shape that
+                # teacher_notification.py uses (which the student app already
+                # parses correctly).
+                instant_noti = {
+                    "_id": str(_OID()),
+                    "type": "general",
+                    "read": False,
+                    "sender_role": "instructor",
+                    "senderRole": "Instructor",
+                    "receiverRole": "Student",
+                    "course_code": module,
+                    "payload": {"title": title, "body": body},
+                    "title": title,
+                    "content": body,
+                    "created_at": now_iso,
+                    "createdAt": now_iso,
+                    "is_broadcast_log": False,
+                }
+                print(f"[SCHEDULE] Pushing WS notification for {source}: title={title!r}, "
+                      f"active_ws={list(rtc_manager.active_connections.keys())}")
+
+                # 1. Send to teacher dashboard
+                await rtc_manager.send_to_user("teacher_admin", {
+                    "type": "new_notification",
+                    "notification": {**instant_noti, "is_broadcast_log": True},
+                })
+                # 2. Broadcast to ALL connected clients (same pattern as
+                #    teacher_notification.py — handles ID format mismatches)
+                for client_id in list(rtc_manager.active_connections.keys()):
+                    if client_id != "teacher_admin":
+                        await rtc_manager.send_to_user(client_id, {
+                            "type": "new_notification",
+                            "notification": instant_noti,
+                        })
             except Exception:
                 print(f"[SCHEDULE] Failed to push realtime notifications for {source}")
                 traceback.print_exc()
 
+        print(f"[SCHEDULE] newSchedule={new_schedule is not None}, "
+              f"module={new_schedule.get('module') if new_schedule else None!r}, "
+              f"presentation={new_schedule.get('presentation') if new_schedule else None!r}")
         if new_schedule and new_schedule.get("module") and new_schedule.get("presentation"):
             await notify_students(new_schedule, None, "schedule:create")
+        elif new_schedule:
+            print(f"[SCHEDULE] WARN: newSchedule present but missing module/presentation. keys={list(new_schedule.keys())}")
 
         if old_doc and "schedules" in payload:
             old_items = {str(item.get("id")): item for item in old_doc.get("schedules", []) if item.get("id")}
@@ -231,22 +262,38 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
                         ]
                         if docs:
                             await db["notifications"].insert_many(docs)
-                            # Also push real-time websocket notifications
+                            # ── Realtime WS push (same as create_schedule) ──
                             try:
-                                for d in docs:
-                                    sid = d.get("student_id")
-                                    if sid is None:
-                                        continue
-                                    msg = {
-                                        "type": "notification",
-                                        "source": "schedule:update",
-                                        "payload": d.get("payload", {}),
-                                        "created_at": d.get("created_at"),
-                                    }
-                                    try:
-                                        await rtc_manager.send_to_user(str(sid), msg)
-                                    except Exception:
-                                        pass
+                                import asyncio
+                                from bson import ObjectId as _OID
+                                update_title = "Class Schedule Updated"
+                                instant_noti = {
+                                    "_id": str(_OID()),
+                                    "type": "general",
+                                    "read": False,
+                                    "sender_role": "instructor",
+                                    "senderRole": "Instructor",
+                                    "receiverRole": "Student",
+                                    "course_code": module,
+                                    "payload": {"title": update_title, "body": body},
+                                    "title": update_title,
+                                    "content": body,
+                                    "created_at": now_iso,
+                                    "createdAt": now_iso,
+                                    "is_broadcast_log": False,
+                                }
+                                print(f"[SCHEDULE] Pushing WS notification for update: "
+                                      f"active_ws={list(rtc_manager.active_connections.keys())}")
+                                await rtc_manager.send_to_user("teacher_admin", {
+                                    "type": "new_notification",
+                                    "notification": {**instant_noti, "is_broadcast_log": True},
+                                })
+                                for client_id in list(rtc_manager.active_connections.keys()):
+                                    if client_id != "teacher_admin":
+                                        await rtc_manager.send_to_user(client_id, {
+                                            "type": "new_notification",
+                                            "notification": instant_noti,
+                                        })
                             except Exception:
                                 print("[SCHEDULE] Failed to push realtime notifications for update")
                                 traceback.print_exc()
