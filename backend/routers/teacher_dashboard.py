@@ -36,9 +36,10 @@ async def list_courses() -> Dict[str, Any]:
                 mod_len = int(course.get("module_length") or 30)
             except (ValueError, TypeError):
                 mod_len = 30
+            mod_title = course.get("title") or course.get("name") or course.get("code_module") or ""
             result.append({
                 "module": course.get("code_module"),
-                "module_name": course.get("title", ""),
+                "module_name": mod_title,
                 "presentation": course.get("code_presentation"),
                 "presentation_name": course.get("code_presentation"),
                 "course_length_days": mod_len * 7,

@@ -98,7 +98,9 @@ export interface StudentProfile {
 
 export interface CourseIndex {
   module: string
+  module_name?: string
   presentation: string
+  presentation_name?: string
   num_weeks: number
   student_count: number
 }

@@ -4,12 +4,14 @@ import {
   Toolbar, Typography, Divider, Chip, Tooltip,
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import ChatIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
 import { tokens } from '../../theme'
 import { moduleRegistry } from '../../modules/registry'
 import { useContextStore } from '../stores/contextStore'
 import { ChatPanel } from '../../modules/chat/components/ChatPanel'
 import { ContextBar } from './ContextBar'
+import { container } from '../../di/container'
 
 const DRAWER_WIDTH = 220
 const CHAT_WIDTH   = 360
@@ -19,6 +21,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
   const { selectedModule, selectedPresentation, currentWeek, activeStudent, chatPanelOpen, setChatPanelOpen } = useContextStore()
 
+  const { data: index } = useQuery({
+    queryKey: ['oulad-index'],
+    queryFn: () => container.dataService.getIndex(),
+    staleTime: 60000,
+  })
+
+  const currentCourse = index?.courses.find(x => x.module === selectedModule)
   const hasData = selectedModule && selectedPresentation
 
   return (
@@ -38,13 +47,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
           },
         }}
       >
-        <Toolbar sx={{ px: 2, py: 1.5 }}>
+        <Toolbar sx={{ px: 2.5, minHeight: '64px !important', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{
+            width: 28, height: 28, borderRadius: 1.5,
+            bgcolor: tokens.brand.primary,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 14, fontWeight: 800, color: tokens.text.onDark,
+            boxShadow: `0 0 12px ${tokens.brand.primary}66`,
+          }}>
+            A
+          </Box>
           <Box>
-            <Typography sx={{ fontFamily: tokens.font.mono, fontSize: 13, fontWeight: 500, color: '#fff', letterSpacing: '0.04em' }}>
-              RTI / MTSS
+            <Typography sx={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: tokens.text.onDark, lineHeight: 1.2 }}>
+              AIRC-Edu
             </Typography>
-            <Typography sx={{ fontSize: 11, color: tokens.text.secondary, fontFamily: tokens.font.mono }}>
-              Teacher Dashboard
+            <Typography sx={{ fontSize: 10, color: tokens.text.subdued, fontFamily: tokens.font.mono, letterSpacing: '0.04em' }}>
+              TEACHER SYSTEM
             </Typography>
           </Box>
         </Toolbar>
@@ -57,9 +75,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               Active context
             </Typography>
             <Chip
-              label={`${selectedModule} · ${selectedPresentation}`}
+              label={currentCourse?.module_name ? `${selectedModule} — ${currentCourse.module_name} · ${selectedPresentation}` : `${selectedModule} · ${selectedPresentation}`}
               size="small"
-              sx={{ bgcolor: `${tokens.brand.primaryLight}22`, color: tokens.brand.primaryMuted, fontSize: 11, fontFamily: tokens.font.mono, height: 22 }}
+              sx={{ bgcolor: `${tokens.brand.primaryLight}22`, color: tokens.brand.primaryMuted, fontSize: 11, fontFamily: tokens.font.mono, height: 'auto', py: 0.25, '& .MuiChip-label': { whiteSpace: 'normal', px: 1 } }}
             />
             <Typography sx={{ fontSize: 11, color: tokens.text.secondary, mt: 0.5, fontFamily: tokens.font.mono }}>
               Week {currentWeek}

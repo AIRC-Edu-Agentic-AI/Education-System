@@ -1,23 +1,34 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography, Chip, Grid } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
 import ChatManager from '../components/ChatManager';
 import AssignmentManager from '../components/AssignmentManager';
 import { useContextStore } from '../../../shared/stores/contextStore';
+import { container } from '../../../di/container';
 
 export const ClassView = () => {
   const { selectedModule, selectedPresentation } = useContextStore();
   const courseCode = `${selectedModule} ${selectedPresentation}`;
   const [activeTab, setActiveTab] = useState(0);
 
+  const { data: index } = useQuery({
+    queryKey: ['oulad-index'],
+    queryFn: () => container.dataService.getIndex(),
+    staleTime: 60000,
+  });
+
+  const currentCourse = index?.courses.find(x => x.module === selectedModule);
+  const courseTitle = currentCourse?.module_name ? `${selectedModule} — ${currentCourse.module_name}` : selectedModule;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Box sx={{ px: 3, pt: 3, pb: 0, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Typography variant="h6" fontWeight={700} color="text.primary" lineHeight={1.3}>
-            {selectedModule}
+            {courseTitle}
           </Typography>
           <Chip label={selectedPresentation} size="small" sx={{ height: 20, fontSize: 11, bgcolor: 'action.selected' }} />
         </Box>

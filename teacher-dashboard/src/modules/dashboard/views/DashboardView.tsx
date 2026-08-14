@@ -71,6 +71,8 @@ export function DashboardView() {
     .filter((c) => c.module === selectedModule)
     .map((c) => c.presentation)
 
+  const currentCourse = index?.courses.find((c) => c.module === selectedModule)
+
   const handleStudentSelect = (s: StudentProfile) => {
     setActiveStudent(s)
     navigate(`/student/${s.id_student}`)
@@ -112,7 +114,7 @@ export function DashboardView() {
             </Box>
 
             <Typography className="dashboard-management-title" sx={{ mt: 4, mb: 2 }}>
-              Course Management — {selectedModule}
+              Course Management — {currentCourse?.module_name ? `${selectedModule} — ${currentCourse.module_name}` : selectedModule}
             </Typography>
 
             <Grid container spacing={3} sx={{ pb: 4 }}>

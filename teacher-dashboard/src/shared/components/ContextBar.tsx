@@ -47,7 +47,7 @@ export function ContextBar() {
       px: 3, py: 1, bgcolor: tokens.surface.paper, borderBottom: `1px solid ${tokens.border.default}`,
       minHeight: 52, flexShrink: 0,
     }}>
-      <FormControl size="small" sx={{ minWidth: 110 }}>
+      <FormControl size="small" sx={{ minWidth: 200 }}>
         <InputLabel sx={{ fontSize: 12 }}>Module</InputLabel>
         <Select
           value={selectedModule}
@@ -58,11 +58,17 @@ export function ContextBar() {
             setModule(mod)
             setPresentation(firstPres)
           }}
-          sx={{ fontSize: 12, fontFamily: tokens.font.mono }}
+          sx={{ fontSize: 12 }}
         >
-          {moduleOptions.map((m) => (
-            <MenuItem key={m} value={m} sx={{ fontSize: 12, fontFamily: tokens.font.mono }}>{m}</MenuItem>
-          ))}
+          {moduleOptions.map((m) => {
+            const courseObj = index?.courses.find((c) => c.module === m)
+            const title = courseObj?.module_name ? `${m} — ${courseObj.module_name}` : m
+            return (
+              <MenuItem key={m} value={m} sx={{ fontSize: 12 }}>
+                {title}
+              </MenuItem>
+            )
+          })}
         </Select>
       </FormControl>
 
