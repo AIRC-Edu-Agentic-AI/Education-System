@@ -167,18 +167,20 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
             print(f"Error seeding channels for {course_code}: {e}")
 
     if course_code:
+        import re
+        mod = course_code.split(' ')[0]
+        escaped_mod = re.escape(mod)
         query = {
-            "$or": [
-                {"members": user_id},
-                {
-                    "course_code": course_code,
-                    "type": {"$in": ["announcement", "discussion", "class_group"]},
-                    "$or": [
-                        {"members": {"$exists": False}},
-                        {"members": {"$size": 0}},
-                        {"members": None}
-                    ]
-                }
+            "$and": [
+                {"$or": [
+                    {"course_code": course_code},
+                    {"course_code": mod},
+                    {"course_code": {"$regex": f"^{escaped_mod}", "$options": "i"}}
+                ]},
+                {"$or": [
+                    {"members": user_id},
+                    {"type": {"$in": ["announcement", "discussion", "class_group"]}}
+                ]}
             ]
         }
     else:
@@ -203,7 +205,7 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
         "_id": "legacy_broadcasts",
         "course_code": course_code or "ALL",
         "type": "announcement",
-        "name": "Lịch sử Thông báo Cũ",
+        "name": "Broadcast History",
         "members": [user_id],
         "created_at": datetime.now(timezone.utc).isoformat()
     }

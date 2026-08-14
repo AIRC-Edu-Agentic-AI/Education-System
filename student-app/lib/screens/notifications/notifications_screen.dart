@@ -9,22 +9,27 @@ import 'package:student_agent/widgets/formatted_text.dart';
 Color notificationColor(String type) => switch (type) {
       'deadline_critical' => AppTheme.danger,
       'deadline_warning' => AppTheme.warning,
-      'risk_intervention' => AppTheme.danger,
+      'risk_intervention' || 'intervention' || 'academic_warning' => AppTheme.danger,
       'assessment_shock' => AppTheme.danger,
       'wellbeing' => AppTheme.accentGreen,
       'milestone_check' => AppTheme.warning,
       'course_guidance' => AppTheme.primaryBlue,
+      'exam_schedule' => AppTheme.danger,
+      'makeup_class' => AppTheme.warning,
+      'general_notice' || 'general' => AppTheme.primaryBlue,
       _ => AppTheme.primaryBlue,
     };
 
 IconData notificationIcon(String type) => switch (type) {
       'deadline_critical' || 'deadline_warning' => Icons.schedule_rounded,
-      'risk_intervention' || 'intervention' => Icons.warning_amber_rounded,
+      'risk_intervention' || 'intervention' || 'academic_warning' => Icons.warning_amber_rounded,
       'assessment_shock' => Icons.trending_down_rounded,
       'wellbeing' => Icons.favorite_outline_rounded,
       'milestone_check' => Icons.flag_outlined,
       'course_guidance' => Icons.school_outlined,
       'vle_inactivity' => Icons.visibility_off_outlined,
+      'exam_schedule' => Icons.event_note_rounded,
+      'makeup_class' => Icons.update_rounded,
       _ => Icons.notifications_outlined,
     };
 

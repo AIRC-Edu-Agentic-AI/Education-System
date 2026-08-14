@@ -53,12 +53,17 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   const [inputMessage, setInputMessage] = useState('');
   
   const [openNewChatDialog, setOpenNewChatDialog] = useState(false);
-  const [students, setStudents] = useState<{ id_student: number; name: string }[]>([]);
+  const [students, setStudents] = useState<{ id_student: number; name: string; tier?: number; age?: string; imd_band?: string }[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<(string | number)[]>([]);
   const [groupName, setGroupName] = useState('');
-  const [dialogMode, setDialogMode] = useState<'private' | 'group'>('private');
+  const [dialogMode, setDialogMode] = useState<'private' | 'group' | 'tier_broadcast'>('private');
+  const [tierFilter, setTierFilter] = useState<'all' | '1' | '2' | '3'>('all');
+  const [broadcastTier, setBroadcastTier] = useState<'1' | '2' | '3'>('3');
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastContent, setBroadcastContent] = useState('');
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
   
   const ws = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -83,11 +88,12 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     activeChannelRef.current = activeChannel;
     if (activeChannel) {
       fetchMessages(activeChannel._id);
+      // Fallback polling only when WebSocket is disconnected
       const pollTimer = setInterval(() => {
-        if (activeChannelRef.current?._id === activeChannel._id) {
+        if (activeChannelRef.current?._id === activeChannel._id && (!ws.current || ws.current.readyState !== WebSocket.OPEN)) {
           fetchMessages(activeChannel._id);
         }
-      }, 4000);
+      }, 15000);
       return () => clearInterval(pollTimer);
     }
   }, [activeChannel]);
@@ -453,92 +459,237 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
         fullWidth
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" fontWeight={700}>New Conversation</Typography>
+          <Typography variant="h6" fontWeight={700}>Conversations & Study Groups</Typography>
           <Tabs 
-            value={dialogMode === 'private' ? 0 : 1} 
+            value={dialogMode === 'private' ? 0 : dialogMode === 'group' ? 1 : 2} 
             onChange={(_, v) => {
-              setDialogMode(v === 0 ? 'private' : 'group');
+              setDialogMode(v === 0 ? 'private' : v === 1 ? 'group' : 'tier_broadcast');
               setSearchQuery('');
               setSelectedStudentIds([]);
             }}
             sx={{ mt: 1, borderBottom: 1, borderColor: 'divider' }}
           >
-            <Tab label="Private Message" />
-            <Tab label="Group Chat" />
+            <Tab label="Direct Message" sx={{ textTransform: 'none', fontSize: 13, fontWeight: 600 }} />
+            <Tab label="Group Chat by Tier" sx={{ textTransform: 'none', fontSize: 13, fontWeight: 600 }} />
+            <Tab label="📢 Broadcast to Tier" sx={{ textTransform: 'none', fontSize: 13, fontWeight: 600 }} />
           </Tabs>
         </DialogTitle>
-        <DialogContent sx={{ p: 2, maxHeight: 400, overflowY: 'auto' }}>
-          {dialogMode === 'group' && (
-            <TextField
-              fullWidth
-              label="Group Name"
-              placeholder="Enter group name..."
-              size="small"
-              value={groupName}
-              onChange={e => setGroupName(e.target.value)}
-              sx={{ mb: 2, mt: 1 }}
-            />
-          )}
+        <DialogContent sx={{ p: 2, maxHeight: 450, overflowY: 'auto' }}>
+          {dialogMode === 'tier_broadcast' ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <Box>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.75 }}>
+                  SELECT TARGET RISK TIER:
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={`Tier 3 — High Risk (${students.filter(s => (s.tier || 1) === 3).length} Students)`}
+                    size="small"
+                    onClick={() => {
+                      setBroadcastTier('3');
+                      setBroadcastTitle('[ACADEMIC WARNING] Support & Academic Improvement Guidance');
+                      setBroadcastContent('Dear Tier 3 students,\n\nThe instructor noticed that your course progress needs improvement. Please reach out to your Instructor or Academic Advisor this week for personalized learning assistance!\n\nBest regards,\nTeaching Team');
+                    }}
+                    color={broadcastTier === '3' ? 'error' : 'default'}
+                    variant={broadcastTier === '3' ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600, fontSize: 11 }}
+                  />
+                  <Chip
+                    label={`Tier 2 — Moderate (${students.filter(s => (s.tier || 1) === 2).length} Students)`}
+                    size="small"
+                    onClick={() => {
+                      setBroadcastTier('2');
+                      setBroadcastTitle('[PROGRESS REMINDER] Review Schedule & Assessment Submissions');
+                      setBroadcastContent('Dear Tier 2 students,\n\nPlease check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!\n\nBest of luck!');
+                    }}
+                    color={broadcastTier === '2' ? 'warning' : 'default'}
+                    variant={broadcastTier === '2' ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600, fontSize: 11 }}
+                  />
+                  <Chip
+                    label={`Tier 1 — Low Risk (${students.filter(s => (s.tier || 1) === 1).length} Students)`}
+                    size="small"
+                    onClick={() => {
+                      setBroadcastTier('1');
+                      setBroadcastTitle('[COMMENDATION] Outstanding Performance & Advanced Resources');
+                      setBroadcastContent('Dear Tier 1 students,\n\nThe Teaching Team commends your active participation and strong performance. In-depth materials and extension exercises have been published on the portal for your further study.\n\nKeep up the great work!');
+                    }}
+                    color={broadcastTier === '1' ? 'success' : 'default'}
+                    variant={broadcastTier === '1' ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600, fontSize: 11 }}
+                  />
+                </Box>
+              </Box>
 
-          <TextField
-            fullWidth
-            placeholder="Search students by name or ID..."
-            size="small"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            sx={{ mb: 2, mt: dialogMode === 'private' ? 1 : 0 }}
-          />
-
-          {loadingStudents ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress size={24} />
+              <TextField
+                fullWidth
+                size="small"
+                label="Message Title"
+                value={broadcastTitle}
+                onChange={e => setBroadcastTitle(e.target.value)}
+                placeholder="Enter title..."
+              />
+              <TextField
+                fullWidth
+                multiline
+                rows={5}
+                size="small"
+                label="Detailed Message Content"
+                value={broadcastContent}
+                onChange={e => setBroadcastContent(e.target.value)}
+                placeholder="Enter message body..."
+              />
             </Box>
           ) : (
-            <List>
-              {students
-                .filter(s => 
-                  s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  String(s.id_student).includes(searchQuery)
-                )
-                .map(student => {
-                  const isSelected = selectedStudentIds.includes(student.id_student);
-                  return (
-                    <ListItem 
-                      key={student.id_student}
-                      button
-                      onClick={() => {
-                        if (dialogMode === 'private') {
-                          handleStartPrivateChat(student.id_student, student.name);
-                        } else {
-                          setSelectedStudentIds(prev => 
-                            prev.includes(student.id_student)
-                              ? prev.filter(id => id !== student.id_student)
-                              : [...prev, student.id_student]
-                          );
-                        }
-                      }}
-                      sx={{ borderRadius: 1, mb: 0.5 }}
-                    >
-                      {dialogMode === 'group' && (
-                        <Checkbox 
-                          checked={isSelected}
-                          edge="start"
-                          disableRipple
-                        />
-                      )}
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, fontSize: 13 }}>
-                          <PersonRoundedIcon sx={{ fontSize: 18 }} />
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText 
-                        primary={student.name} 
-                        secondary={`ID: ${student.id_student}`}
-                      />
-                    </ListItem>
-                  );
-                })}
-            </List>
+            <>
+              {dialogMode === 'group' && (
+                <Box sx={{ mb: 2, mt: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <TextField
+                    fullWidth
+                    label="Group Name"
+                    placeholder="Enter group name..."
+                    size="small"
+                    value={groupName}
+                    onChange={e => setGroupName(e.target.value)}
+                  />
+
+                  {/* Quick Tier Group Preset Selection */}
+                  <Box sx={{ bgcolor: 'action.hover', p: 1.25, borderRadius: 1.5 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.75 }}>
+                      ⚡ QUICK GROUPING BY TIER:
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => {
+                          const t3 = students.filter(s => (s.tier || 1) === 3);
+                          setSelectedStudentIds(t3.map(s => s.id_student));
+                          setGroupName(`Academic Support Group — Tier 3 (${courseCode})`);
+                        }}
+                        sx={{ fontSize: 11, textTransform: 'none', py: 0.25 }}
+                      >
+                        Select All Tier 3 ({students.filter(s => (s.tier || 1) === 3).length} Students)
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => {
+                          const t2 = students.filter(s => (s.tier || 1) === 2);
+                          setSelectedStudentIds(t2.map(s => s.id_student));
+                          setGroupName(`Core Review Group — Tier 2 (${courseCode})`);
+                        }}
+                        sx={{ fontSize: 11, textTransform: 'none', py: 0.25 }}
+                      >
+                        Select All Tier 2 ({students.filter(s => (s.tier || 1) === 2).length} Students)
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        onClick={() => {
+                          const t1 = students.filter(s => (s.tier || 1) === 1);
+                          setSelectedStudentIds(t1.map(s => s.id_student));
+                          setGroupName(`Advanced Research Group — Tier 1 (${courseCode})`);
+                        }}
+                        sx={{ fontSize: 11, textTransform: 'none', py: 0.25 }}
+                      >
+                        Select All Tier 1 ({students.filter(s => (s.tier || 1) === 1).length} Students)
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Filter bar by Tier */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Filter Tier:</Typography>
+                <Chip label="All" size="small" onClick={() => setTierFilter('all')} color={tierFilter === 'all' ? 'primary' : 'default'} variant={tierFilter === 'all' ? 'filled' : 'outlined'} sx={{ height: 22, fontSize: 10, fontWeight: 600 }} />
+                <Chip label="Tier 3 (High)" size="small" onClick={() => setTierFilter('3')} color={tierFilter === '3' ? 'error' : 'default'} variant={tierFilter === '3' ? 'filled' : 'outlined'} sx={{ height: 22, fontSize: 10, fontWeight: 600 }} />
+                <Chip label="Tier 2 (Moderate)" size="small" onClick={() => setTierFilter('2')} color={tierFilter === '2' ? 'warning' : 'default'} variant={tierFilter === '2' ? 'filled' : 'outlined'} sx={{ height: 22, fontSize: 10, fontWeight: 600 }} />
+                <Chip label="Tier 1 (Low)" size="small" onClick={() => setTierFilter('1')} color={tierFilter === '1' ? 'success' : 'default'} variant={tierFilter === '1' ? 'filled' : 'outlined'} sx={{ height: 22, fontSize: 10, fontWeight: 600 }} />
+              </Box>
+
+              <TextField
+                fullWidth
+                placeholder="Search by student name or ID..."
+                size="small"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                sx={{ mb: 1 }}
+              />
+
+              {loadingStudents ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <List sx={{ maxHeight: 260, overflowY: 'auto' }}>
+                  {students
+                    .filter(s => {
+                      if (tierFilter !== 'all' && String(s.tier || 1) !== tierFilter) return false;
+                      if (!searchQuery) return true;
+                      return (
+                        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        String(s.id_student).includes(searchQuery)
+                      );
+                    })
+                    .map(student => {
+                      const isSelected = selectedStudentIds.includes(student.id_student);
+                      const sTier = student.tier || 1;
+                      return (
+                        <ListItem 
+                          key={student.id_student}
+                          button
+                          onClick={() => {
+                            if (dialogMode === 'private') {
+                              handleStartPrivateChat(student.id_student, student.name);
+                            } else {
+                              setSelectedStudentIds(prev => 
+                                prev.includes(student.id_student)
+                                  ? prev.filter(id => id !== student.id_student)
+                                  : [...prev, student.id_student]
+                              );
+                            }
+                          }}
+                          sx={{ borderRadius: 1, mb: 0.5, border: '1px solid', borderColor: 'divider' }}
+                        >
+                          {dialogMode === 'group' && (
+                            <Checkbox 
+                              checked={isSelected}
+                              edge="start"
+                              disableRipple
+                              size="small"
+                            />
+                          )}
+                          <ListItemAvatar sx={{ minWidth: 40 }}>
+                            <Avatar sx={{ bgcolor: sTier === 3 ? 'error.main' : sTier === 2 ? 'warning.main' : 'primary.main', width: 28, height: 28, fontSize: 11 }}>
+                              <PersonRoundedIcon sx={{ fontSize: 16 }} />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText 
+                            primary={
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" fontWeight={600}>{student.name}</Typography>
+                                <Chip
+                                  label={`Tier ${sTier}`}
+                                  size="small"
+                                  color={sTier === 3 ? 'error' : sTier === 2 ? 'warning' : 'success'}
+                                  sx={{ height: 18, fontSize: 9, fontWeight: 700 }}
+                                />
+                              </Box>
+                            } 
+                            secondary={`ID: #${student.id_student} • Age: ${student.age || '21'} • IMD: ${student.imd_band || '20-30%'}`}
+                            secondaryTypographyProps={{ fontSize: 11 }}
+                          />
+                        </ListItem>
+                      );
+                    })}
+                </List>
+              )}
+            </>
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -548,18 +699,68 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
               setSearchQuery('');
               setSelectedStudentIds([]);
               setGroupName('');
+              setBroadcastTitle('');
+              setBroadcastContent('');
             }}
+            color="inherit"
           >
             Cancel
           </Button>
+
+          {dialogMode === 'tier_broadcast' && (
+            <Button
+              variant="contained"
+              color={broadcastTier === '3' ? 'error' : broadcastTier === '2' ? 'warning' : 'primary'}
+              disabled={!broadcastTitle.trim() || !broadcastContent.trim() || isBroadcasting}
+              onClick={async () => {
+                setIsBroadcasting(true);
+                try {
+                  const tNum = parseInt(broadcastTier);
+                  const targetList = students.filter(s => (s.tier || 1) === tNum);
+                  const targetIds = targetList.map(s => s.id_student);
+                  
+                  const res = await fetch(`${BASE_URL}/notify/broadcast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      student_ids: targetIds,
+                      type: tNum === 3 ? 'academic_warning' : tNum === 2 ? 'study_reminder' : 'general_notice',
+                      title: broadcastTitle,
+                      content: broadcastContent,
+                      sender_role: 'instructor',
+                      course_code: courseCode,
+                    })
+                  });
+                  if (res.ok) {
+                    alert(`Successfully sent message to all ${targetIds.length} students in Tier ${broadcastTier}!`);
+                    setOpenNewChatDialog(false);
+                    setBroadcastTitle('');
+                    setBroadcastContent('');
+                    fetchChannels();
+                  }
+                } catch (e) {
+                  console.error(e);
+                  alert("Failed to send message broadcast.");
+                } finally {
+                  setIsBroadcasting(false);
+                }
+              }}
+              startIcon={isBroadcasting ? <CircularProgress size={14} color="inherit" /> : <SendRoundedIcon fontSize="small" />}
+              sx={{ fontWeight: 600, textTransform: 'none' }}
+            >
+              {isBroadcasting ? 'Sending...' : `Send to all Tier ${broadcastTier} (${students.filter(s => (s.tier || 1) === parseInt(broadcastTier)).length} Students)`}
+            </Button>
+          )}
+
           {dialogMode === 'group' && (
             <Button 
               variant="contained" 
               color="primary"
               disabled={!groupName.trim() || selectedStudentIds.length === 0}
               onClick={handleCreateGroupChat}
+              sx={{ fontWeight: 600, textTransform: 'none' }}
             >
-              Create Group ({selectedStudentIds.length})
+              Create Group ({selectedStudentIds.length} Students)
             </Button>
           )}
         </DialogActions>

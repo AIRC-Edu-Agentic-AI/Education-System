@@ -15,7 +15,7 @@ export function StudentDemographicsCard({ student }: Props) {
   const rows: [string, string][] = [
     ['Student ID',     `#${student.id_student}`],
     ['Gender',         student.gender],
-    ['Age band',       student.age_band],
+    ['Age',            student.age_band],
     ['IMD band',       student.imd_band ?? '—'],
     ['Education',      student.highest_education],
     ['Region',         student.region],

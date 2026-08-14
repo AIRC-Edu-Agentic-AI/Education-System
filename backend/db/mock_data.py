@@ -8,7 +8,8 @@ MOCK_STUDENT = {
     "short_name": "Văn An",
     "demographics": {
         "gender": "M",
-        "age_band": "25-35",
+        "age_band": "21",
+        "age": 21,
         "region": "Hà Nội",
         "highest_education": "HE Qualification",
         "imd_band": "20-30%",
