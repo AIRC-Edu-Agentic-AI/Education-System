@@ -42,6 +42,9 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
         print("[SCHEDULE] DB retrieved from db_state")
         payload.pop("_id", None)
         new_schedule = payload.pop("newSchedule", None)
+        updated_schedule = payload.pop("updatedSchedule", None)
+        deleted_schedule_id = payload.pop("deletedScheduleId", None)
+        deleted_schedule_data = payload.pop("deletedScheduleData", None)
 
         old_doc = None
         if "schedules" in payload:
@@ -165,13 +168,39 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
         elif new_schedule:
             print(f"[SCHEDULE] WARN: newSchedule present but missing module/presentation. keys={list(new_schedule.keys())}")
 
+        # Explicitly updated schedule sent by the frontend
+        if updated_schedule and isinstance(updated_schedule, dict) and updated_schedule.get("module") and updated_schedule.get("presentation"):
+            # Try to find the old version from old_doc for a richer diff notification
+            original_item = None
+            if old_doc and "schedules" in old_doc:
+                for item in old_doc.get("schedules", []):
+                    if str(item.get("id")) == str(updated_schedule.get("id")):
+                        original_item = item
+                        break
+            await notify_students(updated_schedule, original_item, "schedule:update")
+
         if old_doc and "schedules" in payload:
             old_items = {str(item.get("id")): item for item in old_doc.get("schedules", []) if item.get("id")}
             new_items = {str(item.get("id")): item for item in payload.get("schedules", []) if item.get("id")}
+            # Only diff-notify items that were NOT already handled by updatedSchedule
+            updated_id = str(updated_schedule.get("id")) if updated_schedule and isinstance(updated_schedule, dict) else None
             for item_id, new_item in new_items.items():
+                if item_id == updated_id:
+                    continue  # already notified above
                 old_item = old_items.get(item_id)
                 if old_item and new_item != old_item:
                     await notify_students(new_item, old_item, "schedule:update")
+            # Notify students about deleted schedule items detected via bulk-save
+            deleted_ids = set(old_items.keys()) - set(new_items.keys())
+            for del_id in deleted_ids:
+                del_item = old_items[del_id]
+                await notify_students_deleted(del_item)
+
+        # Notify students when a specific schedule is explicitly deleted via bulk-save
+        if deleted_schedule_data and isinstance(deleted_schedule_data, dict):
+            await notify_students_deleted(deleted_schedule_data)
+        elif deleted_schedule_id:
+            print(f"[SCHEDULE] deletedScheduleId={deleted_schedule_id} but no deletedScheduleData provided; skipping delete notification")
 
         return serialize_doc(payload)
     except HTTPException:
@@ -305,11 +334,105 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
         raise HTTPException(status_code=400, detail=f"Invalid schedule id: {exc}") from exc
 
 
+async def notify_students_deleted(item: Dict[str, Any]):
+    """Send a cancellation notification to students enrolled in the deleted schedule's module/presentation."""
+    try:
+        db = get_db()
+        module = item.get("module")
+        presentation = item.get("presentation")
+        if not module or not presentation:
+            print(f"[SCHEDULE] notify_students_deleted: missing module/presentation, skip")
+            return
+
+        students = await db["students"].find(
+            {"enrollments.code_module": module, "enrollments.code_presentation": presentation},
+            {"_id": 0, "student_id": 1}
+        ).to_list(None)
+        target_sids = [s.get("student_id") for s in students if "student_id" in s]
+        if not target_sids:
+            print(f"[SCHEDULE] notify_students_deleted: no enrolled students for {module}/{presentation}")
+            return
+
+        from datetime import datetime, timezone
+        now_iso = datetime.now(timezone.utc).isoformat()
+        subject = item.get("subject") or item.get("activity") or "Class"
+        del_date = item.get("date") or "unknown date"
+        del_start = item.get("startTime") or ""
+        del_end = item.get("endTime") or ""
+        del_room = item.get("room") or item.get("locationUrl") or item.get("location") or "unknown room"
+        time_desc = f"{del_date} {del_start}{('-' + del_end) if del_end else ''}".strip()
+        title = "Class Cancelled"
+        body = f'Class "{subject}" scheduled for {time_desc} at {del_room} has been cancelled.'
+
+        docs = [
+            {
+                "student_id": sid,
+                "type": "general",
+                "read": False,
+                "sender_role": "instructor",
+                "course_code": module,
+                "payload": {"title": title, "body": body},
+                "created_at": now_iso,
+            }
+            for sid in target_sids
+        ]
+        if docs:
+            await db["notifications"].insert_many(docs)
+
+        # Realtime WebSocket push
+        try:
+            from bson import ObjectId as _OID
+            from routers.realtime_chat import manager as rtc_manager
+            instant_noti = {
+                "_id": str(_OID()),
+                "type": "general",
+                "read": False,
+                "sender_role": "instructor",
+                "senderRole": "Instructor",
+                "receiverRole": "Student",
+                "course_code": module,
+                "payload": {"title": title, "body": body},
+                "title": title,
+                "content": body,
+                "created_at": now_iso,
+                "createdAt": now_iso,
+                "is_broadcast_log": False,
+            }
+            print(f"[SCHEDULE] Pushing WS cancel notification: title={title!r}, target_sids={target_sids}")
+            await rtc_manager.send_to_user("teacher_admin", {
+                "type": "new_notification",
+                "notification": {**instant_noti, "is_broadcast_log": True},
+            })
+            for sid in target_sids:
+                await rtc_manager.send_to_user(str(sid), {
+                    "type": "new_notification",
+                    "notification": {**instant_noti, "student_id": sid},
+                })
+        except Exception:
+            print("[SCHEDULE] Failed to push realtime cancel notifications")
+            traceback.print_exc()
+    except Exception:
+        print("[SCHEDULE] Exception in notify_students_deleted")
+        traceback.print_exc()
+
+
 @router.delete("/schedules/{schedule_id}")
 async def delete_schedule(schedule_id: str) -> Dict[str, Any]:
     try:
         db = get_db()
+        # Fetch the document before deleting so we can notify enrolled students
+        doc = await db["timetable_blocks"].find_one({"_id": ObjectId(schedule_id)})
         result = await db["timetable_blocks"].delete_one({"_id": ObjectId(schedule_id)})
+        if result.deleted_count and doc:
+            # Attempt to notify students; the schedule may be a container doc with a "schedules" list
+            # or a single flat schedule document.
+            schedules_list = doc.get("schedules") if isinstance(doc.get("schedules"), list) else None
+            if schedules_list:
+                for item in schedules_list:
+                    if isinstance(item, dict):
+                        await notify_students_deleted(item)
+            else:
+                await notify_students_deleted(doc)
         return {"deleted": result.deleted_count}
     except HTTPException:
         raise

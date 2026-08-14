@@ -288,9 +288,21 @@ export function TeachingScheduleView() {
     setDialogOpen(true)
   }
 
-  const autoSaveSchedule = async (items: ScheduleItem[], newSchedule?: ScheduleItem) => {
+  const autoSaveSchedule = async (
+    items: ScheduleItem[],
+    newSchedule?: ScheduleItem,
+    updatedSchedule?: ScheduleItem,
+    deletedSchedule?: ScheduleItem,
+  ) => {
     try {
-      await container.dataService.saveSchedules(items, undefined, undefined, newSchedule)
+      await container.dataService.saveSchedules(
+        items,
+        undefined,
+        undefined,
+        newSchedule,
+        updatedSchedule,
+        deletedSchedule,
+      )
       setMessage('Schedule saved.')
     } catch {
       setMessage('Could not save schedule.')
@@ -337,6 +349,7 @@ export function TeachingScheduleView() {
 
   const updateScheduleForDate = () => {
     if (!draftSchedule || !editingId) return
+    const original = schedules.find((item) => item.id === editingId)
     const updated = schedules.map((item) => item.id === editingId ? {
       ...item,
       subject: draftSchedule.subject || item.subject,
@@ -353,8 +366,9 @@ export function TeachingScheduleView() {
       updatedBy: actor,
       updatedAt: new Date().toISOString(),
     } : item)
+    const updatedItem = updated.find((item) => item.id === editingId)
     setSchedules(updated)
-    autoSaveSchedule(updated)
+    autoSaveSchedule(updated, undefined, original && updatedItem && hasCoreChanges(original, updatedItem) ? updatedItem : undefined)
     setDialogOpen(false)
     setDraftSchedule(null)
     setEditingId(null)
@@ -369,9 +383,10 @@ export function TeachingScheduleView() {
   }
 
   const removeSchedule = (id: string) => {
+    const deletedItem = schedules.find((item) => item.id === id)
     const updated = schedules.filter((item) => item.id !== id)
     setSchedules(updated)
-    autoSaveSchedule(updated)
+    autoSaveSchedule(updated, undefined, undefined, deletedItem)
   }
 
   const stats = {
