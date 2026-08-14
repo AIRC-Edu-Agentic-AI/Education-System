@@ -617,57 +617,131 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
   }
 
   Widget _buildSubmittedFileCard(AssignmentSubmission submission) {
+    final isGraded = submission.status == 'graded';
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.cardBorder),
+        border: Border.all(
+          color: isGraded
+              ? AppTheme.accentGreen.withValues(alpha: 0.35)
+              : AppTheme.cardBorder,
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            submission.fileType == 'pdf'
-                ? Icons.picture_as_pdf_rounded
-                : Icons.insert_drive_file_rounded,
-            color: submission.fileType == 'pdf' ? AppTheme.danger : AppTheme.primaryBlue,
-            size: 32,
+          Row(
+            children: [
+              Icon(
+                submission.fileType == 'pdf'
+                    ? Icons.picture_as_pdf_rounded
+                    : Icons.insert_drive_file_rounded,
+                color: submission.fileType == 'pdf' ? AppTheme.danger : AppTheme.primaryBlue,
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      submission.fileName,
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Nộp lúc: ${_formatTime(submission.submittedAt)}',
+                      style: const TextStyle(
+                        color: AppTheme.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isGraded && submission.score != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGreen.withAlpha(30),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star_rounded, size: 16, color: AppTheme.warning),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${submission.score!.toStringAsFixed(submission.score! == submission.score!.roundToDouble() ? 0 : 1)}%',
+                        style: const TextStyle(
+                          color: AppTheme.accentGreen,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              IconButton(
+                icon: const Icon(Icons.remove_red_eye_rounded, size: 20),
+                onPressed: () => _previewPDF(submission.fileUrl),
+                tooltip: 'Xem trước',
+                color: AppTheme.primaryBlue,
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  submission.fileName,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+          if (isGraded && submission.feedback != null && submission.feedback!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundDark,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.comment_rounded, size: 14, color: AppTheme.primaryBlue),
+                      SizedBox(width: 6),
+                      Text(
+                        'Nhận xét từ giảng viên',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  'Submitted at: ${_formatTime(submission.submittedAt)}',
-                  style: const TextStyle(
-                    color: AppTheme.textMuted,
-                    fontSize: 11,
+                  const SizedBox(height: 6),
+                  Text(
+                    submission.feedback!,
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.remove_red_eye_rounded, size: 20),
-            onPressed: () => _previewPDF(submission.fileUrl),
-            tooltip: 'Preview',
-            color: AppTheme.primaryBlue,
-          ),
+          ],
         ],
       ),
     );
   }
+
 
   Widget _buildFeedbackCard(InstructorFeedback feedback) {
     return Container(

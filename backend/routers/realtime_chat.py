@@ -107,6 +107,19 @@ class CreateChannelPayload(BaseModel):
 @router.post("/channels")
 async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
     db = get_db()
+    if db is None:
+        # Mock mode: return a mock channel
+        return {
+            "_id": f"mock_channel_{payload.name.replace(' ', '_')}",
+            "course_code": payload.course_code,
+            "type": payload.type,
+            "name": payload.name,
+            "members": [str(m) for m in payload.members],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "is_mock": True
+        }
+    
     now = datetime.now(timezone.utc).isoformat()
     normalized_members = [str(m) for m in payload.members]
 
@@ -158,6 +171,29 @@ async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
 @router.get("/channels")
 async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[Dict[str, Any]]:
     db = get_db()
+    
+    if db is None:
+        # Mock mode: return mock channels
+        return [
+            {
+                "_id": "mock_channel_general",
+                "course_code": course_code or "ALL",
+                "type": "discussion",
+                "name": "Tổng thể",
+                "members": [user_id],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "is_mock": True
+            },
+            {
+                "_id": "legacy_broadcasts",
+                "course_code": course_code or "ALL",
+                "type": "announcement",
+                "name": "Lịch sử Thông báo Cũ",
+                "members": [user_id],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "is_mock": True
+            }
+        ]
     
     if course_code:
         try:
@@ -214,6 +250,11 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
 @router.get("/channels/{channel_id}/messages")
 async def get_messages(channel_id: str, skip: int = 0, limit: int = 50) -> List[Dict[str, Any]]:
     db = get_db()
+    
+    if db is None:
+        # Mock mode: return empty message list
+        return []
+    
     if channel_id == "legacy_broadcasts":
         # Fetch old notifications
         old_notifs = await db["notifications"].find({"is_broadcast_log": True}).sort("createdAt", -1).skip(skip).limit(limit).to_list(None)
@@ -332,8 +373,21 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 async def get_private_channel(student_id: str, course_code: Optional[str] = None) -> Dict[str, Any]:
     """Get or create a private message channel between instructor and a specific student."""
     db = get_db()
+    
+    # Handle mock mode - return a mock channel
     if db is None:
-        raise HTTPException(status_code=503, detail="Database required")
+        return {
+            "_id": f"mock_private_{student_id}",
+            "name": f"Sinh viên {student_id}",
+            "course_code": course_code or "AAA 2013J",
+            "members": ["teacher_admin", str(student_id)],
+            "type": "private_message",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "is_mock": True
+        }
+    
     sid_str = str(student_id)
     sid_int = int(student_id) if student_id.isdigit() else student_id
 

@@ -156,10 +156,29 @@ async def grade_submission(id_assessment: int, student_id: int, payload: GradeSu
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Submission not found")
 
+    # Build the update dict for the student's enrollment assessment entry
+    student_update = {"enrollments.$[e].assessments.$[a].score": payload.score}
+    if payload.feedback is not None:
+        student_update["enrollments.$[e].assessments.$[a].feedback"] = payload.feedback
+
+    # Resolve the enrollment's code_module so we can filter by it
+    submission_doc = await db.submissions.find_one(
+        {"id_assessment": id_assessment, "student_id": student_id}
+    )
+    code_module = None
+    if submission_doc:
+        code_module = submission_doc.get("course_code")
+    if not code_module:
+        assignment_doc = await db.assignments.find_one({"id_assessment": id_assessment})
+        if assignment_doc:
+            code_module = assignment_doc.get("code_module")
+
+    enrollment_filter = {"e.code_module": code_module} if code_module else {"e.assessments.id_assessment": id_assessment}
+
     await db.students.update_one(
-        {"student_id": student_id, "enrollments.assessments.id_assessment": id_assessment},
-        {"$set": {"enrollments.$[e].assessments.$[a].score": payload.score}},
-        array_filters=[{"a.id_assessment": id_assessment}],
+        {"student_id": student_id},
+        {"$set": student_update},
+        array_filters=[enrollment_filter, {"a.id_assessment": id_assessment}],
     )
 
     await log_event(

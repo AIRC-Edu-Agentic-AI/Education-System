@@ -9,6 +9,8 @@ class AssignmentSubmission {
   final DateTime submittedAt;
   final int? submittedDay;
   final String status;
+  final double? score;
+  final String? feedback;
 
   const AssignmentSubmission({
     required this.id,
@@ -21,6 +23,8 @@ class AssignmentSubmission {
     required this.submittedAt,
     this.submittedDay,
     required this.status,
+    this.score,
+    this.feedback,
   });
 
   factory AssignmentSubmission.fromJson(Map<String, dynamic> json) =>
@@ -37,5 +41,7 @@ class AssignmentSubmission {
             : DateTime.now(),
         submittedDay: json['submitted_day'],
         status: json['status'] ?? 'submitted',
+        score: json['score'] != null ? (json['score'] as num).toDouble() : null,
+        feedback: json['feedback'],
       );
 }

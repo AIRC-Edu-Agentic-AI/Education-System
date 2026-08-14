@@ -87,8 +87,8 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
   const [dueDate, setDueDate] = useState(1)
   const [maxFileSizeMb, setMaxFileSizeMb] = useState(25)
   const [allowedFormats, setAllowedFormats] = useState('pdf, docx')
-  const [gradeScore, setGradeScore] = useState<number | ''>('')
-  const [gradeFeedback, setGradeFeedback] = useState('')
+  const [gradeScores, setGradeScores] = useState<Record<string, number | ''>>({})
+  const [gradeFeedbacks, setGradeFeedbacks] = useState<Record<string, string>>({})
   const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false)
 
   const teacherId = authUser?.email || authUser?.name || 'teacher_admin'
@@ -201,14 +201,17 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
   const handleCloseSubmissions = () => {
     setSelectedAssignment(null)
     setSubmissions([])
-    setGradeScore('')
-    setGradeFeedback('')
+    setGradeScores({})
+    setGradeFeedbacks({})
     setSubmissionDialogOpen(false)
   }
 
   const handleGradeSubmission = async (submission: SubmissionRecord) => {
-    if (gradeScore === '' || Number(gradeScore) < 0 || Number(gradeScore) > 100) {
-      setError('Score must be between 0 and 100')
+    const subKey = submission._id
+    const scoreVal = gradeScores[subKey]
+    const feedbackVal = gradeFeedbacks[subKey] ?? ''
+    if (scoreVal === undefined || scoreVal === '' || Number(scoreVal) < 0 || Number(scoreVal) > 100) {
+      setError('Score phải từ 0 đến 100')
       return
     }
     setGrading(true)
@@ -217,15 +220,15 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
       const res = await fetch(`${API_BASE}/assignments/${submission.id_assessment}/grade/${submission.student_id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score: Number(gradeScore), feedback: gradeFeedback }),
+        body: JSON.stringify({ score: Number(scoreVal), feedback: feedbackVal }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.detail || 'Failed to submit grade')
       }
       await fetchSubmissions(submission.id_assessment)
-      setGradeScore('')
-      setGradeFeedback('')
+      setGradeScores((prev) => { const next = { ...prev }; delete next[subKey]; return next })
+      setGradeFeedbacks((prev) => { const next = { ...prev }; delete next[subKey]; return next })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error submitting grade')
     } finally {
@@ -488,8 +491,8 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                           label="Score"
                           type="number"
                           size="small"
-                          value={gradeScore}
-                          onChange={(event) => setGradeScore(event.target.value === '' ? '' : Number(event.target.value))}
+                          value={gradeScores[submission._id] ?? ''}
+                          onChange={(event) => setGradeScores((prev) => ({ ...prev, [submission._id]: event.target.value === '' ? '' : Number(event.target.value) }))}
                           inputProps={{ min: 0, max: 100 }}
                         />
                         <TextField
@@ -497,8 +500,8 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                           size="small"
                           multiline
                           minRows={2}
-                          value={gradeFeedback}
-                          onChange={(event) => setGradeFeedback(event.target.value)}
+                          value={gradeFeedbacks[submission._id] ?? ''}
+                          onChange={(event) => setGradeFeedbacks((prev) => ({ ...prev, [submission._id]: event.target.value }))}
                         />
                         <Button
                           size="small"
