@@ -76,7 +76,9 @@ class ProfileScreen extends ConsumerWidget {
                     label: 'Gender',
                     value: student.demographics.gender == 'M' ? 'Male' : 'Female'),
                 _InfoRow(
-                    label: 'Age band', value: student.demographics.ageBand),
+                    label: 'Age', value: student.demographics.ageBand),
+                _InfoRow(
+                    label: 'IMD band', value: student.demographics.imdBand.isNotEmpty ? student.demographics.imdBand : '20-30%'),
                 _InfoRow(
                     label: 'Region', value: student.demographics.region),
                 _InfoRow(

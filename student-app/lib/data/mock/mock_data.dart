@@ -13,7 +13,7 @@ class MockData {
     shortName: 'Van An',
     demographics: const Demographics(
       gender: 'M',
-      ageBand: '25-35',
+      ageBand: '21',
       region: 'Hanoi',
       highestEducation: 'HE Qualification',
       imdBand: '20-30%',

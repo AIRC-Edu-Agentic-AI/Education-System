@@ -67,7 +67,11 @@ app = FastAPI(
 @app.middleware("http")
 async def auto_event_logging_middleware(request, call_next):
     path = request.url.path
-    if path in {"/docs", "/openapi.json", "/redoc", "/health", "/uploads"}:
+    # Fast-path for static, doc, health endpoints and standard GET queries
+    if path in {"/docs", "/openapi.json", "/redoc", "/health", "/uploads"} or path.startswith("/uploads"):
+        return await call_next(request)
+
+    if request.method in {"GET", "OPTIONS", "HEAD"}:
         return await call_next(request)
 
     payload = {
@@ -75,29 +79,30 @@ async def auto_event_logging_middleware(request, call_next):
         "path": path,
         "query_params": dict(request.query_params),
         "user_agent": request.headers.get("user-agent"),
-        "client_ip": request.headers.get("x-forwarded-for") or request.client.host if request.client else None,
+        "client_ip": request.headers.get("x-forwarded-for") or (request.client.host if request.client else None),
     }
 
+    import asyncio
     try:
         response = await call_next(request)
+        # Log state-modifying requests in the background without blocking the client
+        asyncio.create_task(log_event(
+            None,
+            "http_request",
+            target_id=path,
+            payload={**payload, "status_code": response.status_code},
+            source="http_middleware",
+        ))
+        return response
     except Exception as exc:
-        await log_event(
+        asyncio.create_task(log_event(
             None,
             "http_error",
             target_id=path,
             payload={**payload, "error": str(exc)},
             source="http_middleware",
-        )
+        ))
         raise
-
-    await log_event(
-        None,
-        "http_request",
-        target_id=path,
-        payload={**payload, "status_code": response.status_code},
-        source="http_middleware",
-    )
-    return response
 
 app.add_middleware(
     CORSMiddleware,

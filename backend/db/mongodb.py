@@ -1,4 +1,4 @@
-﻿from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
 db_state = {"connected": False, "client": None, "db": None}
@@ -31,14 +31,47 @@ async def connect_db():
     try:
         client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=8000)
         await client.admin.command("ping")
+        db = client[db_name]
         db_state["client"] = client
-        db_state["db"] = client[db_name]
+        db_state["db"] = db
         db_state["connected"] = True
         print(f"[DB] Connected to MongoDB Atlas -> {db_name}")
+
+        # Create essential performance indexes in the background
+        import asyncio
+        asyncio.create_task(_ensure_indexes(db))
     except Exception as e:
         print(f"[DB] Connection FAILED: {e}")
         print("[DB] Falling back to mock mode")
         db_state["connected"] = False
+
+
+async def _ensure_indexes(db):
+    try:
+        # Index students for course filtering and ID lookups
+        await db["students"].create_index([("enrollments.code_module", 1), ("enrollments.code_presentation", 1)], background=True)
+        await db["students"].create_index([("student_id", 1)], background=True)
+        await db["students"].create_index([("risk.tier", 1)], background=True)
+
+        # Index courses
+        await db["courses"].create_index([("code_module", 1), ("code_presentation", 1)], background=True)
+
+        # Index notifications for system inbox and recipient queries
+        await db["notifications"].create_index([("course_code", 1), ("createdAt", -1)], background=True)
+        await db["notifications"].create_index([("recipient_id", 1), ("createdAt", -1)], background=True)
+        await db["notifications"].create_index([("student_id", 1)], background=True)
+
+        # Index channels and messages
+        await db["channels"].create_index([("course_code", 1), ("type", 1)], background=True)
+        await db["channels"].create_index([("members", 1)], background=True)
+        await db["messages"].create_index([("channel_id", 1), ("created_at", 1)], background=True)
+
+        # Index study groups and classrooms
+        await db["study_groups"].create_index([("course_code", 1)], background=True)
+        await db["classrooms"].create_index([("course_code", 1)], background=True)
+        print("[DB] All performance indexes verified and ready.")
+    except Exception as e:
+        print(f"[DB] Index creation warning: {e}")
 
 
 async def close_db():

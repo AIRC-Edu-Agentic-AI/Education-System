@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs, Typography, Chip, Grid } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/DashboardRounded';
+import ForumIcon from '@mui/icons-material/ForumRounded';
+import AssignmentIcon from '@mui/icons-material/AssignmentRounded';
 import NotificationManager from '../components/NotificationManager';
 import AttendanceDashboard from '../components/AttendanceDashboard';
 import ChatManager from '../components/ChatManager';
@@ -31,8 +33,8 @@ export const ClassView = () => {
           }}
         >
           <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Overview" />
-          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Communication" />
-          <Tab icon={<DashboardIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Assignments" />
+          <Tab icon={<ForumIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Communication" />
+          <Tab icon={<AssignmentIcon sx={{ fontSize: 16 }} />} iconPosition="start" label="Assignments" />
         </Tabs>
       </Box>
 

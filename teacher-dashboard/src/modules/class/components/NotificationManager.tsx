@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api'
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+
 import {
   Box, Card, Typography, TextField, Button, Chip, Divider,
-  List, ListItem, ListItemText, ListItemIcon, Avatar, CircularProgress,
-  Tab, Tabs, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle,
-  DialogContent, DialogActions, DialogContentText
+  Avatar, CircularProgress, Tab, Tabs, IconButton, Tooltip, Dialog, DialogTitle,
+  DialogContent, DialogActions, DialogContentText, Badge, InputAdornment,
+  Paper, Alert
 } from '@mui/material';
-import { createFilterOptions } from '@mui/material/Autocomplete';
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
@@ -18,27 +18,29 @@ import ReportRoundedIcon from '@mui/icons-material/ReportRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import InboxRoundedIcon from '@mui/icons-material/InboxRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 
 interface NotificationItem {
   _id?: string;
-  senderRole: 'Admin' | 'Instructor';
-  receiverRole: 'Instructor' | 'Student';
+  senderRole?: 'Admin' | 'Instructor' | string;
+  receiverRole?: 'Instructor' | 'Student' | string;
   receiverId?: number;
   receiverName?: string;
-  type: 'General Notice' | 'Exam Schedule' | 'Makeup Class' | 'Academic Warning' | 'Direct Message';
+  type: 'General Notice' | 'Exam Schedule' | 'Makeup Class' | 'Academic Warning' | 'Direct Message' | string;
   title: string;
   content: string;
   createdAt: string;
-}
-
-interface ClassGroup {
-  class_name: string;
-  members: number[];
+  target_count?: number;
+  course_code?: string;
 }
 
 interface StudentOption {
   id: number;
   name: string;
+  tier?: number;
 }
 
 interface NotificationManagerProps {
@@ -46,34 +48,34 @@ interface NotificationManagerProps {
   presentation?: string;
 }
 
-const filterOptions = createFilterOptions<StudentOption>({
-  limit: 50,
-});
-
 export default function NotificationManager({ module, presentation }: NotificationManagerProps) {
+  // 0: System Inbox, 1: Send Broadcast
   const [activeTab, setActiveTab] = useState(0);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [targetAudience, setTargetAudience] = useState<'all' | 'tier3' | 'tier2' | 'tier1'>('all');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [type, setType] = useState<Exclude<NotificationItem['type'], 'Direct Message'>>('General Notice');
+  const [type, setType] = useState<string>('General Notice');
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [students, setStudents] = useState<StudentOption[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<StudentOption | null>(null);
-  const [dmTitle, setDmTitle] = useState('');
-  const [dmContent, setDmContent] = useState('');
-  const [isDmSending, setIsDmSending] = useState(false);
-  const [studentsLoading, setStudentsLoading] = useState(false);
+  // Search and filter for Inbox
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [inboxFilter, setInboxFilter] = useState<'all' | 'academic_warning' | 'study_reminder' | 'exam_schedule' | 'other'>('all');
 
-  // Class group state
-  const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
-  const [selectedClassGroup, setSelectedClassGroup] = useState<ClassGroup | null>(null);
-  const [classGroupsLoading, setClassGroupsLoading] = useState(false);
-  const [classTitle, setClassTitle] = useState('');
-  const [classContent, setClassContent] = useState('');
-  const [isClassSending, setIsClassSending] = useState(false);
-  const [classType, setClassType] = useState<Exclude<NotificationItem['type'], 'Direct Message'>>('General Notice');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Success toast feedback
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Students count & list
+  const [students, setStudents] = useState<StudentOption[]>([]);
 
   // Edit state
   const [editingNoti, setEditingNoti] = useState<NotificationItem | null>(null);
@@ -122,38 +124,23 @@ export default function NotificationManager({ module, presentation }: Notificati
 
   const fetchStudents = async () => {
     if (!module || !presentation) return;
-    setStudentsLoading(true);
     try {
       const res = await fetch(`${API_BASE}/course/${module}/${presentation}/students-lite`);
       const data = await res.json();
-      const list: StudentOption[] = (data.students ?? []).map((s: { id_student: number; name?: string }) => ({
+      const list: StudentOption[] = (data.students ?? []).map((s: { id_student: number; name?: string; full_name?: string; tier?: number }) => ({
         id: s.id_student,
-        name: s.name || `Student #${s.id_student}`,
+        name: s.full_name || s.name || `Student #${s.id_student}`,
+        tier: s.tier,
       }));
       setStudents(list);
     } catch (error) {
       console.error(error);
-    } finally {
-      setStudentsLoading(false);
-    }
-  };
-
-  const fetchClasses = async () => {
-    if (!module || !presentation) return;
-    setClassGroupsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/course/${module}/${presentation}/classes`);
-      const data = await res.json();
-      setClassGroups(data.classes ?? []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setClassGroupsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchNotifications();
+    fetchStudents();
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
@@ -183,17 +170,17 @@ export default function NotificationManager({ module, presentation }: Notificati
     };
   }, []);
 
-  useEffect(() => {
-    fetchStudents();
-    fetchClasses();
-  }, [module, presentation]);
-
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || isSending) return;
     setIsSending(true);
     try {
-      const studentIds = students.map(s => s.id);
+      const targetList = 
+        targetAudience === 'tier3' ? students.filter(s => (s.tier || 1) === 3) :
+        targetAudience === 'tier2' ? students.filter(s => (s.tier || 1) === 2) :
+        targetAudience === 'tier1' ? students.filter(s => (s.tier || 1) === 1) :
+        students;
+      const studentIds = targetList.map(s => s.id);
       const courseCode = module && presentation ? `${module} ${presentation}` : (module || 'ALL');
       const res = await fetch(`${BASE_URL}/notify/broadcast`, {
         method: 'POST',
@@ -214,83 +201,17 @@ export default function NotificationManager({ module, presentation }: Notificati
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(`[${type}] ${title}`, { body: content });
       }
+      setSuccessMsg(`Broadcast successfully sent to ${targetAudience === 'all' ? 'Entire Course' : `Tier ${targetAudience.replace('tier', '')}`}!`);
       setTitle('');
       setContent('');
       setType('General Notice');
       await fetchNotifications();
+      setActiveTab(0); // Return to Inbox to view the sent notification
+      setTimeout(() => setSuccessMsg(null), 4000);
     } catch (error) {
       console.error(error);
     } finally {
       setIsSending(false);
-    }
-  };
-
-  const handleSendDirect = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedStudent || !dmTitle.trim() || !dmContent.trim() || isDmSending) return;
-    setIsDmSending(true);
-    try {
-      const res = await fetch(`${BASE_URL}/notify/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_ids: [selectedStudent.id],
-          type: 'direct_message',
-          title: dmTitle,
-          content: dmContent,
-          sender_role: 'instructor',
-          course_code: `${module} ${presentation}`,
-        }),
-      });
-      const data = await res.json();
-      if (data?.log) {
-        setNotifications(prev => [data.log, ...prev.filter(n => n._id !== data.log._id)]);
-      }
-      setDmTitle('');
-      setDmContent('');
-      setSelectedStudent(null);
-      await fetchNotifications();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsDmSending(false);
-    }
-  };
-
-  const handleSendClassBroadcast = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClassGroup || !classTitle.trim() || !classContent.trim() || isClassSending) return;
-    setIsClassSending(true);
-    try {
-      const res = await fetch(`${BASE_URL}/notify/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_ids: selectedClassGroup.members,
-          type: classType.toLowerCase().replace(/ /g, '_'),
-          title: classTitle,
-          content: classContent,
-          sender_role: 'instructor',
-          course_code: `${module} ${presentation}`,
-          classroom_name: selectedClassGroup.class_name,
-        }),
-      });
-      const data = await res.json();
-      if (data?.log) {
-        setNotifications(prev => [data.log, ...prev.filter(n => n._id !== data.log._id)]);
-      }
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`[${classType}] ${classTitle}`, { body: classContent });
-      }
-      setClassTitle('');
-      setClassContent('');
-      setClassType('General Notice');
-      setSelectedClassGroup(null);
-      await fetchNotifications();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsClassSending(false);
     }
   };
 
@@ -352,188 +273,592 @@ export default function NotificationManager({ module, presentation }: Notificati
     }
   };
 
-  const getTypeUI = (notiType: NotificationItem['type']) => {
-    switch (notiType) {
-      case 'Exam Schedule': return { color: 'error' as const, icon: <EventNoteRoundedIcon color="error" fontSize="small" /> };
-      case 'Makeup Class': return { color: 'warning' as const, icon: <UpdateRoundedIcon color="warning" fontSize="small" /> };
-      case 'Academic Warning': return { color: 'error' as const, icon: <ReportRoundedIcon color="error" fontSize="small" /> };
-      case 'Direct Message': return { color: 'secondary' as const, icon: <ChatRoundedIcon color="secondary" fontSize="small" /> };
-      default: return { color: 'info' as const, icon: <InfoRoundedIcon color="info" fontSize="small" /> };
+  const getTypeUI = (notiType: string) => {
+    const lower = (notiType || '').toLowerCase();
+    if (lower.includes('warning')) {
+      return { label: 'Academic Warning', color: 'error' as const, bg: '#FEF2F2', border: '#FCA5A5', icon: <ReportRoundedIcon sx={{ fontSize: 18, color: '#DC2626' }} /> };
     }
+    if (lower.includes('reminder') || lower.includes('makeup')) {
+      return { label: 'Progress Reminder', color: 'warning' as const, bg: '#FFFBEB', border: '#FCD34D', icon: <UpdateRoundedIcon sx={{ fontSize: 18, color: '#D97706' }} /> };
+    }
+    if (lower.includes('exam')) {
+      return { label: 'Exam Schedule', color: 'info' as const, bg: '#EFF6FF', border: '#93C5FD', icon: <EventNoteRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} /> };
+    }
+    if (lower.includes('direct') || lower.includes('message')) {
+      return { label: 'Direct Message', color: 'secondary' as const, bg: '#FAF5FF', border: '#D8B4FE', icon: <ChatRoundedIcon sx={{ fontSize: 18, color: '#9333EA' }} /> };
+    }
+    return { label: 'General Notice', color: 'primary' as const, bg: '#F8FAFC', border: '#CBD5E1', icon: <InfoRoundedIcon sx={{ fontSize: 18, color: '#475569' }} /> };
   };
 
+  const tier3Count = students.filter(s => (s.tier || 1) === 3).length;
+  const tier2Count = students.filter(s => (s.tier || 1) === 2).length;
+  const tier1Count = students.filter(s => (s.tier || 1) === 1).length;
+
+  // Filtered notifications for search & category
+  const filteredNotifications = React.useMemo(() => {
+    return notifications.filter(n => {
+      const matchesSearch = !debouncedSearch.trim() || 
+        (n.title && n.title.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+        (n.content && n.content.toLowerCase().includes(debouncedSearch.toLowerCase()));
+      
+      if (!matchesSearch) return false;
+
+      const lowerType = (n.type || '').toLowerCase();
+      if (inboxFilter === 'academic_warning') return lowerType.includes('warning');
+      if (inboxFilter === 'study_reminder') return lowerType.includes('reminder') || lowerType.includes('makeup');
+      if (inboxFilter === 'exam_schedule') return lowerType.includes('exam');
+      return true;
+    });
+  }, [notifications, debouncedSearch, inboxFilter]);
+
   return (
-    <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ px: 2, pt: 2, pb: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-          <Avatar sx={{ bgcolor: 'primary.50', color: 'primary.main', width: 32, height: 32 }}>
-            <CampaignRoundedIcon fontSize="small" />
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>Messaging</Typography>
-            <Typography variant="caption" color="text.secondary">Send notifications or direct messages to students</Typography>
+    <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2.5, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', overflow: 'hidden' }}>
+      {/* Top Header & View Switcher */}
+      <Box sx={{ px: 2.5, pt: 2, pb: 1.5, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Avatar sx={{ bgcolor: 'primary.main', color: '#fff', width: 34, height: 34, boxShadow: '0 2px 6px rgba(37,99,235,0.25)' }}>
+              <CampaignRoundedIcon fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+                System Notifications & Broadcasts
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {module} ({presentation}) — {students.length} Enrolled Students
+              </Typography>
+            </Box>
           </Box>
+
+          {activeTab === 0 ? (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setActiveTab(1)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderRadius: 2,
+                px: 1.75,
+                py: 0.5,
+                boxShadow: '0 2px 6px rgba(37,99,235,0.25)'
+              }}
+            >
+              Compose Broadcast
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setActiveTab(0)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderRadius: 2,
+                px: 1.5,
+                py: 0.5,
+              }}
+            >
+              Back to Inbox
+            </Button>
+          )}
         </Box>
+
+        {/* Segmented Navigation Tabs */}
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => setActiveTab(v)}
+          sx={{
+            minHeight: 38,
+            '& .MuiTab-root': {
+              minHeight: 38,
+              py: 0.5,
+              px: 1.75,
+              fontSize: '0.8125rem',
+              textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: 1.5,
+            },
+            '& .Mui-selected': {
+              color: 'primary.main',
+              fontWeight: 700,
+            }
+          }}
+        >
+          <Tab
+            icon={
+              <Badge badgeContent={notifications.length} color="primary" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', height: 16, minWidth: 16 } }}>
+                <InboxRoundedIcon sx={{ fontSize: 18 }} />
+              </Badge>
+            }
+            iconPosition="start"
+            label="System Inbox"
+          />
+          <Tab
+            icon={<CampaignRoundedIcon sx={{ fontSize: 18 }} />}
+            iconPosition="start"
+            label="Send Broadcast"
+          />
+        </Tabs>
       </Box>
 
-      <Divider />
+      {/* Success Notification Alert */}
+      {successMsg && (
+        <Alert severity="success" sx={{ py: 0.5, px: 2, fontSize: '0.8125rem', borderRadius: 0 }} onClose={() => setSuccessMsg(null)}>
+          {successMsg}
+        </Alert>
+      )}
 
-      <Box component="form" onSubmit={handleSendBroadcast} sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            {(['General Notice', 'Exam Schedule', 'Makeup Class', 'Academic Warning'] as const).map((t) => (
+      {/* TAB 0: SYSTEM INBOX (Full Height, Spacious, Rich Details) */}
+      {activeTab === 0 && (
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: '#F8FAFC' }}>
+          {/* Filter Bar & Search Box */}
+          <Box sx={{ px: 2, py: 1.25, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <TextField
+              size="small"
+              placeholder="Search notifications by title, keyword, or content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  bgcolor: '#F8FAFC',
+                  fontSize: '0.8125rem',
+                  height: 36,
+                }
+              }}
+            />
+
+            <Box sx={{ display: 'flex', gap: 0.75, overflowX: 'auto', pb: 0.25 }}>
               <Chip
-                key={t} label={t} size="small"
-                onClick={() => setType(t)}
-                color={type === t ? getTypeUI(t).color : 'default'}
-                variant={type === t ? 'filled' : 'outlined'}
-                sx={{ fontWeight: type === t ? 600 : 400, fontSize: '0.75rem' }}
+                label={`All (${notifications.length})`}
+                size="small"
+                onClick={() => setInboxFilter('all')}
+                color={inboxFilter === 'all' ? 'primary' : 'default'}
+                variant={inboxFilter === 'all' ? 'filled' : 'outlined'}
+                sx={{ fontWeight: 600, fontSize: '0.725rem', height: 24 }}
               />
-            ))}
+              <Chip
+                label="Academic Warnings"
+                size="small"
+                onClick={() => setInboxFilter('academic_warning')}
+                color={inboxFilter === 'academic_warning' ? 'error' : 'default'}
+                variant={inboxFilter === 'academic_warning' ? 'filled' : 'outlined'}
+                sx={{ fontWeight: 600, fontSize: '0.725rem', height: 24 }}
+              />
+              <Chip
+                label="Progress Reminders"
+                size="small"
+                onClick={() => setInboxFilter('study_reminder')}
+                color={inboxFilter === 'study_reminder' ? 'warning' : 'default'}
+                variant={inboxFilter === 'study_reminder' ? 'filled' : 'outlined'}
+                sx={{ fontWeight: 600, fontSize: '0.725rem', height: 24 }}
+              />
+              <Chip
+                label="Exam Notices"
+                size="small"
+                onClick={() => setInboxFilter('exam_schedule')}
+                color={inboxFilter === 'exam_schedule' ? 'info' : 'default'}
+                variant={inboxFilter === 'exam_schedule' ? 'filled' : 'outlined'}
+                sx={{ fontWeight: 600, fontSize: '0.725rem', height: 24 }}
+              />
+            </Box>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <TextField fullWidth size="small" label="Title" value={title} onChange={(e) => setTitle(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <TextField fullWidth size="small" multiline rows={2} label="Detailed Content" placeholder="Enter the detailed content..." value={content} onChange={(e) => setContent(e.target.value)} required InputLabelProps={{ shrink: true }} />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button type="submit" variant="contained" disableElevation size="small"
-                endIcon={isSending ? <CircularProgress size={14} color="inherit" /> : <SendRoundedIcon fontSize="small" />}
-                disabled={!title.trim() || !content.trim() || isSending}
-                sx={{ px: 2, py: 0.5, borderRadius: 1, fontWeight: 600, textTransform: 'none' }}
+
+          {/* Notification List (Full Height Scrollable) */}
+          <Box sx={{ flex: 1, overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {isLoading ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, gap: 1.5 }}>
+                <CircularProgress size={28} />
+                <Typography variant="caption" color="text.secondary">Loading class notifications...</Typography>
+              </Box>
+            ) : filteredNotifications.length === 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, textAlign: 'center' }}>
+                <Avatar sx={{ width: 48, height: 48, bgcolor: 'action.hover', color: 'text.secondary', mb: 1.5 }}>
+                  <InboxRoundedIcon />
+                </Avatar>
+                <Typography variant="subtitle2" fontWeight={600} color="text.primary">
+                  {searchQuery ? 'No matching notifications found' : 'No notifications yet'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 280, mt: 0.5, mb: 2 }}>
+                  {searchQuery ? 'Try adjusting your search keywords or active filter tags.' : 'Send announcements, risk alerts, or study reminders to students in this course.'}
+                </Typography>
+                {!searchQuery && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<AddRoundedIcon />}
+                    onClick={() => setActiveTab(1)}
+                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', borderRadius: 2 }}
+                  >
+                    Send First Notification
+                  </Button>
+                )}
+              </Box>
+            ) : (
+              filteredNotifications.map((noti, index) => {
+                const ui = getTypeUI(noti.type);
+                const createdDate = new Date(noti.createdAt || (noti as any).created_at || Date.now());
+                const dateStr = !isNaN(createdDate.getTime()) ? createdDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+
+                return (
+                  <Paper
+                    key={noti._id || index}
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: '#FFFFFF',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                        '& .noti-actions': { opacity: 1 },
+                      }
+                    }}
+                  >
+                    {/* Header Row */}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1, py: 0.35, bgcolor: ui.bg, border: `1px solid ${ui.border}`, borderRadius: 1.5 }}>
+                          {ui.icon}
+                          <Typography variant="caption" fontWeight={700} color={`${ui.color}.main`} sx={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            {ui.label}
+                          </Typography>
+                        </Box>
+
+                        {noti.target_count && (
+                          <Chip
+                            label={`📢 ${noti.target_count} Recipients`}
+                            size="small"
+                            sx={{ height: 20, fontSize: '0.675rem', fontWeight: 600, bgcolor: 'action.hover' }}
+                          />
+                        )}
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.725rem', whiteSpace: 'nowrap' }}>
+                          {dateStr}
+                        </Typography>
+
+                        {noti._id && (
+                          <Box className="noti-actions" sx={{ display: 'flex', opacity: 0.6, transition: 'opacity 0.2s ease' }}>
+                            <Tooltip title="Edit Notification" arrow>
+                              <IconButton size="small" onClick={() => handleOpenEdit(noti)} sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                                <EditRoundedIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete Notification" arrow>
+                              <IconButton size="small" onClick={() => handleOpenDelete(noti)} sx={{ p: 0.5, color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
+                                <DeleteRoundedIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
+
+                    {/* Title */}
+                    <Typography variant="subtitle2" fontWeight={700} color="text.primary" sx={{ mb: 0.75, lineHeight: 1.35, fontSize: '0.875rem' }}>
+                      {noti.title}
+                    </Typography>
+
+                    {/* Content */}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: '0.8125rem',
+                        lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        bgcolor: '#F8FAFC',
+                        p: 1.25,
+                        borderRadius: 1.5,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      {noti.content}
+                    </Typography>
+                  </Paper>
+                );
+              })
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {/* TAB 1: SEND BROADCAST COMPOSER */}
+      {activeTab === 1 && (
+        <Box sx={{ flex: 1, overflowY: 'auto', p: 2.5, bgcolor: '#F8FAFC' }}>
+          <Box component="form" onSubmit={handleSendBroadcast} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
+            {/* Target Audience Selector */}
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                1. Select Target Audience & Risk Tier:
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.25 }}>
+                {/* Entire Course */}
+                <Paper
+                  elevation={0}
+                  onClick={() => {
+                    setTargetAudience('all');
+                    setType('General Notice');
+                  }}
+                  sx={{
+                    p: 1.5,
+                    cursor: 'pointer',
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: targetAudience === 'all' ? 'primary.main' : 'divider',
+                    bgcolor: targetAudience === 'all' ? 'primary.50' : '#FFFFFF',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={700} color={targetAudience === 'all' ? 'primary.main' : 'text.primary'} sx={{ fontSize: '0.8125rem' }}>
+                    🌐 Entire Course
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {students.length} Enrolled Students
+                  </Typography>
+                </Paper>
+
+                {/* Tier 3 High Risk */}
+                <Paper
+                  elevation={0}
+                  onClick={() => {
+                    setTargetAudience('tier3');
+                    setType('Academic Warning');
+                    setTitle('[ACADEMIC WARNING] Support & Academic Improvement Guidance');
+                    setContent('Dear Tier 3 students,\n\nThe instructor noticed that your course progress and activity may put your outcome at risk. Please contact your Instructor or Academic Advisor this week for personalized learning assistance and review sessions!\n\nBest regards,\nCourse Teaching Team');
+                  }}
+                  sx={{
+                    p: 1.5,
+                    cursor: 'pointer',
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: targetAudience === 'tier3' ? 'error.main' : 'divider',
+                    bgcolor: targetAudience === 'tier3' ? '#FEF2F2' : '#FFFFFF',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={700} color={targetAudience === 'tier3' ? 'error.main' : 'text.primary'} sx={{ fontSize: '0.8125rem' }}>
+                    🚨 Tier 3 — High Risk
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {tier3Count} High-Risk Students
+                  </Typography>
+                </Paper>
+
+                {/* Tier 2 Moderate Risk */}
+                <Paper
+                  elevation={0}
+                  onClick={() => {
+                    setTargetAudience('tier2');
+                    setType('General Notice');
+                    setTitle('[PROGRESS REMINDER] Review Schedule & Assessment Submissions');
+                    setContent('Dear Tier 2 students,\n\nPlease check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!\n\nBest of luck!');
+                  }}
+                  sx={{
+                    p: 1.5,
+                    cursor: 'pointer',
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: targetAudience === 'tier2' ? 'warning.main' : 'divider',
+                    bgcolor: targetAudience === 'tier2' ? '#FFFBEB' : '#FFFFFF',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={700} color={targetAudience === 'tier2' ? 'warning.dark' : 'text.primary'} sx={{ fontSize: '0.8125rem' }}>
+                    ⚠️ Tier 2 — Moderate
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {tier2Count} Moderate-Risk Students
+                  </Typography>
+                </Paper>
+
+                {/* Tier 1 Low Risk */}
+                <Paper
+                  elevation={0}
+                  onClick={() => {
+                    setTargetAudience('tier1');
+                    setType('General Notice');
+                    setTitle('[COMMENDATION] Outstanding Performance & Advanced Resources');
+                    setContent('Dear Tier 1 students,\n\nThe Teaching Team commends your active participation and strong performance. In-depth materials and extension exercises have been published on the portal for your further study.\n\nKeep up the great work!');
+                  }}
+                  sx={{
+                    p: 1.5,
+                    cursor: 'pointer',
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: targetAudience === 'tier1' ? 'success.main' : 'divider',
+                    bgcolor: targetAudience === 'tier1' ? '#F0FDF4' : '#FFFFFF',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={700} color={targetAudience === 'tier1' ? 'success.main' : 'text.primary'} sx={{ fontSize: '0.8125rem' }}>
+                    🌟 Tier 1 — Low Risk
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {tier1Count} Good Progress Students
+                  </Typography>
+                </Paper>
+              </Box>
+            </Box>
+
+            {/* Notification Category */}
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                2. Notification Category:
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {(['General Notice', 'Exam Schedule', 'Makeup Class', 'Academic Warning'] as const).map((t) => {
+                  const isSel = type === t;
+                  return (
+                    <Chip
+                      key={t}
+                      label={t}
+                      size="small"
+                      onClick={() => setType(t)}
+                      color={isSel ? getTypeUI(t).color : 'default'}
+                      variant={isSel ? 'filled' : 'outlined'}
+                      sx={{ fontWeight: isSel ? 700 : 500, fontSize: '0.75rem', px: 0.5 }}
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+
+            {/* Title & Content */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Notification Title"
+                placeholder="e.g., [ACADEMIC WARNING] Support Guidance..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#FFFFFF', borderRadius: 1.5 } }}
+              />
+
+              <TextField
+                fullWidth
+                size="small"
+                multiline
+                rows={4}
+                label="Broadcast Message Content"
+                placeholder="Enter detailed message for students..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                required
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#FFFFFF', borderRadius: 1.5 } }}
+              />
+            </Box>
+
+            {/* Action Bar */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setActiveTab(0)}
+                sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
               >
-                {isSending ? 'Sending...' : 'Send'}
+                Cancel
+              </Button>
+
+              <Button
+                type="submit"
+                variant="contained"
+                disableElevation
+                size="medium"
+                endIcon={isSending ? <CircularProgress size={16} color="inherit" /> : <SendRoundedIcon fontSize="small" />}
+                disabled={!title.trim() || !content.trim() || isSending}
+                sx={{
+                  px: 3,
+                  py: 0.75,
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 12px rgba(37,99,235,0.25)'
+                }}
+              >
+                {isSending ? 'Sending Broadcast...' : `Send to ${targetAudience === 'all' ? 'Entire Course' : `Tier ${targetAudience.replace('tier', '')}`}`}
               </Button>
             </Box>
           </Box>
-      </Box>
-
-      <Divider />
-
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', borderBottomLeftRadius: 8, borderBottomRightRadius: 8, overflow: 'hidden' }}>
-        <Box sx={{ px: 2, py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="caption" fontWeight={700} color="text.secondary" textTransform="uppercase">System Inbox</Typography>
         </Box>
-        <List sx={{ p: 0, flex: 1, overflowY: 'auto', maxHeight: 220 }}>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}><CircularProgress size={20} /></Box>
-          ) : notifications.length === 0 ? (
-            <Typography variant="caption" color="text.secondary" sx={{ p: 2, display: 'block', textAlign: 'center' }}>No notifications yet.</Typography>
-          ) : (
-            notifications.map((noti, index) => (
-              <React.Fragment key={noti._id || index}>
-                <ListItem
-                  alignItems="flex-start"
-                  sx={{
-                    px: 2, py: 1,
-                    '&:hover': { bgcolor: 'action.hover' },
-                    '&:hover .noti-actions': { opacity: 1 },
-                    bgcolor: noti.senderRole === 'Admin' ? 'error.50' : 'transparent',
-                    position: 'relative',
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>{getTypeUI(noti.type).icon}</ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', pr: 1, mb: 0.25 }}>
-                        <Typography variant="body2" fontWeight={600}>{noti.title}</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{new Date(noti.createdAt).toLocaleString()}</Typography>
-                          {noti._id && (
-                            <Box
-                              className="noti-actions"
-                              sx={{
-                                display: 'flex', gap: 0, opacity: 0,
-                                transition: 'opacity 0.2s ease',
-                              }}
-                            >
-                              <Tooltip title="Edit" arrow>
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenEdit(noti); }} sx={{ p: 0.25 }}>
-                                  <EditRoundedIcon sx={{ fontSize: 14, color: 'primary.main' }} />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete" arrow>
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenDelete(noti); }} sx={{ p: 0.25 }}>
-                                  <DeleteRoundedIcon sx={{ fontSize: 14, color: 'error.main' }} />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    }
-                    secondary={
-                      <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="caption" sx={{ color: noti.senderRole === 'Admin' ? 'error.main' : 'primary.main', fontWeight: 600, mb: 0.25 }}>
-                          [{noti.type}] From: {noti.senderRole}
-                          {noti.receiverName && ` → ${noti.receiverName}`}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {noti.content}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </ListItem>
-                {index < notifications.length - 1 && <Divider component="li" />}
-              </React.Fragment>
-            ))
-          )}
-        </List>
-      </Box>
+      )}
 
-      {/* Edit Dialog */}
-      <Dialog open={Boolean(editingNoti)} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EditRoundedIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-          Edit Notification
-        </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              fullWidth size="small" label="Title"
-              value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-              required InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              fullWidth size="small" multiline rows={4} label="Content"
-              value={editContent} onChange={(e) => setEditContent(e.target.value)}
-              required InputLabelProps={{ shrink: true }}
-            />
-          </Box>
+      {/* Edit Notification Dialog */}
+      <Dialog open={!!editingNoti} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Edit Notification</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Title"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            multiline
+            rows={4}
+            label="Content"
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseEdit} color="inherit" disabled={isEditing} sx={{ textTransform: 'none', fontSize: 13 }}>
-            Cancel
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseEdit} sx={{ textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
           <Button
-            onClick={handleSaveEdit} variant="contained" disableElevation
+            onClick={handleSaveEdit}
+            variant="contained"
             disabled={!editTitle.trim() || !editContent.trim() || isEditing}
-            startIcon={isEditing ? <CircularProgress size={14} color="inherit" /> : null}
-            sx={{ textTransform: 'none', fontSize: 13, boxShadow: 'none' }}
+            sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 1.5 }}
           >
             {isEditing ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={Boolean(deletingNoti)} onClose={handleCloseDelete} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
-          <DeleteRoundedIcon sx={{ fontSize: 20 }} />
-          Delete Notification
-        </DialogTitle>
+      {/* Delete Notification Confirmation Dialog */}
+      <Dialog open={!!deletingNoti} onClose={handleCloseDelete} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: 'error.main' }}>Delete Notification</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ fontSize: 13 }}>
-            Are you sure you want to delete "<strong>{deletingNoti?.title}</strong>"? This action cannot be undone.
+          <DialogContentText sx={{ fontSize: '0.875rem' }}>
+            Are you sure you want to delete notification <strong>"{deletingNoti?.title}"</strong>? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDelete} color="inherit" disabled={isDeleting} sx={{ textTransform: 'none', fontSize: 13 }}>
-            Cancel
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseDelete} sx={{ textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
           <Button
-            onClick={handleConfirmDelete} variant="contained" color="error" disableElevation
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
             disabled={isDeleting}
-            startIcon={isDeleting ? <CircularProgress size={14} color="inherit" /> : null}
-            sx={{ textTransform: 'none', fontSize: 13, boxShadow: 'none' }}
+            sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 1.5 }}
           >
             {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
