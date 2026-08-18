@@ -72,6 +72,9 @@ function normalizeSchedule(item: ScheduleItem, index: number, actor: string): Sc
     note: item.note ?? '',
     deliveryMode: item.deliveryMode || 'offline',
     teacherId: item.teacherId || undefined,
+    module: item.module || '',
+    presentation: item.presentation || '',
+    is_makeup: item.is_makeup ?? false,
     changeLog: item.changeLog ?? [],
   }
 }
@@ -92,6 +95,8 @@ function hasCoreChanges(a?: ScheduleItem, b?: ScheduleItem) {
     'is_makeup',
     'note',
     'deliveryMode',
+    'module',
+    'presentation',
   ]
   return fields.some((field) => a[field] !== b[field])
 }
@@ -284,7 +289,11 @@ export function TeachingScheduleView() {
     const item = schedules.find((s) => s.id === scheduleId)
     if (!item) return
     setEditingId(scheduleId)
-    setDraftSchedule(item)
+    setDraftSchedule({
+      ...item,
+      module: item.module || index?.courses[0]?.module || '',
+      presentation: item.presentation || index?.courses.find(c => c.module === (item.module || index?.courses[0]?.module))?.presentation || '',
+    })
     setDialogOpen(true)
   }
 
@@ -320,8 +329,8 @@ export function TeachingScheduleView() {
       subject: draftSchedule.subject || draftSchedule.activity || 'Teaching session',
       teacher: draftSchedule.teacher || actor,
       teacherId: draftSchedule.teacherId || user?.email,
-      module: draftSchedule.module,
-      presentation: draftSchedule.presentation,
+      module: draftSchedule.module || (index?.courses[0]?.module ?? ''),
+      presentation: draftSchedule.presentation || (index?.courses.find(c => c.module === draftSchedule.module)?.presentation ?? ''),
       className: draftSchedule.className || '',
       room: draftSchedule.room || '',
       date: draftSchedule.date,
@@ -350,25 +359,31 @@ export function TeachingScheduleView() {
   const updateScheduleForDate = () => {
     if (!draftSchedule || !editingId) return
     const original = schedules.find((item) => item.id === editingId)
-    const updated = schedules.map((item) => item.id === editingId ? {
+    const updated: ScheduleItem[] = schedules.map((item) => item.id === editingId ? {
       ...item,
-      subject: draftSchedule.subject || item.subject,
+      subject: draftSchedule.subject || item.subject || 'Teaching session',
+      activity: draftSchedule.subject || draftSchedule.activity || item.activity || item.subject || 'Teaching session',
       className: draftSchedule.className || item.className,
       teacher: draftSchedule.teacher || item.teacher,
+      teacherId: draftSchedule.teacherId || item.teacherId,
+      module: draftSchedule.module ?? item.module,
+      presentation: draftSchedule.presentation ?? item.presentation,
       date: draftSchedule.date || item.date,
       startTime: draftSchedule.startTime || item.startTime,
       endTime: draftSchedule.endTime || item.endTime,
       time: `${draftSchedule.startTime || item.startTime}-${draftSchedule.endTime || item.endTime}`,
-      room: draftSchedule.room || item.room,
-      locationUrl: draftSchedule.locationUrl || item.locationUrl,
-      note: draftSchedule.note || item.note,
+      room: draftSchedule.room ?? item.room,
+      locationUrl: draftSchedule.locationUrl ?? item.locationUrl,
+      note: draftSchedule.note ?? item.note,
       status: draftSchedule.status || item.status,
+      deliveryMode: draftSchedule.deliveryMode || item.deliveryMode,
+      is_makeup: draftSchedule.is_makeup ?? item.is_makeup,
       updatedBy: actor,
       updatedAt: new Date().toISOString(),
     } : item)
     const updatedItem = updated.find((item) => item.id === editingId)
     setSchedules(updated)
-    autoSaveSchedule(updated, undefined, original && updatedItem && hasCoreChanges(original, updatedItem) ? updatedItem : undefined)
+    autoSaveSchedule(updated, undefined, updatedItem)
     setDialogOpen(false)
     setDraftSchedule(null)
     setEditingId(null)
