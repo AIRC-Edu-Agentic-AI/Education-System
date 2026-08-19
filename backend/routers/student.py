@@ -1,14 +1,14 @@
-"""Student router — endpoints cho Student Portal.
+"""Student router — endpoints for the Student Portal.
 
 BR01-BR18 (Student business rules)
 
 Endpoints:
-  GET    /student/{student_id}                  - Thong tin sinh vien
-  PATCH  /student/{student_id}/profile          - Cap nhat thong tin ca nhan (BR02-03)
-  GET    /student/{student_id}/enrollments      - Danh sach mon hoc dang ky (BR07)
-  GET    /student/{student_id}/assignments      - Danh sach bai tap cua SV (BR13)
-  GET    /student/{student_id}/knowledge        - Trang thai kien thuc
-  GET    /student/{student_id}/risk-history     - Lich su rui ro
+    GET    /student/{student_id}                  - Student profile
+    PATCH  /student/{student_id}/profile          - Update profile fields (BR02-03)
+    GET    /student/{student_id}/enrollments      - Enrolled courses (BR07)
+    GET    /student/{student_id}/assignments      - Student assignments (BR13)
+    GET    /student/{student_id}/knowledge        - Knowledge state
+    GET    /student/{student_id}/risk-history     - Risk history
 """
 
 from typing import Any, Dict, List, Optional
@@ -27,8 +27,8 @@ router = APIRouter()
 
 class StudentProfileUpdate(BaseModel):
     """
-    BR02: Chi cho phep cap nhat cac truong duoc he thong cho phep.
-    Cac truong nhu student_id, email khong duoc cap nhat qua day.
+    BR02: Only fields permitted by the system can be updated.
+    Fields such as student_id and email cannot be updated here.
     """
     full_name: Optional[str] = None
     short_name: Optional[str] = None
@@ -190,8 +190,8 @@ async def _build_enrollments_payload(student_doc: dict, code_module: Optional[st
 @router.get("/{student_id}")
 async def get_student(student_id: int):
     """
-    BR01: Lay thong tin ca nhan cua sinh vien.
-    BR04: Chi xem ho so hoc tap cua chinh minh.
+    BR01: Retrieve the student's profile.
+    BR04: Students can only view their own academic profile.
     """
     db = get_db()
     if db is None:
@@ -208,8 +208,8 @@ async def get_student(student_id: int):
 @router.patch("/{student_id}/profile")
 async def update_student_profile(student_id: int, payload: StudentProfileUpdate):
     """
-    BR02: Cap nhat thong tin ca nhan duoc phep.
-    BR03: Thay doi duoc luu vao he thong sau khi xac nhan.
+    BR02: Update permitted profile fields.
+    BR03: Persist changes after confirmation.
     """
     db = get_db()
     if db is None:
@@ -231,7 +231,7 @@ async def update_student_profile(student_id: int, payload: StudentProfileUpdate)
     if payload.avatar_url is not None:
         update_fields["avatar_url"] = payload.avatar_url
 
-    # Cap nhat demographics sub-fields
+    # Update demographic sub-fields
     demo_updates = {}
     if payload.gender is not None:
         demo_updates["demographics.gender"] = payload.gender
@@ -251,8 +251,8 @@ async def update_student_profile(student_id: int, payload: StudentProfileUpdate)
 @router.get("/{student_id}/enrollments")
 async def get_student_enrollments(student_id: int):
     """
-    BR07: Lay danh sach khoa hoc da duoc phan cong hoac dang ky.
-    Tra ve danh sach enrollments tu students collection.
+    BR07: Retrieve assigned or enrolled courses.
+    Return enrollment records from the students collection.
     """
     db = get_db()
     if db is None:
