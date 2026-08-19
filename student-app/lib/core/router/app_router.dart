@@ -84,10 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(
         path: '/course/:courseCode/channels',
-        builder: (ctx, state) {
-          final courseCode = state.pathParameters['courseCode']!;
-          return CourseChannelsScreen();
-        },
+        builder: (ctx, state) => const CourseChannelsScreen(),
         routes: [
           GoRoute(
             path: ':channelId/messages',

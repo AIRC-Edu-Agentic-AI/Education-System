@@ -58,17 +58,7 @@ class StudyGroupsScreen extends ConsumerWidget {
           ),
         ),
         data: (groups) {
-          // ⭐ LỌC DỮ LIỆU AN TOÀN
-          final validGroups = groups.where((g) {
-            try {
-              // Kiểm tra members có phải là List không
-              return g.members is List;
-            } catch (_) {
-              return false;
-            }
-          }).toList();
-
-          if (validGroups.isEmpty) {
+          if (groups.isEmpty) {
             return _EmptyState(
               onCreate: () => _showCreateGroupDialog(context, ref),
               onJoin: () => _showJoinGroupDialog(context, ref),
@@ -81,12 +71,11 @@ class StudyGroupsScreen extends ConsumerWidget {
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: validGroups.length,
+              itemCount: groups.length,
               itemBuilder: (_, index) {
-                // ⭐ SỬ DỤNG index AN TOÀN
-                if (index >= validGroups.length) return const SizedBox.shrink();
+                if (index >= groups.length) return const SizedBox.shrink();
                 
-                final group = validGroups[index];
+                final group = groups[index];
                 
                 // ⭐ KIỂM TRA group hợp lệ
                 if (group.id.isEmpty) return const SizedBox.shrink();

@@ -241,15 +241,15 @@ class ChatMessageToast {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Instructor',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
                                     ),
-                                    if (message.courseCode != null) ...[
+                                    if (message.courseCode.isNotEmpty) ...[
                                       const SizedBox(width: 6),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
@@ -258,7 +258,7 @@ class ChatMessageToast {
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          message.courseCode!,
+                                          message.courseCode,
                                           style: const TextStyle(
                                             fontSize: 10,
                                             color: Color(0xFF60A5FA),

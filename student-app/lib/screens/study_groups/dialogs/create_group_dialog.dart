@@ -32,20 +32,12 @@ Future<void> _createGroup() async {
   setState(() => _loading = true);
 
   try {
-    // ⭐ THÊM DEBUG
-    print('📤 Creating group with name: ${_nameController.text.trim()}');
-    
-    final result = await ref.read(
+    await ref.read(
       createGroupProvider({
         'name': _nameController.text.trim(),
         'description': _descController.text.trim(),
       }).future,
     );
-    
-    // ⭐ THÊM DEBUG
-    print('✅ Group created: ${result.id} - ${result.name}');
-    print('📊 Members: ${result.members}');
-    print('📊 Member count: ${result.memberCount}');
 
     if (mounted) {
       Navigator.pop(context);
@@ -55,7 +47,6 @@ Future<void> _createGroup() async {
       );
     }
   } catch (e) {
-    print('❌ Error creating group: $e');
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

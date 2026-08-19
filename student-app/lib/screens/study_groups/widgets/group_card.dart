@@ -75,10 +75,10 @@ class GroupCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${group.totalMembers ?? 0} members',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
+                            '${group.totalMembers} members',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
                             ),
                           ),
                           const SizedBox(width: 12),

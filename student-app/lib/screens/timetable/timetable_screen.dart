@@ -39,7 +39,7 @@ class _Block {
 
 class _MiniCalendar extends StatefulWidget {
   final void Function(DateTime date)? onDaySelected;
-  const _MiniCalendar({this.onDaySelected, super.key});
+  const _MiniCalendar({this.onDaySelected});
 
   @override
   State<_MiniCalendar> createState() => _MiniCalendarState();
@@ -70,8 +70,12 @@ class _MiniCalendarState extends State<_MiniCalendar> {
     final dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     final cells = <int?>[];
-    for (int i = 0; i < startWeekday; i++) cells.add(null);
-    for (int d = 1; d <= totalDays; d++) cells.add(d);
+    for (int i = 0; i < startWeekday; i++) {
+      cells.add(null);
+    }
+    for (int d = 1; d <= totalDays; d++) {
+      cells.add(d);
+    }
 
     return Container(
       padding: const EdgeInsets.all(8),
@@ -331,7 +335,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       if (effectiveStart == 0 && start == null) return; // no useful time info
 
       blocks.add(_Block(
-        id: 'std-${kind.name}-${day}-${effectiveStart}-${it.title}',
+        id: 'std-${kind.name}-$day-$effectiveStart-${it.title}',
         day: day,
         startMin: effectiveStart,
         endMin: effectiveStart + defaultMin,
@@ -356,7 +360,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       final dur = (s['duration'] is num) ? (s['duration'] as num).toInt() : 45;
       final type = (s['type'] ?? '').toString();
       blocks.add(_Block(
-        id: 'std-study-${day}-${start}-${dur}-${(s['subject'] ?? '').toString()}',
+        id: 'std-study-$day-$start-$dur-${(s['subject'] ?? '').toString()}',
         day: day,
         startMin: start,
         endMin: start + dur,
@@ -420,7 +424,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: selectedDay,
+                    initialValue: selectedDay,
                     decoration: const InputDecoration(
                       labelText: 'Day of week',
                       border: OutlineInputBorder(),
@@ -551,14 +555,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         });
       }
 
-      final ok = await api.updateStudyPlan(studentId, mutable);
-      if (!ok) {
-        print('Failed to sync study plan');
-      }
-    } catch (e, s) {
-      print('sync error: $e');
-      print(s);
-    }
+      await api.updateStudyPlan(studentId, mutable);
+    } catch (_) {}
   }
 
   String _labelFromDate(DateTime d) {
@@ -600,7 +598,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text('Tasks ${label} — ${date.day}/${date.month}/${date.year}', style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(child: Text('Tasks $label — ${date.day}/${date.month}/${date.year}', style: const TextStyle(fontWeight: FontWeight.w700))),
                     IconButton(onPressed: () => Navigator.of(ctx).pop(), icon: const Icon(Icons.close)),
                   ],
                 ),
@@ -754,7 +752,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 class _WeekHeader extends StatelessWidget {
   final String currentDay;
   final VoidCallback onAdd;
-  const _WeekHeader({required this.currentDay, required this.onAdd, super.key});
+  const _WeekHeader({required this.currentDay, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -800,7 +798,7 @@ class _WeekHeader extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
+              const Text(
                 'Weekly Overview Calendar',
                 style: TextStyle(
                   fontSize: 12,
@@ -824,7 +822,6 @@ class _DayColumn extends StatelessWidget {
     required this.day,
     required this.blocks,
     required this.isToday,
-    super.key,
   });
 
   @override
@@ -836,7 +833,7 @@ class _DayColumn extends StatelessWidget {
         color: AppTheme.surfaceCard,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isToday ? AppTheme.primaryBlue.withOpacity(0.45) : AppTheme.cardBorder,
+          color: isToday ? AppTheme.primaryBlue.withValues(alpha: 0.45) : AppTheme.cardBorder,
           width: 1,
         ),
       ),
@@ -875,15 +872,15 @@ class _DayColumn extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${blocks.length} events',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: AppTheme.textMuted,
             ),
           ),
           const SizedBox(height: 8),
           if (blocks.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4),
+            const Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 4),
               child: Text(
                 'No schedule for this day',
                 style: TextStyle(
@@ -902,7 +899,7 @@ class _DayColumn extends StatelessWidget {
 
 class _MiniEventCard extends StatelessWidget {
   final _Block block;
-  const _MiniEventCard({required this.block, super.key});
+  const _MiniEventCard({required this.block});
 
   @override
   Widget build(BuildContext context) {
@@ -917,9 +914,9 @@ class _MiniEventCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.24), width: 1),
+          border: Border.all(color: color.withValues(alpha: 0.24), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -132,17 +132,17 @@ class MoreScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // ── Quick Actions ──
-            _QuickActionsSection(actions: _quickActions),
+            const _QuickActionsSection(actions: _quickActions),
 
             const SizedBox(height: 24),
 
             // ── Recent Activity ──
-            _RecentActivitySection(activities: _recentActivities),
+            const _RecentActivitySection(activities: _recentActivities),
 
             const SizedBox(height: 24),
 
             // ── Settings Section ──
-            _SettingsSection(settings: _settings),
+            const _SettingsSection(settings: _settings),
 
             const SizedBox(height: 24),
 
@@ -297,11 +297,11 @@ class _BannerCard extends StatelessWidget {
                 icon: Icons.credit_card_rounded,
                 color: AppTheme.accentGreen,
               ),
-              _StatItem(
+              const _StatItem(
                 value: '12',
                 label: 'Study Days',
                 icon: Icons.local_fire_department_rounded,
-                color: const Color(0xFFF59E0B),
+                color: Color(0xFFF59E0B),
               ),
             ],
           ),
@@ -398,7 +398,7 @@ class _StatItem extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   value,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -506,7 +506,7 @@ class _QuickActionCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               action.label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
                 color: AppTheme.textPrimary,
@@ -590,7 +590,7 @@ class _RecentItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
           bottom: BorderSide(
             color: AppTheme.divider,
@@ -735,7 +735,7 @@ class _SettingRow extends StatelessWidget {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border: Border(
             bottom: BorderSide(
               color: AppTheme.divider,

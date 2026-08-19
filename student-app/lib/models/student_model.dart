@@ -275,7 +275,7 @@ class NotificationAction {
   const NotificationAction({
     required this.label,
     required this.action,
-    required this.payload,
+    this.payload = const {},
   });
 
   factory NotificationAction.fromJson(Map<String, dynamic> json) =>
@@ -296,6 +296,8 @@ class NotificationModel {
   final DateTime createdAt;
   final String? courseCode;
   final String? senderRole;
+  final int? idAssessment;
+  final Map<String, dynamic> payload;
   final List<NotificationAction> actionOptions;
 
   const NotificationModel({
@@ -308,14 +310,20 @@ class NotificationModel {
     required this.createdAt,
     this.courseCode,
     this.senderRole,
+    this.idAssessment,
+    this.payload = const {},
     this.actionOptions = const [],
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    final payload = json['payload'] is Map ? json['payload'] as Map<String, dynamic> : <String, dynamic>{};
+    final payload = json['payload'] is Map ? Map<String, dynamic>.from(json['payload'] as Map) : <String, dynamic>{};
     final title = payload['title'] ?? json['title'] ?? '';
     final body = payload['body'] ?? json['content'] ?? json['body'] ?? '';
     final createdAtValue = json['created_at'] ?? json['createdAt'];
+    final rawIdAssessment = json['id_assessment'] ?? json['idAssessment'] ?? payload['id_assessment'] ?? payload['idAssessment'];
+    final idAssessment = rawIdAssessment is int
+        ? rawIdAssessment
+        : (rawIdAssessment != null ? int.tryParse(rawIdAssessment.toString()) : null);
 
     return NotificationModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -327,6 +335,8 @@ class NotificationModel {
       createdAt: parseServerTime(createdAtValue),
       courseCode: (json['course_code'] ?? json['courseCode'] ?? payload['course_code'] ?? payload['courseCode'])?.toString(),
       senderRole: json['sender_role'] ?? json['senderRole'] ?? payload['sender_role'] ?? payload['senderRole'],
+      idAssessment: idAssessment,
+      payload: payload,
       actionOptions: (json['action_options'] as List? ?? [])
           .map((a) => NotificationAction.fromJson(a))
           .toList(),
@@ -339,6 +349,8 @@ class NotificationModel {
     String? body,
     String? courseCode,
     String? senderRole,
+    int? idAssessment,
+    Map<String, dynamic>? payload,
   }) => NotificationModel(
         id: id,
         studentId: studentId,
@@ -349,6 +361,8 @@ class NotificationModel {
         createdAt: createdAt,
         courseCode: courseCode ?? this.courseCode,
         senderRole: senderRole ?? this.senderRole,
+        idAssessment: idAssessment ?? this.idAssessment,
+        payload: payload ?? this.payload,
         actionOptions: actionOptions,
       );
 }

@@ -117,7 +117,8 @@ class _ClassCard extends ConsumerWidget {
         : enrollment.codeModule;
     final unreadAnnouncements = ref.watch(courseUnreadAnnouncementsCountProvider(fullCourseCode));
     final unreadDiscussions = ref.watch(courseUnreadDiscussionsCountProvider(fullCourseCode));
-    final totalUnread = unreadAnnouncements + unreadDiscussions;
+    final unreadAssignments = ref.watch(courseUnreadAssignmentsCountProvider(fullCourseCode));
+    final totalUnread = unreadAnnouncements + unreadDiscussions + unreadAssignments;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -217,8 +218,10 @@ class _ClassCard extends ConsumerWidget {
                       Expanded(
                         child: _InfoChip(
                           icon: Icons.assignment_turned_in_outlined,
-                          label: '$submitted/$total submitted',
-                          color: AppTheme.accentGreen,
+                          label: unreadAssignments > 0
+                              ? '$submitted/$total submitted · $unreadAssignments new'
+                              : '$submitted/$total submitted',
+                          color: unreadAssignments > 0 ? AppTheme.warning : AppTheme.accentGreen,
                         ),
                       ),
                       const SizedBox(width: 8),

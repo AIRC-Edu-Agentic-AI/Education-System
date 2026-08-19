@@ -362,7 +362,35 @@ void showNotificationDetail(
                 baseStyle: const TextStyle(
                     fontSize: 14, color: AppTheme.textSecondary, height: 1.5),
               ),
-              if (notif.actionOptions.isNotEmpty) ...[
+              if (notif.type == 'assignment' || notif.idAssessment != null) ...[
+                const SizedBox(height: 20),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _DetailActionChip(
+                      action: const NotificationAction(
+                        label: 'View Assignment 📝',
+                        action: 'view_assignment',
+                      ),
+                      onTap: () {
+                        Navigator.of(sheetContext).pop();
+                        ref.read(notificationProvider.notifier).markRead(notif.id);
+                        final course = notif.courseCode?.trim().split(' ').first ?? '';
+                        if (course.isNotEmpty) {
+                          if (notif.idAssessment != null) {
+                            context.push('/my-class/$course/assignments/${notif.idAssessment}');
+                          } else {
+                            context.push('/my-class/$course/assignments');
+                          }
+                        } else {
+                          context.push('/my-class');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ] else if (notif.actionOptions.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Wrap(
                   spacing: 8,

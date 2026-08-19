@@ -27,17 +27,9 @@ final myGroupsProvider = FutureProvider<List<StudyGroup>>((ref) async {
   try {
     final service = ref.read(studyGroupServiceProvider);
     final studentId = ref.read(activeStudentIdProvider);
-    print('🔍 Fetching groups for student: $studentId');
-    
     if (studentId == 0) return [];
-    
-    final result = await service.getMyGroups(studentId);
-    print('✅ Groups loaded: ${result.length}');
-    print('📊 First group: ${result.isNotEmpty ? result.first.name : "none"}');
-    return result;
-  } catch (e, stacktrace) {
-    print('❌ Error: $e');
-    print('📚 Stacktrace: $stacktrace');
+    return await service.getMyGroups(studentId);
+  } catch (_) {
     return [];
   }
 });
@@ -76,20 +68,14 @@ final createGroupProvider = FutureProvider.family<StudyGroup, Map<String, dynami
   try {
     final service = ref.read(studyGroupServiceProvider);
     final studentId = ref.read(activeStudentIdProvider);
-    print('🔍 Creating group for student: $studentId');
-    
     if (studentId == 0) throw Exception('Not logged in');
-    
-    final result = await service.createGroup(
+
+    return await service.createGroup(
       studentId: studentId,
       name: params['name'] as String,
       description: params['description'] as String? ?? '',
     );
-    
-    print('✅ Group created successfully: ${result.id}');
-    return result;
   } catch (e) {
-    print('❌ Error in createGroupProvider: $e');
     throw Exception('Unable to create study group: $e');
   }
 });
