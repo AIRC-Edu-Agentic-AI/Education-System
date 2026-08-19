@@ -82,6 +82,123 @@ async def _load_assignments(module: str, presentation: str):
     return docs
 
 
+async def _notify_assignment_created(
+    db,
+    module: str,
+    presentation: str,
+    id_assessment: int,
+    payload: CreateAssignmentRequest,
+    student_ids: Optional[List[int]] = None
+):
+    if db is None:
+        return
+    try:
+        from routers.realtime_chat import manager
+        import asyncio
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc).isoformat()
+        course_code = f"{module} {presentation}".strip()
+
+        if not student_ids:
+            # Find students enrolled in this exact course (code_module + code_presentation)
+            students = await db["students"].find(
+                {"enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}},
+                {"student_id": 1, "id_student": 1}
+            ).to_list(None)
+            found_ids = []
+            for s in students:
+                sid = s.get("student_id") or s.get("id_student")
+                if sid is not None:
+                    found_ids.append(int(sid))
+            
+            if not found_ids:
+                students = await db["students"].find(
+                    {"$or": [
+                        {"enrollments.code_module": module},
+                        {"code_module": module}
+                    ]},
+                    {"student_id": 1, "id_student": 1}
+                ).to_list(None)
+                for s in students:
+                    sid = s.get("student_id") or s.get("id_student")
+                    if sid is not None and int(sid) not in found_ids:
+                        found_ids.append(int(sid))
+            student_ids = found_ids
+
+        if not student_ids:
+            return
+
+        noti_title = f"New Assignment: {payload.title}"
+        noti_body = f"A new {payload.type} assignment '{payload.title}' (weight: {payload.weight}%, due day: {payload.due_date}) has been posted for {course_code}."
+
+        noti_docs = []
+        for sid in student_ids:
+            noti_docs.append({
+                "student_id": int(sid),
+                "receiverId": int(sid),
+                "type": "assignment",
+                "title": noti_title,
+                "content": noti_body,
+                "course_code": course_code,
+                "courseCode": course_code,
+                "sender_role": "instructor",
+                "senderRole": "instructor",
+                "read": False,
+                "is_read": False,
+                "created_at": now,
+                "createdAt": now,
+                "payload": {
+                    "title": noti_title,
+                    "body": noti_body,
+                    "type": "assignment",
+                    "course_code": course_code,
+                    "courseCode": course_code,
+                    "id_assessment": id_assessment,
+                    "action": f"/my-class/{module}/assignments",
+                },
+                "action_options": [
+                    {
+                        "label": "View Assignment",
+                        "action": f"/my-class/{module}/assignments",
+                        "is_primary": True,
+                    }
+                ],
+            })
+
+        if noti_docs:
+            await db["notifications"].insert_many(noti_docs)
+
+        # Dispatch WebSocket event to targeted students
+        for sid in student_ids:
+            asyncio.create_task(manager.send_to_user(str(sid), {
+                "type": "new_notification",
+                "notification": {
+                    "student_id": int(sid),
+                    "type": "assignment",
+                    "title": noti_title,
+                    "body": noti_body,
+                    "content": noti_body,
+                    "course_code": course_code,
+                    "courseCode": course_code,
+                    "sender_role": "instructor",
+                    "read": False,
+                    "created_at": now,
+                    "payload": {
+                        "title": noti_title,
+                        "body": noti_body,
+                        "type": "assignment",
+                        "course_code": course_code,
+                        "courseCode": course_code,
+                        "id_assessment": id_assessment,
+                        "action": f"/my-class/{module}/assignments",
+                    }
+                }
+            }))
+    except Exception as e:
+        print(f"Error sending assignment notifications: {e}")
+
+
 async def _create_assignment(module: str, presentation: str, payload: CreateAssignmentRequest):
     db = get_db()
     if db is None:
@@ -114,6 +231,8 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
         payload={"code_module": module, "code_presentation": presentation},
         source="assignments",
     )
+    # Send targeted notification to enrolled students
+    await _notify_assignment_created(db, module, presentation, id_assessment, payload)
     return doc
 
 
@@ -170,6 +289,48 @@ async def grade_submission(id_assessment: int, student_id: int, payload: GradeSu
         payload={"score": payload.score, "student_id": student_id},
         source="assignments",
     )
+
+    # Send grade notification to student
+    try:
+        from routers.realtime_chat import manager
+        import asyncio
+        from datetime import timezone
+        now_str = datetime.now(timezone.utc).isoformat()
+        grade_noti = {
+            "student_id": student_id,
+            "receiverId": student_id,
+            "type": "grade",
+            "title": "Assignment Graded",
+            "content": f"Your submission for assessment #{id_assessment} has been graded: {payload.score}/100.",
+            "sender_role": "instructor",
+            "read": False,
+            "is_read": False,
+            "created_at": now_str,
+            "createdAt": now_str,
+            "payload": {
+                "title": "Assignment Graded",
+                "body": f"Your submission for assessment #{id_assessment} has been graded: {payload.score}/100.",
+                "type": "grade",
+                "id_assessment": id_assessment,
+                "score": payload.score,
+                "feedback": payload.feedback or ""
+            }
+        }
+        await db["notifications"].insert_one(grade_noti)
+        asyncio.create_task(manager.send_to_user(str(student_id), {
+            "type": "new_notification",
+            "notification": {
+                "student_id": student_id,
+                "type": "grade",
+                "title": grade_noti["title"],
+                "body": grade_noti["content"],
+                "read": False,
+                "created_at": now_str
+            }
+        }))
+    except Exception as e:
+        print(f"Error sending grade notification: {e}")
+
     return {"ok": True, "student_id": student_id, "id_assessment": id_assessment, "score": payload.score}
 
 
@@ -342,6 +503,26 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
         target_id=str(id_assessment),
         payload={"classroom_id": classroom_id, "code_module": payload.code_module, "student_count": len(student_ids)},
         source="assignments",
+    )
+
+    # Send targeted notification to classroom students
+    pres = classroom.get("code_presentation") or classroom.get("presentation") or ""
+    await _notify_assignment_created(
+        db,
+        payload.code_module,
+        pres,
+        id_assessment,
+        CreateAssignmentRequest(
+            title=payload.title,
+            description=payload.description,
+            type=payload.type,
+            weight=payload.weight,
+            due_date=payload.due_date,
+            allowed_formats=payload.allowed_formats,
+            max_file_size_mb=payload.max_file_size_mb,
+            teacher_id=payload.teacher_id,
+        ),
+        student_ids=student_ids,
     )
 
     return doc

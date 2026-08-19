@@ -44,6 +44,7 @@ async def get_course_channels(db, course_code: str):
     module = course_code.split(' ')[0]
     query = {
         "status": {"$ne": COURSE_STATUS_DELETED},
+        "type": {"$nin": ["private_message", "private_group"]},
         "$or": [
             {"course_code": course_code},
             {"course_code": module}

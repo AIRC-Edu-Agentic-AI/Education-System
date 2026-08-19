@@ -3,13 +3,19 @@ import 'package:student_agent/core/theme/app_theme.dart';
 
 // ── Helper ──
 DateTime parseServerTime(dynamic raw) {
-  if (raw == null) return DateTime.now();
-  final s = raw.toString();
+  if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0);
+  if (raw is DateTime) return raw.toLocal();
+  final s = raw.toString().trim().replaceFirst(' ', 'T');
+  if (s.isEmpty) return DateTime.fromMillisecondsSinceEpoch(0);
   final hasTz = RegExp(r'[zZ]|[+-]\d\d:?\d\d$').hasMatch(s);
   try {
     return DateTime.parse(hasTz ? s : '${s}Z').toLocal();
   } catch (_) {
-    return DateTime.now();
+    try {
+      return DateTime.parse(s).toLocal();
+    } catch (_) {
+      return DateTime.fromMillisecondsSinceEpoch(0);
+    }
   }
 }
 

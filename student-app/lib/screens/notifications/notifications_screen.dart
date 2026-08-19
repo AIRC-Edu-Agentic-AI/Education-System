@@ -16,6 +16,8 @@ Color notificationColor(String type) => switch (type) {
       'course_guidance' => AppTheme.primaryBlue,
       'exam_schedule' => AppTheme.danger,
       'makeup_class' => AppTheme.warning,
+      'assignment' => AppTheme.accentGreen,
+      'grade' => AppTheme.warning,
       'general_notice' || 'general' => AppTheme.primaryBlue,
       _ => AppTheme.primaryBlue,
     };
@@ -30,6 +32,8 @@ IconData notificationIcon(String type) => switch (type) {
       'vle_inactivity' => Icons.visibility_off_outlined,
       'exam_schedule' => Icons.event_note_rounded,
       'makeup_class' => Icons.update_rounded,
+      'assignment' => Icons.assignment_outlined,
+      'grade' => Icons.grade_outlined,
       _ => Icons.notifications_outlined,
     };
 
@@ -80,6 +84,10 @@ void handleNotificationAction(
       }
     case 'snooze':
       break;
+    default:
+      if (action.action.startsWith('/')) {
+        context.push(action.action);
+      }
   }
 }
 
@@ -161,7 +169,7 @@ class _NotificationTile extends ConsumerWidget {
         if (isUnread) {
           ref.read(notificationProvider.notifier).markRead(notification.id);
         }
-        _showDetail(context, ref, notification);
+        showNotificationDetail(context, ref, notification);
       },
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -285,7 +293,7 @@ class _NotificationTile extends ConsumerWidget {
   }
 }
 
-void _showDetail(
+void showNotificationDetail(
     BuildContext context, WidgetRef ref, NotificationModel notif) {
   showModalBottomSheet(
     context: context,

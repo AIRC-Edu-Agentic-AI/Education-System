@@ -88,20 +88,7 @@ class _CourseCard extends ConsumerWidget {
 
                 return Column(
                   children: channels.map((channel) {
-                    return ListTile(
-                      leading: Icon(
-                        channel.type == 'announcement' ? Icons.campaign : Icons.forum,
-                      ),
-                      title: Text(channel.name),
-                      subtitle: Text(channel.type),
-                      onTap: () {
-                        context.go(
-                          '/course/${course.courseCode}/channels/${channel.id}/messages'
-                          '?name=${Uri.encodeComponent(channel.name)}'
-                          '&type=${Uri.encodeComponent(channel.type)}',
-                        );
-                      },
-                    );
+                    return _ChannelTile(course: course, channel: channel);
                   }).toList(),
                 );
               },
@@ -109,6 +96,94 @@ class _CourseCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ChannelTile extends ConsumerWidget {
+  final CourseModel course;
+  final CourseChannel channel;
+
+  const _ChannelTile({
+    required this.course,
+    required this.channel,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAnnouncement = channel.type == 'announcement';
+    final unreadCount = isAnnouncement
+        ? ref.watch(courseUnreadAnnouncementsCountProvider(course.courseCode))
+        : ref.watch(channelUnreadCountProvider(channel.id));
+
+    return ListTile(
+      leading: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(
+            isAnnouncement ? Icons.campaign : Icons.forum,
+            color: isAnnouncement ? const Color(0xFFF59E0B) : const Color(0xFF38BDF8),
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              right: -4,
+              top: -4,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEF4444),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
+      ),
+      title: Text(
+        channel.name,
+        style: TextStyle(
+          fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(channel.type),
+      trailing: unreadCount > 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                unreadCount > 99 ? '99+' : '$unreadCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : const Icon(Icons.chevron_right_rounded),
+      onTap: () {
+        ref.read(channelReadStateProvider.notifier).markChannelRead(channel.id);
+        if (isAnnouncement) {
+          final notifs = ref.read(courseNotificationsProvider(course.courseCode)).value ?? [];
+          for (final n in notifs.where((item) => !item.read)) {
+            ref.read(notificationProvider.notifier).markRead(n.id);
+          }
+        }
+        context.go(
+          '/course/${course.courseCode}/channels/${channel.id}/messages'
+          '?name=${Uri.encodeComponent(channel.name)}'
+          '&type=${Uri.encodeComponent(channel.type)}',
+        );
+      },
     );
   }
 }
