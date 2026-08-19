@@ -134,13 +134,21 @@ async def mark_read(notif_id: str):
         return {"ok": True}
     from bson import ObjectId
     from bson.errors import InvalidId
+    
+    clauses = [{"_id": notif_id}, {"id": notif_id}]
     try:
         oid = ObjectId(notif_id)
-    except (InvalidId, TypeError):
-        # Non-ObjectId id (e.g. a mock/string id) — nothing to update
-        return {"ok": True}
-    await db["notifications"].update_one(
-        {"_id": oid}, {"$set": {"read": True, "is_read": True}}
+        clauses.append({"_id": oid})
+    except (InvalidId, TypeError, ValueError):
+        pass
+    try:
+        int_id = int(notif_id)
+        clauses.extend([{"_id": int_id}, {"id": int_id}])
+    except (ValueError, TypeError):
+        pass
+
+    await db["notifications"].update_many(
+        {"$or": clauses}, {"$set": {"read": True, "is_read": True}}
     )
     return {"ok": True}
 

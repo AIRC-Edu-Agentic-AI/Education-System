@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
-import 'package:student_agent/models/course_model.dart';
 import 'package:student_agent/providers/providers.dart';
 import 'package:student_agent/widgets/formatted_text.dart';
 
@@ -39,8 +38,6 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   // Selected instructor for chat thread view (null = show instructor list)
   InstructorInfo? _selectedInstructor;
   
-  int _unreadCount = 0;
-  CourseMessage? _lastMessage;
   String? _privateChannelId;
   StreamSubscription? _msgSub;
   final TextEditingController _textController = TextEditingController();
@@ -65,22 +62,15 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     _loadPrivateChannel();
     _msgSub = newMessageStreamController.stream.listen((msg) {
       if (!mounted) return;
-      final isPrivate = (msg.channelType == 'private_message') ||
-          (msg.channelId == _privateChannelId) ||
-          (msg.senderRole == 'instructor' && msg.courseCode.isEmpty);
-      if (isPrivate || msg.channelId == _privateChannelId) {
-        setState(() {
-          _unreadCount++;
-          _lastMessage = msg;
-          if (msg.channelId.isNotEmpty) {
-            _privateChannelId = msg.channelId;
-          }
-        });
+      if (msg.channelId.isNotEmpty) {
+        ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
       }
-      ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
       if (_privateChannelId != null) {
         ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: _privateChannelId!)));
       }
+      final studentId = ref.read(activeStudentIdProvider);
+      ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$studentId')));
+      ref.invalidate(studentPrivateChannelProvider);
     });
 
     _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
@@ -142,6 +132,8 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
     if (_privateChannelId == null) {
       _loadPrivateChannel();
     }
+
+    final totalUnread = ref.watch(teacherDirectMessagesUnreadCountProvider);
 
     final size = widget.bodySize;
     final defaultPos = Offset(size.width - _size - 16, size.height - _size - 80);
@@ -212,13 +204,13 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                           color: _activeTab == 0 ? const Color(0xFF0EA5E9) : Colors.transparent,
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: const Row(
+                                        child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Colors.white),
-                                            SizedBox(width: 4),
-                                            Text(
+                                            const Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Colors.white),
+                                            const SizedBox(width: 4),
+                                            const Text(
                                               'Messages',
                                               style: TextStyle(
                                                 fontSize: 11,
@@ -226,6 +218,24 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                                                 color: Colors.white,
                                               ),
                                             ),
+                                            if (totalUnread > 0) ...[
+                                              const SizedBox(width: 4),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFEF4444),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  totalUnread > 99 ? '99+' : '$totalUnread',
+                                                  style: const TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -282,7 +292,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                     // Body List Area
                     Expanded(
                       child: _activeTab == 0
-                          ? (_selectedInstructor == null ? _buildInstructorList() : _buildInstructorMessageThread())
+                          ? (_selectedInstructor == null ? _buildInstructorList(totalUnread) : _buildInstructorMessageThread())
                           : _buildAiChatList(),
                     ),
 
@@ -354,123 +364,82 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
         Positioned(
           left: currentPos.dx,
           top: currentPos.dy,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Tooltip Preview Callout when new private message arrives
-              if (_unreadCount > 0 && !_isExpanded && _lastMessage != null)
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isExpanded = true;
-                      _activeTab = 0; // Messages tab
-                      _selectedInstructor = _instructors.first; // Open instructor thread
-                      _unreadCount = 0;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    constraints: const BoxConstraints(maxWidth: 220),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Text(
-                              'Instructor message:',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF38BDF8),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _lastMessage!.content,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 11, color: Colors.white),
-                        ),
-                      ],
-                    ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanUpdate: _onPanUpdate,
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+              if (_isExpanded) {
+                final sid = ref.read(activeStudentIdProvider).toString();
+                ref.read(channelReadStateProvider.notifier).markChannelRead('private_$sid');
+                if (_privateChannelId != null && _privateChannelId != 'private_$sid') {
+                  ref.read(channelReadStateProvider.notifier).markChannelRead(_privateChannelId!);
+                }
+              }
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: _size,
+                  height: _size,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.blueGreenGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                        blurRadius: 16,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _isExpanded ? Icons.close_rounded : Icons.support_agent_rounded,
+                    color: Colors.white,
+                    size: 28,
                   ),
                 ),
 
-              // Floating Bubble Icon
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanUpdate: _onPanUpdate,
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                    if (_isExpanded) _unreadCount = 0;
-                  });
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: _size,
-                      height: _size,
+                // Unread Badge Counter
+                if (totalUnread > 0 && !_isExpanded)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        gradient: AppTheme.blueGreenGradient,
-                        shape: BoxShape.circle,
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
-                            blurRadius: 16,
-                            spreadRadius: 2,
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Icon(
-                        _isExpanded ? Icons.close_rounded : Icons.support_agent_rounded,
-                        color: Colors.white,
-                        size: 28,
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
                       ),
-                    ),
-
-                    // Unread Badge Counter
-                    if (_unreadCount > 0 && !_isExpanded)
-                      Positioned(
-                        top: -4,
-                        right: -4,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '$_unreadCount',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                      child: Center(
+                        child: Text(
+                          totalUnread > 99 ? '99+' : '$totalUnread',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                  ],
-                ),
-              ),
-            ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ],
@@ -478,7 +447,7 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
   }
 
   // ── TAB 0 - SUBVIEW A: Instructor List ─────────────────────────────────────
-  Widget _buildInstructorList() {
+  Widget _buildInstructorList(int totalUnread) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -544,12 +513,45 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF38BDF8)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (totalUnread > 0)
+                        Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            totalUnread > 99 ? '99+' : '$totalUnread',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF38BDF8)),
+                    ],
+                  ),
                   onTap: () {
                     setState(() {
                       _selectedInstructor = inst;
-                      _unreadCount = 0;
                     });
+                    final sid = ref.read(activeStudentIdProvider).toString();
+                    ref.read(channelReadStateProvider.notifier).markChannelRead('private_$sid');
+                    if (_privateChannelId != null && _privateChannelId != 'private_$sid') {
+                      ref.read(channelReadStateProvider.notifier).markChannelRead(_privateChannelId!);
+                    }
                   },
                 ),
               );
@@ -562,13 +564,21 @@ class _FloatingChatButtonState extends ConsumerState<FloatingChatButton> {
 
   // ── TAB 0 - SUBVIEW B: Instructor Chat Thread ──────────────────────────────
   Widget _buildInstructorMessageThread() {
-    final chanId = _privateChannelId ?? 'private_${ref.watch(activeStudentIdProvider)}';
+    final sid = ref.watch(activeStudentIdProvider).toString();
+    final chanId = _privateChannelId ?? 'private_$sid';
     final messagesAsync = ref.watch(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: chanId)));
 
     return messagesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8), strokeWidth: 2)),
       error: (e, _) => const Center(child: Text('No private messages yet', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12))),
       data: (messages) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(channelReadStateProvider.notifier).markChannelRead('private_$sid');
+          if (_privateChannelId != null && _privateChannelId != 'private_$sid') {
+            ref.read(channelReadStateProvider.notifier).markChannelRead(_privateChannelId!);
+          }
+        });
+
         if (messages.isEmpty) {
           return Center(
             child: Padding(

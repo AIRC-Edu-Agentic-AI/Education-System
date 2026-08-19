@@ -14,7 +14,49 @@ class MyClassScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
-      appBar: AppBar(title: const Text('My Class')),
+      appBar: AppBar(
+        title: const Text('My Class'),
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined,
+                    color: AppTheme.textSecondary),
+                onPressed: () => context.push('/notifications'),
+                padding: EdgeInsets.zero,
+              ),
+              if (ref.watch(unreadCountProvider) > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.danger,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${ref.watch(unreadCountProvider) > 99 ? '99+' : ref.watch(unreadCountProvider)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: studentAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppTheme.primaryBlue),
@@ -56,19 +98,26 @@ class MyClassScreen extends ConsumerWidget {
   }
 }
 
-class _ClassCard extends StatelessWidget {
+class _ClassCard extends ConsumerWidget {
   final Enrollment enrollment;
 
   const _ClassCard({required this.enrollment});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final submitted = enrollment.assessments.where((a) => a.isSubmitted).length;
     final total = enrollment.assessments.length;
     final progress = total == 0 ? 0.0 : submitted / total;
     final pending = enrollment.assessments.where((a) => !a.isSubmitted).toList()
       ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
     final next = pending.isNotEmpty ? pending.first : null;
+
+    final fullCourseCode = enrollment.codePresentation.isNotEmpty
+        ? '${enrollment.codeModule} ${enrollment.codePresentation}'
+        : enrollment.codeModule;
+    final unreadAnnouncements = ref.watch(courseUnreadAnnouncementsCountProvider(fullCourseCode));
+    final unreadDiscussions = ref.watch(courseUnreadDiscussionsCountProvider(fullCourseCode));
+    final totalUnread = unreadAnnouncements + unreadDiscussions;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -93,13 +142,48 @@ class _ClassCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    enrollment.codeModule,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        enrollment.codeModule,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (totalUnread > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.danger,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.danger.withValues(alpha: 0.5),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.notifications_active_rounded, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$totalUnread new',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(

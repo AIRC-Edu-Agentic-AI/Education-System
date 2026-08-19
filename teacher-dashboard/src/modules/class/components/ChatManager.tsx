@@ -122,10 +122,16 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
   }, [openNewChatDialog, courseCode]);
 
   const getChannelDisplayName = (c: Channel) => {
-    if (c.type === 'private_message' && c.members) {
-      const studentId = c.members.find(m => String(m) !== TEACHER_ID);
-      if (studentId && !c.name.includes('#')) {
-        return `${c.name} (#${studentId})`;
+    if (c.type === 'private_message') {
+      const studentId = (c.members || []).find(m => String(m) !== TEACHER_ID);
+      if (studentId) {
+        if (c.name === 'Instructor' || c.name === 'teacher_admin' || !c.name) {
+          const foundStudent = students.find(s => String(s.id_student) === String(studentId));
+          return foundStudent ? `${foundStudent.name} (#${studentId})` : `Student #${studentId}`;
+        }
+        if (!c.name.includes('#')) {
+          return `${c.name} (#${studentId})`;
+        }
       }
     }
     return c.name;
@@ -163,6 +169,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
         });
         setActiveChannel(newChan);
         setOpenNewChatDialog(false);
+        fetchChannels();
       }
     } catch (e) {
       console.error(e);
@@ -189,6 +196,7 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
         setOpenNewChatDialog(false);
         setGroupName('');
         setSelectedStudentIds([]);
+        fetchChannels();
       }
     } catch (e) {
       console.error(e);
@@ -234,7 +242,15 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
     setLoadingChannels(true);
     try {
       const res = await fetch(`${BASE_URL}/realtime-chat/channels?user_id=${TEACHER_ID}&course_code=${courseCode}`);
-      const data: Channel[] = await res.json();
+      if (!res.ok) {
+        console.error("Failed to fetch channels:", res.status, res.statusText);
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        console.warn("Channels response is not an array:", data);
+        return;
+      }
       
       const uniqueChannels: Channel[] = [];
       const seenIds = new Set<string>();
@@ -254,9 +270,13 @@ export default function ChatManager({ module, presentation }: ChatManagerProps) 
       }
 
       setChannels(uniqueChannels);
-      if (uniqueChannels.length > 0 && !activeChannel) {
-        setActiveChannel(uniqueChannels[0]);
-      }
+      setActiveChannel(prev => {
+        if (prev) {
+          const match = uniqueChannels.find(c => c._id === prev._id);
+          if (match) return match;
+        }
+        return uniqueChannels.length > 0 ? uniqueChannels[0] : null;
+      });
     } catch (e) {
       console.error(e);
     } finally {

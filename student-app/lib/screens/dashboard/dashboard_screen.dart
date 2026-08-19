@@ -820,15 +820,18 @@ class _NotificationsSection extends ConsumerWidget {
   }
 }
 
-class _PreviewTile extends StatelessWidget {
+class _PreviewTile extends ConsumerWidget {
   final NotificationModel notification;
   const _PreviewTile({required this.notification});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => context.push('/notifications'),
+      onTap: () {
+        ref.read(notificationProvider.notifier).markRead(notification.id);
+        showNotificationDetail(context, ref, notification);
+      },
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
