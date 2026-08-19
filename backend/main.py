@@ -6,7 +6,11 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
 from routers import student, chat, schedule, notifications, auth, admin, teacher_dashboard, teacher_schedule, teacher_notification, realtime_chat
 from routers import study_groups

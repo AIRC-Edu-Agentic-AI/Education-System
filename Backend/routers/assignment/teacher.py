@@ -7,6 +7,7 @@ from bson.errors import InvalidId
 
 from db.mongodb import get_db
 from db.event_logging import log_event
+from db.notifications import push_notification
 
 router = APIRouter()
 
@@ -82,6 +83,61 @@ async def _load_assignments(module: str, presentation: str):
     return docs
 
 
+async def _notify_assignment_recipients(
+    db,
+    student_ids: List[int],
+    assignment: dict,
+    course_code: str,
+):
+    """Notify enrolled students after an assignment is created."""
+    recipient_ids = sorted({sid for sid in student_ids if isinstance(sid, int)})
+    if not recipient_ids:
+        return 0
+
+    title = "New Assignment Available"
+    body = (
+        f"{assignment['title']} has been assigned in {course_code}. "
+        f"Due date: {assignment['due_date']}."
+    )
+
+    for student_id in recipient_ids:
+        await push_notification(
+            db,
+            student_id,
+            "assignment",
+            title,
+            body,
+        )
+
+    try:
+        from routers.realtime_chat import manager
+
+        notification = {
+            "type": "assignment",
+            "read": False,
+            "sender_role": "instructor",
+            "course_code": course_code,
+            "payload": {"title": title, "body": body},
+            "title": title,
+            "content": body,
+            "created_at": datetime.now().isoformat(),
+            "id_assessment": assignment["id_assessment"],
+        }
+        for student_id in recipient_ids:
+            await manager.send_to_user(
+                str(student_id),
+                {"type": "new_notification", "notification": {
+                    **notification,
+                    "student_id": student_id,
+                }},
+            )
+    except Exception as exc:
+        # Persisted notifications remain available when WebSocket delivery fails.
+        print(f"[ASSIGNMENT] WebSocket notification failed: {exc}")
+
+    return len(recipient_ids)
+
+
 async def _create_assignment(module: str, presentation: str, payload: CreateAssignmentRequest):
     db = get_db()
     if db is None:
@@ -106,12 +162,29 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
     }
     result = await db.assignments.insert_one(doc)
     doc["_id"] = str(result.inserted_id)
+    students = await db.students.find(
+        {"enrollments": {"$elemMatch": {
+            "code_module": module,
+            "code_presentation": presentation,
+        }}},
+        {"_id": 0, "student_id": 1},
+    ).to_list(None)
+    notified_count = await _notify_assignment_recipients(
+        db,
+        [student.get("student_id") for student in students],
+        doc,
+        f"{module} {presentation}",
+    )
     await log_event(
         None,
         "assignment_created",
         actor_id=payload.teacher_id,
         target_id=str(id_assessment),
-        payload={"code_module": module, "code_presentation": presentation},
+        payload={
+            "code_module": module,
+            "code_presentation": presentation,
+            "notified_student_count": notified_count,
+        },
         source="assignments",
     )
     return doc
@@ -334,13 +407,24 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
     }
     result = await db["assignments"].insert_one(doc)
     doc["_id"] = str(result.inserted_id)
+    notified_count = await _notify_assignment_recipients(
+        db,
+        student_ids,
+        doc,
+        payload.code_module,
+    )
 
     await log_event(
         None,
         "assignment_created",
         actor_id=payload.teacher_id,
         target_id=str(id_assessment),
-        payload={"classroom_id": classroom_id, "code_module": payload.code_module, "student_count": len(student_ids)},
+        payload={
+            "classroom_id": classroom_id,
+            "code_module": payload.code_module,
+            "student_count": len(student_ids),
+            "notified_student_count": notified_count,
+        },
         source="assignments",
     )
 

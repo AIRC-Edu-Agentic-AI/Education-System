@@ -95,7 +95,8 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
             final eventType = data['type'] as String?;
 
             if (eventType == 'new_notification' && data['notification'] != null) {
-              final newNotif = NotificationModel.fromJson(Map<String, dynamic>.from(data['notification']));
+              final notificationData = Map<String, dynamic>.from(data['notification']);
+              final newNotif = NotificationModel.fromJson(notificationData);
               final current = state.value ?? [];
               final isDuplicate = current.any((n) =>
                 n.id == newNotif.id || (n.title == newNotif.title && n.body == newNotif.body));
@@ -104,6 +105,10 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
                 updated.sort(_sortNotifications);
                 state = AsyncData(updated);
                 newNotificationStreamController.add(newNotif);
+              }
+              if (notificationData['type'] == 'assignment' ||
+                  newNotif.type == 'assignment') {
+                ref.invalidate(studentProvider);
               }
             } else if (eventType == 'notification_updated' && data['notification'] != null) {
               final updatedNotif = NotificationModel.fromJson(Map<String, dynamic>.from(data['notification']));

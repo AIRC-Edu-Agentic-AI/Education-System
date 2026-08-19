@@ -8,7 +8,6 @@ import 'package:student_agent/providers/providers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:student_agent/models/instructor_feedback_model.dart';
-import 'package:student_agent/models/class_comment_model.dart';
 
 
 class AssignmentDetailScreen extends ConsumerStatefulWidget {
@@ -31,8 +30,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
   bool _submitting = false;
   List<AssignmentSubmission> _submissions = [];
   List<InstructorFeedback> _feedbacks = [];
-  List<ClassComment> _classComments = [];
-  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
@@ -42,7 +39,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
 
   @override
   void dispose() {
-    _commentController.dispose();
     super.dispose();
   }
 
@@ -54,14 +50,11 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     final submissions = await api.getSubmissions(widget.assessmentId, studentId);
     // Load feedbacks
     final feedbacks = await api.getFeedbacks(widget.assessmentId);
-    // Load class comments
-    final comments = await api.getClassComments(widget.assessmentId);
     
     if (!mounted) return;
     setState(() {
       _submissions = submissions;
       _feedbacks = feedbacks;
-      _classComments = comments;
     });
   }
 
@@ -81,7 +74,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
   Future<void> _submitAssignment() async {
     if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a PDF file to submit')),
+        const SnackBar(content: Text('Vui lòng chọn file PDF để nộp')),
       );
       return;
     }
@@ -109,7 +102,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Assignment submitted successfully'),
+          content: Text('Đã nộp bài thành công'),
           backgroundColor: AppTheme.accentGreen,
         ),
       );
@@ -118,7 +111,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
       setState(() => _submitting = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to submit assignment: $e')),
+        SnackBar(content: Text('Không thể nộp bài: $e')),
       );
     }
   }
@@ -140,7 +133,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Submission cancelled'),
+          content: Text('Đã hủy nộp bài'),
           backgroundColor: AppTheme.warning,
         ),
       );
@@ -149,42 +142,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
       setState(() => _submitting = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to cancel submission: $e')),
-      );
-    }
-  }
-
-  Future<void> _addClassComment() async {
-    final comment = _commentController.text.trim();
-    if (comment.isEmpty) return;
-    
-    try {
-      final api = ref.read(apiServiceProvider);
-      final studentId = ref.read(activeStudentIdProvider);
-      
-      final newComment = await api.addClassComment(
-        assessmentId: widget.assessmentId,
-        studentId: studentId,
-        content: comment,
-      );
-      
-      if (!mounted) return;
-      setState(() {
-        _classComments = [newComment, ..._classComments];
-        _commentController.clear();
-      });
-      
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Comment added'),
-          backgroundColor: AppTheme.accentGreen,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Không thể hủy nộp bài: $e')),
       );
     }
   }
@@ -196,7 +154,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        title: const Text('Assignment Details'),
+        title: const Text('Chi tiết bài tập'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.go('/my-class/${widget.courseCode}/assignments'),
@@ -207,7 +165,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           child: CircularProgressIndicator(color: AppTheme.primaryBlue),
         ),
         error: (e, _) => Center(
-          child: Text('Error: $e', style: const TextStyle(color: AppTheme.danger)),
+          child: Text('Lỗi: $e', style: const TextStyle(color: AppTheme.danger)),
         ),
         data: (student) {
           final enrollment = student.enrollments
@@ -216,7 +174,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           if (enrollment == null) {
             return const Center(
               child: Text(
-                'Class not found',
+                'Không tìm thấy lớp học',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
             );
@@ -228,7 +186,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           if (assessment == null) {
             return const Center(
               child: Text(
-                'Assignment not found',
+                'Không tìm thấy bài tập',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
             );
@@ -255,7 +213,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
               if (!isSubmitted) _buildFileUploadSection(),
               if (isSubmitted) ...[
                 const Text(
-                  'Submitted Files',
+                  'Bài đã nộp',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 14,
@@ -266,32 +224,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                 ..._submissions.map((submission) => _buildSubmittedFileCard(submission)),
               ],
               const SizedBox(height: 24),
-              if (_feedbacks.isNotEmpty) ...[
-                const Text(
-                  'Instructor Feedback',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ..._feedbacks.map((feedback) => _buildFeedbackCard(feedback)),
-                const SizedBox(height: 16),
-              ],
-              const Text(
-                'Class Discussion',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildClassCommentInput(),
-              const SizedBox(height: 8),
-              if (_classComments.isNotEmpty)
-                ..._classComments.map((comment) => _buildClassCommentCard(comment)),
+              _buildScoreAndFeedbackSection(assessment),
             ],
           );
         },
@@ -312,7 +245,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Submission Info',
+            'Thông tin nộp bài',
             style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 14,
@@ -321,17 +254,17 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           ),
           const SizedBox(height: 10),
           Text(
-            'Format: ${assessment.allowedFormats.isEmpty ? 'PDF' : assessment.allowedFormats.join(', ').toUpperCase()}',
+            'Định dạng: ${assessment.allowedFormats.isEmpty ? 'PDF' : assessment.allowedFormats.join(', ').toUpperCase()}',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 6),
           Text(
-            'Max file size: ${assessment.maxFileSizeMb} MB',
+            'Dung lượng tối đa: ${assessment.maxFileSizeMb} MB',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 10),
           const Text(
-            'Note: Please submit in the correct format and content as instructed. The file will be recorded in the system for instructor grading.',
+            'Lưu ý: Nộp đúng định dạng và nội dung theo đề bài. File sẽ được ghi nhận vào hệ thống và có thể được chấm điểm bởi giảng viên.',
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.45),
           ),
         ],
@@ -382,23 +315,12 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            runSpacing: 10,
-            spacing: 10,
-            children: [
-              _buildInfoChip('Type', assessment.type),
-              _buildInfoChip('Weight', '${assessment.weight.round()}%'),
-              _buildInfoChip('Due Date', assessment.dueDateLabel),
-              if (assessment.teacherId.isNotEmpty) _buildInfoChip('Instructor', assessment.teacherId),
-            ],
-          ),
           if (assessment.createdAt != null || assessment.updatedAt != null) ...[
             const SizedBox(height: 12),
             if (assessment.createdAt != null)
-              _buildInfoLine('Created at', _formatTime(assessment.createdAt!)),
+              _buildInfoLine('Created', _formatTime(assessment.createdAt!)),
             if (assessment.updatedAt != null)
-              _buildInfoLine('Updated at', _formatTime(assessment.updatedAt!)),
+              _buildInfoLine('Updated', _formatTime(assessment.updatedAt!)),
           ],
         ],
       ),
@@ -418,7 +340,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Assignment Description',
+            'Mô tả bài tập',
             style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 14,
@@ -427,7 +349,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           ),
           const SizedBox(height: 10),
           Text(
-            description.isNotEmpty ? description : 'No description available for this assignment.',
+            description.isNotEmpty ? description : 'Chưa có mô tả cho bài tập này.',
             style: const TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 13,
@@ -491,7 +413,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Submit Assignment',
+            'Nộp bài',
             style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 14,
@@ -512,7 +434,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                   child: Text(
                     _selectedFile != null
                         ? _selectedFile!.path.split('/').last
-                        : 'No file selected',
+                        : 'Chưa có file nào được chọn',
                     style: TextStyle(
                       color: _selectedFile != null
                           ? AppTheme.textPrimary
@@ -550,7 +472,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                     color: Colors.white,
                   ),
                 ),
-                label: const Text('Select File'),
+                label: const Text('Chọn file'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryBlue,
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -576,7 +498,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                       size: 20, color: AppTheme.danger),
                   SizedBox(width: 8),
                   Text(
-                    'PDF file ready for submission',
+                    'File PDF sẵn sàng để nộp',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
@@ -601,7 +523,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                       ),
                     )
                   : const Icon(Icons.upload_rounded),
-              label: Text(_submitting ? 'Submitting...' : 'Submit File'),
+              label: Text(_submitting ? 'Đang nộp...' : 'Thêm bài nộp'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.accentGreen,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -649,7 +571,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Submitted at: ${_formatTime(submission.submittedAt)}',
+                  'Nộp lúc: ${_formatTime(submission.submittedAt)}',
                   style: const TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 11,
@@ -661,7 +583,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
           IconButton(
             icon: const Icon(Icons.remove_red_eye_rounded, size: 20),
             onPressed: () => _previewPDF(submission.fileUrl),
-            tooltip: 'Preview',
+            tooltip: 'Xem trước',
             color: AppTheme.primaryBlue,
           ),
         ],
@@ -694,7 +616,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Instructor',
+                  'Giảng viên',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 13,
@@ -716,7 +638,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                           size: 16, color: AppTheme.warning),
                       const SizedBox(width: 4),
                       Text(
-                        'Score: ${feedback.score}',
+                        'Điểm: ${feedback.score}',
                         style: const TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 12,
@@ -741,93 +663,50 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     );
   }
 
-  Widget _buildClassCommentInput() {
+  Widget _buildScoreAndFeedbackSection(Assessment assessment) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.cardBorder),
       ),
       child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _commentController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                hintText: 'Write a comment...',
-                hintStyle: TextStyle(color: AppTheme.textMuted),
-                border: InputBorder.none,
-                isDense: true,
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send_rounded,
-                color: AppTheme.primaryBlue),
-            onPressed: _addClassComment,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClassCommentCard(ClassComment comment) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: comment.isInstructor
-              ? AppTheme.primaryBlue.withValues(alpha: 0.25)
-              : AppTheme.cardBorder,
-        ),
-      ),
-      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: comment.isInstructor
-                ? AppTheme.primaryBlue
-                : AppTheme.textMuted,
-            child: Icon(
-              comment.isInstructor ? Icons.school : Icons.person,
-              size: 14,
-              color: Colors.white,
-            ),
-          ),
+          const Icon(Icons.grade_outlined, color: AppTheme.warning, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text(
+                  'Score & Instructor Feedback',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Text(
-                  comment.studentName,
+                  assessment.score == null
+                      ? 'Score: Not graded yet'
+                      : 'Score: ${assessment.score!.toStringAsFixed(1)}%',
                   style: const TextStyle(
                     color: AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  comment.content,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-                Text(
-                  _formatTime(comment.createdAt),
-                  style: const TextStyle(
-                    color: AppTheme.textMuted,
-                    fontSize: 10,
-                  ),
-                ),
+                const SizedBox(height: 10),
+                if (_feedbacks.isEmpty)
+                  const Text(
+                    'No instructor feedback yet.',
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  )
+                else
+                  ..._feedbacks.map(_buildFeedbackCard),
               ],
             ),
           ),
@@ -837,6 +716,8 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
   }
 
   Future<void> _previewPDF(String url) async {
+    // TODO: Implement PDF preview with pdfx package
+    // Show dialog with PDF viewer
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -852,7 +733,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'File Preview',
+                    'Xem trước file',
                     style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 16,
@@ -874,7 +755,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                   ),
                   child: const Center(
                     child: Text(
-                      'PDF Viewer will be displayed here',
+                      'PDF Viewer sẽ được hiển thị ở đây',
                       style: TextStyle(color: Colors.black54),
                     ),
                   ),
@@ -936,7 +817,7 @@ class _HeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${assessment.type} · ${assessment.weight.round()}% weight',
+                  '${assessment.type} · ${assessment.weight.round()}% trọng số',
                   style: const TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 16,
@@ -946,8 +827,8 @@ class _HeaderCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   isSubmitted
-                      ? 'Submitted · Due Day ${assessment.dueDate}'
-                      : 'Due: Day ${assessment.dueDate}',
+                      ? 'Đã nộp · hạn ngày ${assessment.dueDate}'
+                      : 'Hạn nộp: ngày ${assessment.dueDate}',
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -969,7 +850,7 @@ class _HeaderCard extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.undo_rounded, size: 16),
-              label: Text(isUnsubmitting ? '' : 'Unsubmit'),
+              label: Text(isUnsubmitting ? '' : 'Hủy nộp'),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.warning,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
