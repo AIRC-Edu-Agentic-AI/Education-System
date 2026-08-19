@@ -391,6 +391,14 @@ class WeekItem {
   final DateTime dateTime;
   final bool isCompleted;
   final bool isUrgent;
+  final String? room;
+  final String? locationUrl;
+  final String? meetingLink;
+  final String? note;
+  final String? teacher;
+  final String? startTime;
+  final String? endTime;
+  final String? date;
 
   const WeekItem({
     required this.title,
@@ -398,7 +406,20 @@ class WeekItem {
     required this.dateTime,
     this.isCompleted = false,
     this.isUrgent = false,
+    this.room,
+    this.locationUrl,
+    this.meetingLink,
+    this.note,
+    this.teacher,
+    this.startTime,
+    this.endTime,
+    this.date,
   });
+
+  String get effectiveMeetingLink =>
+      (meetingLink != null && meetingLink!.isNotEmpty)
+          ? meetingLink!
+          : (locationUrl ?? '');
 
   factory WeekItem.fromJson(Map<String, dynamic> json) => WeekItem(
         title: json['title'] ?? '',
@@ -408,5 +429,13 @@ class WeekItem {
             : DateTime.now(),
         isCompleted: json['is_completed'] ?? false,
         isUrgent: json['is_urgent'] ?? false,
+        room: json['room'],
+        locationUrl: json['location_url'] ?? json['locationUrl'],
+        meetingLink: json['meeting_link'] ?? json['meetingLink'],
+        note: json['note'] ?? json['notes'],
+        teacher: json['teacher'],
+        startTime: json['start_time'] ?? json['startTime'],
+        endTime: json['end_time'] ?? json['endTime'],
+        date: json['date'],
       );
 }

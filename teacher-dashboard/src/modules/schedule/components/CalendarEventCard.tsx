@@ -39,7 +39,7 @@ export function CalendarEventCard({ event, compact = false, onClick }: Props) {
         </Stack>
 
         <Typography variant={compact ? 'caption' : 'body2'} color="text.secondary">
-          {event.className || 'No class'} · {event.teacher || 'No teacher'}
+          {event.className ? `${event.className} · ` : ''}{event.teacher || 'No teacher'}
         </Typography>
 
         <Typography variant={compact ? 'caption' : 'body2'}>

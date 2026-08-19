@@ -152,7 +152,6 @@ function validateSchedules(items: Schedule[]) {
       errors.push(`${label}: start time must be before end time.`)
     }
     if (!item.teacher.trim()) errors.push(`${label}: teacher is required.`)
-    if (!item.className.trim()) errors.push(`${label}: class is required.`)
     if (!item.subject.trim()) errors.push(`${label}: subject is required.`)
   })
 

@@ -138,7 +138,6 @@ function validateSchedules(items: ScheduleItem[], numWeeks: number) {
       errors.push(`${label}: start time must be before end time.`)
     }
     if (!item.teacher?.trim()) errors.push(`${label}: teacher is required.`)
-    if (!item.className?.trim()) errors.push(`${label}: class is required.`)
     if (!item.subject?.trim()) errors.push(`${label}: subject is required.`)
   })
 
@@ -516,14 +515,6 @@ export function TeachingScheduleView() {
               label="Subject"
               value={draftSchedule?.subject ?? ''}
               onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, subject: e.target.value } : prev)}
-              fullWidth
-              disabled={!canEdit}
-            />
-            <TextField
-              size="small"
-              label="Class"
-              value={draftSchedule?.className ?? ''}
-              onChange={(e) => setDraftSchedule((prev) => prev ? { ...prev, className: e.target.value } : prev)}
               fullWidth
               disabled={!canEdit}
             />

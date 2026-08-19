@@ -37,13 +37,6 @@ export function ScheduleDetailsPanel({ schedule, canEdit, onChange, onClose, onD
       />
       <TextField
         size="small"
-        label="Class"
-        value={schedule.className ?? ''}
-        onChange={(e) => onChange({ className: e.target.value })}
-        disabled={!canEdit}
-      />
-      <TextField
-        size="small"
         label="Teacher"
         value={schedule.teacher ?? ''}
         onChange={(e) => onChange({ teacher: e.target.value })}
