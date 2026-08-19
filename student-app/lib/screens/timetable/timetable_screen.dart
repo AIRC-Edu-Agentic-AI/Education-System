@@ -312,17 +312,33 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     final blocks = <_Block>[];
 
     void addTimed(WeekItem it, BlockKind kind, int defaultMin) {
-      final day = _matchDay(it.subtitle);
+      // Try to extract day from subtitle first, fall back to dateTime
+      String? day = _matchDay(it.subtitle);
       final start = _matchTime(it.subtitle);
-      if (day == null || start == null) return;
+
+      // Derive day from dateTime if subtitle didn't contain a day label
+      DateTime? itemDate;
+      if (day == null) {
+        itemDate = it.dateTime;
+        final weekdayIndex = (itemDate.weekday - 1) % 7;
+        day = _days[weekdayIndex];
+      } else {
+        itemDate = it.dateTime;
+      }
+
+      // Derive start time from dateTime if subtitle didn't contain a time
+      final effectiveStart = start ?? (itemDate.hour * 60 + itemDate.minute);
+      if (effectiveStart == 0 && start == null) return; // no useful time info
+
       blocks.add(_Block(
-        id: 'std-${kind.name}-${day}-${start}-${it.title}',
+        id: 'std-${kind.name}-${day}-${effectiveStart}-${it.title}',
         day: day,
-        startMin: start,
-        endMin: start + defaultMin,
+        startMin: effectiveStart,
+        endMin: effectiveStart + defaultMin,
         title: it.title,
         sub: _roomOf(it.subtitle),
         kind: kind,
+        date: itemDate,
       ));
     }
 

@@ -147,6 +147,10 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
               ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: msg.channelId)));
               ref.invalidate(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$activeStudentId')));
               ref.invalidate(notificationProvider);
+            } else if (eventType == 'schedule_updated') {
+              // Teacher created/updated/deleted a schedule → refresh timetable
+              print('[WS] schedule_updated received – refreshing timetable');
+              ref.invalidate(weeklyScheduleProvider);
             }
           } catch (e) {
             print('[WS Data Parse Error] $e');

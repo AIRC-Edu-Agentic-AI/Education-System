@@ -16,6 +16,9 @@ def get_db():
     return db_state["db"]
 
 
+from routers.teacher_schedule import notify_students, notify_students_deleted
+
+
 # ── Schedules ────────────────────────────────────────────────────────────────
 
 @router.get("/schedules")
@@ -43,6 +46,7 @@ async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
         db = get_db()
         result = await db["schedules"].insert_one(payload)
         payload["_id"] = str(result.inserted_id)
+        await notify_students(payload, None, "schedule:create")
         return payload
     except HTTPException:
         raise
@@ -55,9 +59,12 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
     try:
         db = get_db()
         payload.pop("_id", None)
+        original = await db["schedules"].find_one({"_id": ObjectId(schedule_id)})
         result = await db["schedules"].update_one(
             {"_id": ObjectId(schedule_id)}, {"$set": payload}
         )
+        updated = await db["schedules"].find_one({"_id": ObjectId(schedule_id)})
+        await notify_students(updated or payload, original, "schedule:update")
         return {"updated": result.modified_count}
     except HTTPException:
         raise
@@ -69,7 +76,12 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
 async def delete_schedule(schedule_id: str) -> Dict[str, Any]:
     try:
         db = get_db()
+        doc = await db["schedules"].find_one({"_id": ObjectId(schedule_id)})
         result = await db["schedules"].delete_one({"_id": ObjectId(schedule_id)})
+        if doc:
+            await notify_students_deleted(doc)
+        else:
+            await notify_students_deleted({"_id": schedule_id})
         return {"deleted": result.deleted_count}
     except HTTPException:
         raise
