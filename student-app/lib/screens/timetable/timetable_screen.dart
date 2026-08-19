@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:student_agent/core/theme/app_theme.dart';
 import 'package:student_agent/models/student_model.dart';
@@ -21,6 +22,10 @@ class _Block {
   final BlockKind kind;
   final DateTime? date;
   final bool isCustom;
+  final String? room;
+  final String? meetingLink;
+  final String? note;
+  final String? teacher;
 
   const _Block({
     required this.id,
@@ -32,6 +37,10 @@ class _Block {
     required this.kind,
     this.date,
     this.isCustom = false,
+    this.room,
+    this.meetingLink,
+    this.note,
+    this.teacher,
   });
 
   String get timeLabel => '${_fmt(startMin)}–${_fmt(endMin)}';
@@ -334,15 +343,24 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       final effectiveStart = start ?? (itemDate.hour * 60 + itemDate.minute);
       if (effectiveStart == 0 && start == null) return; // no useful time info
 
+      final effectiveRoom = (it.room != null && it.room!.isNotEmpty)
+          ? it.room
+          : (it.subtitle.contains('·') ? _roomOf(it.subtitle) : null);
+      final effectiveLink = it.effectiveMeetingLink.isNotEmpty ? it.effectiveMeetingLink : null;
+
       blocks.add(_Block(
         id: 'std-${kind.name}-$day-$effectiveStart-${it.title}',
         day: day,
         startMin: effectiveStart,
         endMin: effectiveStart + defaultMin,
         title: it.title,
-        sub: _roomOf(it.subtitle),
+        sub: effectiveRoom ?? (effectiveLink != null ? 'Online' : _roomOf(it.subtitle)),
         kind: kind,
         date: itemDate,
+        room: effectiveRoom,
+        meetingLink: effectiveLink,
+        note: (it.note != null && it.note!.isNotEmpty) ? it.note : null,
+        teacher: (it.teacher != null && it.teacher!.isNotEmpty) ? it.teacher : null,
       ));
     }
 
@@ -629,6 +647,18 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                               title: Text(b.title),
                               subtitle: Text('${b.timeLabel}${b.sub.isNotEmpty ? ' · ${b.sub}' : ''}'),
                               leading: CircleAvatar(backgroundColor: _kindColor(b.kind)),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (b.meetingLink != null && b.meetingLink!.isNotEmpty)
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 4),
+                                      child: Icon(Icons.videocam_rounded, size: 16, color: AppTheme.primaryBlue),
+                                    ),
+                                  if (b.note != null && b.note!.isNotEmpty)
+                                    const Icon(Icons.notes_rounded, size: 16, color: AppTheme.textMuted),
+                                ],
+                              ),
                               onTap: () {
                                 Navigator.of(ctx).pop();
                                 _showEventActions(b);
@@ -649,69 +679,305 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.surfaceDark,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final allowEdit = block.isCustom || block.kind == BlockKind.study;
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(block.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              Text('${block.timeLabel} · ${_kindLabel(block.kind)}', style: const TextStyle(color: AppTheme.textSecondary)),
-              if (block.sub.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(block.sub, style: const TextStyle(color: AppTheme.textMuted)),
-              ],
-              if (block.date != null) ...[
-                const SizedBox(height: 8),
-                Text('Date: ${block.date!.day}/${block.date!.month}/${block.date!.year}', style: const TextStyle(color: AppTheme.textMuted)),
-              ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  if (allowEdit)
+        final color = _kindColor(block.kind);
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: color.withOpacity(0.3)),
+                      ),
+                      child: Icon(_kindIcon(block.kind), color: color, size: 22),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          final pre = block.date ?? _dateForBlock(block);
-                          _showAddEventDialog(pre, block);
-                        },
-                        child: const Text('Edit'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            block.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              _kindLabel(block.kind),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  if (allowEdit) const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        if (block.isCustom) {
-                          setState(() {
-                            _addedBlocks.removeWhere((b) => b.id == block.id);
-                          });
-                          _syncStudyPlanWithBackend();
-                        } else if (block.kind == BlockKind.study) {
-                          setState(() {
-                            _removedStdIds.add(block.id);
-                          });
-                          _syncStudyPlanWithBackend();
-                        }
-                      },
-                      style: FilledButton.styleFrom(backgroundColor: (block.isCustom || block.kind == BlockKind.study) ? AppTheme.danger : AppTheme.surfaceCard),
-                      child: Text((block.isCustom || block.kind == BlockKind.study) ? 'Delete' : 'Close'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: AppTheme.cardBorder),
+                const SizedBox(height: 14),
+                _buildInfoTile(
+                  icon: Icons.access_time_rounded,
+                  iconColor: AppTheme.primaryBlue,
+                  label: 'Time',
+                  value: block.timeLabel,
+                ),
+                if (block.date != null) ...[
+                  const SizedBox(height: 10),
+                  _buildInfoTile(
+                    icon: Icons.calendar_today_rounded,
+                    iconColor: AppTheme.primaryBlue,
+                    label: 'Date',
+                    value: '${block.day}, ${block.date!.day.toString().padLeft(2, '0')}/${block.date!.month.toString().padLeft(2, '0')}/${block.date!.year}',
+                  ),
+                ],
+                if (block.teacher != null && block.teacher!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  _buildInfoTile(
+                    icon: Icons.person_outline_rounded,
+                    iconColor: AppTheme.accentGreen,
+                    label: 'Teacher',
+                    value: block.teacher!,
+                  ),
+                ],
+                if (block.room != null && block.room!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  _buildInfoTile(
+                    icon: Icons.meeting_room_outlined,
+                    iconColor: AppTheme.warning,
+                    label: 'Room',
+                    value: block.room!,
+                  ),
+                ] else if (block.sub.isNotEmpty && block.sub != 'Online') ...[
+                  const SizedBox(height: 10),
+                  _buildInfoTile(
+                    icon: Icons.location_on_outlined,
+                    iconColor: AppTheme.warning,
+                    label: 'Location',
+                    value: block.sub,
+                  ),
+                ],
+                if (block.meetingLink != null && block.meetingLink!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.videocam_rounded, color: AppTheme.primaryBlue, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Meeting link',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.primaryBlue,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              SelectableText(
+                                block.meetingLink!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.textPrimary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy_rounded, size: 18, color: AppTheme.primaryBlue),
+                          tooltip: 'Copy meeting link',
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: block.meetingLink!));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Copied meeting link to clipboard'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ],
+                if (block.note != null && block.note!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.cardBorder),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.notes_rounded, color: AppTheme.textSecondary, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Note',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                block.note!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.textPrimary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    if (allowEdit) ...[
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            final pre = block.date ?? _dateForBlock(block);
+                            _showAddEventDialog(pre, block);
+                          },
+                          child: const Text('Edit'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            if (block.isCustom) {
+                              setState(() {
+                                _addedBlocks.removeWhere((b) => b.id == block.id);
+                              });
+                              _syncStudyPlanWithBackend();
+                            } else if (block.kind == BlockKind.study) {
+                              setState(() {
+                                _removedStdIds.add(block.id);
+                              });
+                              _syncStudyPlanWithBackend();
+                            }
+                          },
+                          style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
+                          child: const Text('Delete'),
+                        ),
+                      ),
+                    ] else
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.surfaceCard,
+                            foregroundColor: AppTheme.textPrimary,
+                          ),
+                          child: const Text('Close'),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInfoTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: iconColor),
+        const SizedBox(width: 10),
+        Text(
+          '$label: ',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -937,6 +1203,16 @@ class _MiniEventCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (block.meetingLink != null && block.meetingLink!.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Icon(Icons.videocam_rounded, size: 14, color: AppTheme.primaryBlue),
+                  ),
+                if (block.note != null && block.note!.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Icon(Icons.notes_rounded, size: 14, color: AppTheme.textMuted),
+                  ),
               ],
             ),
             const SizedBox(height: 4),

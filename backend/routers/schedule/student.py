@@ -52,11 +52,15 @@ def _schedule_item_to_week_item(item: dict) -> dict:
     date_str = item.get("date") or ""
     start_time = item.get("startTime") or ""
     end_time = item.get("endTime") or ""
-    room = item.get("room") or item.get("locationUrl") or ""
+    room = item.get("room") or ""
+    meeting_link = item.get("locationUrl") or item.get("meeting_link") or item.get("meetingLink") or ""
+    note = item.get("note") or item.get("notes") or ""
+    teacher = item.get("teacher") or ""
 
     day = _day_label(date_str) if date_str else ""
-    time_part = start_time if start_time else ""
-    room_part = f" · {room}" if room else ""
+    time_part = f"{start_time}-{end_time}" if start_time and end_time else start_time
+    location_desc = room or meeting_link
+    room_part = f" · {location_desc}" if location_desc else ""
     subtitle = f"{day}, {time_part}{room_part}" if day else f"{date_str} {time_part}{room_part}".strip()
 
     date_time = None
@@ -77,6 +81,14 @@ def _schedule_item_to_week_item(item: dict) -> dict:
         "date_time": date_time or datetime.now(timezone.utc).isoformat(),
         "is_completed": item.get("status") == "completed",
         "is_urgent": item.get("is_urgent", False),
+        "room": room,
+        "location_url": meeting_link,
+        "meeting_link": meeting_link,
+        "note": note,
+        "teacher": teacher,
+        "start_time": start_time,
+        "end_time": end_time,
+        "date": date_str,
     }
 
 
