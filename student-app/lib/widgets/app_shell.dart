@@ -31,6 +31,11 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(studentProvider);
+      }
+    });
     _notifSub = newNotificationStreamController.stream.listen((notif) {
       if (mounted) {
         NotificationToast.show(

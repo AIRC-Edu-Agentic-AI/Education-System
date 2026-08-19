@@ -131,9 +131,15 @@ async def _build_enrollments_payload(student_doc: dict, code_module: Optional[st
             ]
             continue
 
-        assignment_filter = {"code_module": module}
-        if presentation:
-            assignment_filter["code_presentation"] = presentation
+        assignment_filter = {
+            "$or": [
+                {
+                    "code_module": module,
+                    **({"code_presentation": presentation} if presentation else {}),
+                },
+                {"student_ids": student_id},
+            ],
+        }
 
         assignment_docs = await db.assignments.find(assignment_filter).to_list(None)
         if assignment_docs:

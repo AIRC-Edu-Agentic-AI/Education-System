@@ -7,6 +7,7 @@ from bson.errors import InvalidId
 
 from db.mongodb import get_db
 from db.event_logging import log_event
+from db.notifications import push_notification
 
 router = APIRouter()
 
@@ -82,121 +83,59 @@ async def _load_assignments(module: str, presentation: str):
     return docs
 
 
-async def _notify_assignment_created(
+async def _notify_assignment_recipients(
     db,
-    module: str,
-    presentation: str,
-    id_assessment: int,
-    payload: CreateAssignmentRequest,
-    student_ids: Optional[List[int]] = None
+    student_ids: List[int],
+    assignment: dict,
+    course_code: str,
 ):
-    if db is None:
-        return
+    """Notify enrolled students after an assignment is created."""
+    recipient_ids = sorted({sid for sid in student_ids if isinstance(sid, int)})
+    if not recipient_ids:
+        return 0
+
+    title = "New Assignment Available"
+    body = (
+        f"{assignment['title']} has been assigned in {course_code}. "
+        f"Due date: {assignment['due_date']}."
+    )
+
+    for student_id in recipient_ids:
+        await push_notification(
+            db,
+            student_id,
+            "assignment",
+            title,
+            body,
+        )
+
     try:
         from routers.realtime_chat import manager
-        import asyncio
-        from datetime import datetime, timezone
 
-        now = datetime.now(timezone.utc).isoformat()
-        course_code = f"{module} {presentation}".strip()
+        notification = {
+            "type": "assignment",
+            "read": False,
+            "sender_role": "instructor",
+            "course_code": course_code,
+            "payload": {"title": title, "body": body},
+            "title": title,
+            "content": body,
+            "created_at": datetime.now().isoformat(),
+            "id_assessment": assignment["id_assessment"],
+        }
+        for student_id in recipient_ids:
+            await manager.send_to_user(
+                str(student_id),
+                {"type": "new_notification", "notification": {
+                    **notification,
+                    "student_id": student_id,
+                }},
+            )
+    except Exception as exc:
+        # Persisted notifications remain available when WebSocket delivery fails.
+        print(f"[ASSIGNMENT] WebSocket notification failed: {exc}")
 
-        if not student_ids:
-            # Find students enrolled in this exact course (code_module + code_presentation)
-            students = await db["students"].find(
-                {"enrollments": {"$elemMatch": {"code_module": module, "code_presentation": presentation}}},
-                {"student_id": 1, "id_student": 1}
-            ).to_list(None)
-            found_ids = []
-            for s in students:
-                sid = s.get("student_id") or s.get("id_student")
-                if sid is not None:
-                    found_ids.append(int(sid))
-            
-            if not found_ids:
-                students = await db["students"].find(
-                    {"$or": [
-                        {"enrollments.code_module": module},
-                        {"code_module": module}
-                    ]},
-                    {"student_id": 1, "id_student": 1}
-                ).to_list(None)
-                for s in students:
-                    sid = s.get("student_id") or s.get("id_student")
-                    if sid is not None and int(sid) not in found_ids:
-                        found_ids.append(int(sid))
-            student_ids = found_ids
-
-        if not student_ids:
-            return
-
-        noti_title = f"New Assignment: {payload.title}"
-        noti_body = f"A new {payload.type} assignment '{payload.title}' (weight: {payload.weight}%, due day: {payload.due_date}) has been posted for {course_code}."
-
-        noti_docs = []
-        for sid in student_ids:
-            noti_docs.append({
-                "student_id": int(sid),
-                "receiverId": int(sid),
-                "type": "assignment",
-                "title": noti_title,
-                "content": noti_body,
-                "course_code": course_code,
-                "courseCode": course_code,
-                "sender_role": "instructor",
-                "senderRole": "instructor",
-                "read": False,
-                "is_read": False,
-                "created_at": now,
-                "createdAt": now,
-                "payload": {
-                    "title": noti_title,
-                    "body": noti_body,
-                    "type": "assignment",
-                    "course_code": course_code,
-                    "courseCode": course_code,
-                    "id_assessment": id_assessment,
-                    "action": f"/my-class/{module}/assignments",
-                },
-                "action_options": [
-                    {
-                        "label": "View Assignment",
-                        "action": f"/my-class/{module}/assignments",
-                        "is_primary": True,
-                    }
-                ],
-            })
-
-        if noti_docs:
-            await db["notifications"].insert_many(noti_docs)
-
-        # Dispatch WebSocket event to targeted students
-        for sid in student_ids:
-            asyncio.create_task(manager.send_to_user(str(sid), {
-                "type": "new_notification",
-                "notification": {
-                    "student_id": int(sid),
-                    "type": "assignment",
-                    "title": noti_title,
-                    "body": noti_body,
-                    "content": noti_body,
-                    "course_code": course_code,
-                    "courseCode": course_code,
-                    "sender_role": "instructor",
-                    "read": False,
-                    "created_at": now,
-                    "payload": {
-                        "title": noti_title,
-                        "body": noti_body,
-                        "type": "assignment",
-                        "course_code": course_code,
-                        "courseCode": course_code,
-                        "id_assessment": id_assessment,
-                        "action": f"/my-class/{module}/assignments",
-                    }
-                }
-            }))
-    except Exception as e:
-        print(f"Error sending assignment notifications: {e}")
+    return len(recipient_ids)
 
 
 async def _create_assignment(module: str, presentation: str, payload: CreateAssignmentRequest):
@@ -223,12 +162,29 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
     }
     result = await db.assignments.insert_one(doc)
     doc["_id"] = str(result.inserted_id)
+    students = await db.students.find(
+        {"enrollments": {"$elemMatch": {
+            "code_module": module,
+            "code_presentation": presentation,
+        }}},
+        {"_id": 0, "student_id": 1},
+    ).to_list(None)
+    notified_count = await _notify_assignment_recipients(
+        db,
+        [student.get("student_id") for student in students],
+        doc,
+        f"{module} {presentation}",
+    )
     await log_event(
         None,
         "assignment_created",
         actor_id=payload.teacher_id,
         target_id=str(id_assessment),
-        payload={"code_module": module, "code_presentation": presentation},
+        payload={
+            "code_module": module,
+            "code_presentation": presentation,
+            "notified_student_count": notified_count,
+        },
         source="assignments",
     )
     # Send targeted notification to enrolled students
@@ -495,13 +451,24 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
     }
     result = await db["assignments"].insert_one(doc)
     doc["_id"] = str(result.inserted_id)
+    notified_count = await _notify_assignment_recipients(
+        db,
+        student_ids,
+        doc,
+        payload.code_module,
+    )
 
     await log_event(
         None,
         "assignment_created",
         actor_id=payload.teacher_id,
         target_id=str(id_assessment),
-        payload={"classroom_id": classroom_id, "code_module": payload.code_module, "student_count": len(student_ids)},
+        payload={
+            "classroom_id": classroom_id,
+            "code_module": payload.code_module,
+            "student_count": len(student_ids),
+            "notified_student_count": notified_count,
+        },
         source="assignments",
     )
 
