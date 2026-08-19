@@ -11,11 +11,37 @@ from .channel import get_channel
 
 async def get_channel_messages(db, channel_id: str, parent_id: str | None = None):
     """Get all messages in a channel (optionally for a parent message)."""
-    channel_query = [{"channel_id": channel_id}]
-    try:
-        channel_query.append({"channel_id": ObjectId(channel_id)})
-    except Exception:
-        pass
+    target_ids = [str(channel_id)]
+    if str(channel_id).startswith("private_"):
+        sid_str = str(channel_id).replace("private_", "")
+        chan = await db["channels"].find_one({
+            "type": "private_message",
+            "$or": [
+                {"members": {"$all": ["teacher_admin", sid_str]}},
+                {"members": {"$all": ["teacher_admin", int(sid_str)] if sid_str.isdigit() else sid_str}},
+                {"members_key": {"$regex": sid_str}}
+            ]
+        })
+        if chan:
+            target_ids.append(str(chan["_id"]))
+    else:
+        try:
+            oid = ObjectId(channel_id)
+            chan = await db["channels"].find_one({"_id": oid})
+            if chan and chan.get("type") == "private_message":
+                mems = [str(m) for m in chan.get("members", []) if str(m) != "teacher_admin"]
+                for m in mems:
+                    target_ids.append(f"private_{m}")
+        except Exception:
+            pass
+
+    channel_query = []
+    for tid in target_ids:
+        channel_query.append({"channel_id": tid})
+        try:
+            channel_query.append({"channel_id": ObjectId(tid)})
+        except Exception:
+            pass
         
     query = {"$or": channel_query}
     if parent_id is None:

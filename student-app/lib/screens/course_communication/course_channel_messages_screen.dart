@@ -53,6 +53,19 @@ extends ConsumerState<CourseChannelMessagesScreen> {
   void initState() {
     super.initState();
     _startMessagePolling();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _markRead();
+    });
+  }
+
+  void _markRead() {
+    ref.read(channelReadStateProvider.notifier).markChannelRead(widget.channelId);
+    if (_isAnnouncement) {
+      final notifs = ref.read(courseNotificationsProvider(widget.courseCode)).value ?? [];
+      for (final n in notifs.where((item) => !item.read)) {
+        ref.read(notificationProvider.notifier).markRead(n.id);
+      }
+    }
   }
 
   void _startMessagePolling() {
@@ -191,6 +204,7 @@ extends ConsumerState<CourseChannelMessagesScreen> {
         (_, next) {
           next.whenData((_) {
             _scrollToBottom();
+            _markRead();
           });
         },
       );
@@ -202,6 +216,7 @@ extends ConsumerState<CourseChannelMessagesScreen> {
         (_, next) {
           next.whenData((_) {
             _scrollToBottom();
+            _markRead();
           });
         },
       );
@@ -253,6 +268,14 @@ extends ConsumerState<CourseChannelMessagesScreen> {
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Error: $e')),
                     data: (notifications) {
+                      final unread = notifications.where((n) => !n.read).toList();
+                      if (unread.isNotEmpty) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          for (final n in unread) {
+                            ref.read(notificationProvider.notifier).markRead(n.id);
+                          }
+                        });
+                      }
                       if (notifications.isEmpty) {
                         return const Center(
                           child: Text(

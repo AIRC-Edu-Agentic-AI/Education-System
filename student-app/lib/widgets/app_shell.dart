@@ -53,15 +53,20 @@ class _AppShellState extends ConsumerState<AppShell> {
 
     _msgSub = newMessageStreamController.stream.listen((msg) {
       if (mounted) {
-        ChatMessageToast.show(
-          context,
-          ref: ref,
-          message: msg,
-          onTap: () {
-            final courseCode = msg.courseCode;
-            context.push('/course/$courseCode/channels/${msg.channelId}/messages');
-          },
-        );
+        final isPrivate = msg.channelType == 'private_message' ||
+            msg.channelId.startsWith('private_') ||
+            (msg.senderRole == 'instructor' && msg.courseCode.isEmpty);
+        if (!isPrivate) {
+          ChatMessageToast.show(
+            context,
+            ref: ref,
+            message: msg,
+            onTap: () {
+              final courseCode = msg.courseCode;
+              context.push('/course/$courseCode/channels/${msg.channelId}/messages');
+            },
+          );
+        }
       }
     });
   }
@@ -108,18 +113,25 @@ class _AppShellState extends ConsumerState<AppShell> {
           onDestinationSelected: (i) => context.go(_tabs[i].route),
           destinations: _tabs.map((t) {
             final isMore = t.route == '/more';
-            final showBadge = isMore && unreadCount > 0;
+            final isClass = t.route == '/my-class';
+            final showBadge = unreadCount > 0 && (isMore || isClass);
             return NavigationDestination(
               icon: showBadge
                   ? Badge(
-                      smallSize: 8,
+                      label: Text(
+                        unreadCount > 99 ? '99+' : '$unreadCount',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
                       backgroundColor: AppTheme.danger,
                       child: Icon(t.icon),
                     )
                   : Icon(t.icon),
               selectedIcon: showBadge
                   ? Badge(
-                      smallSize: 8,
+                      label: Text(
+                        unreadCount > 99 ? '99+' : '$unreadCount',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
                       backgroundColor: AppTheme.danger,
                       child: Icon(t.activeIcon),
                     )

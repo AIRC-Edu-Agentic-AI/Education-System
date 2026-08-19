@@ -187,6 +187,8 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
         },
         source="assignments",
     )
+    # Send targeted notification to enrolled students
+    await _notify_assignment_created(db, module, presentation, id_assessment, payload)
     return doc
 
 
@@ -243,6 +245,48 @@ async def grade_submission(id_assessment: int, student_id: int, payload: GradeSu
         payload={"score": payload.score, "student_id": student_id},
         source="assignments",
     )
+
+    # Send grade notification to student
+    try:
+        from routers.realtime_chat import manager
+        import asyncio
+        from datetime import timezone
+        now_str = datetime.now(timezone.utc).isoformat()
+        grade_noti = {
+            "student_id": student_id,
+            "receiverId": student_id,
+            "type": "grade",
+            "title": "Assignment Graded",
+            "content": f"Your submission for assessment #{id_assessment} has been graded: {payload.score}/100.",
+            "sender_role": "instructor",
+            "read": False,
+            "is_read": False,
+            "created_at": now_str,
+            "createdAt": now_str,
+            "payload": {
+                "title": "Assignment Graded",
+                "body": f"Your submission for assessment #{id_assessment} has been graded: {payload.score}/100.",
+                "type": "grade",
+                "id_assessment": id_assessment,
+                "score": payload.score,
+                "feedback": payload.feedback or ""
+            }
+        }
+        await db["notifications"].insert_one(grade_noti)
+        asyncio.create_task(manager.send_to_user(str(student_id), {
+            "type": "new_notification",
+            "notification": {
+                "student_id": student_id,
+                "type": "grade",
+                "title": grade_noti["title"],
+                "body": grade_noti["content"],
+                "read": False,
+                "created_at": now_str
+            }
+        }))
+    except Exception as e:
+        print(f"Error sending grade notification: {e}")
+
     return {"ok": True, "student_id": student_id, "id_assessment": id_assessment, "score": payload.score}
 
 
@@ -426,6 +470,26 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
             "notified_student_count": notified_count,
         },
         source="assignments",
+    )
+
+    # Send targeted notification to classroom students
+    pres = classroom.get("code_presentation") or classroom.get("presentation") or ""
+    await _notify_assignment_created(
+        db,
+        payload.code_module,
+        pres,
+        id_assessment,
+        CreateAssignmentRequest(
+            title=payload.title,
+            description=payload.description,
+            type=payload.type,
+            weight=payload.weight,
+            due_date=payload.due_date,
+            allowed_formats=payload.allowed_formats,
+            max_file_size_mb=payload.max_file_size_mb,
+            teacher_id=payload.teacher_id,
+        ),
+        student_ids=student_ids,
     )
 
     return doc

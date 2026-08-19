@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:student_agent/core/config/env_config.dart';
 import 'package:student_agent/data/services/api_service.dart';
 import 'package:student_agent/models/assignment_milestone_model.dart';
@@ -183,25 +184,34 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
   }
 
   Future<void> markRead(String notifId) async {
-    final api = ref.read(apiServiceProvider);
-    await api.markNotificationRead(notifId);
-    final updatedList = state.value
-            ?.map((n) => n.id == notifId ? n.copyWith(read: true) : n)
-            .toList() ??
-        [];
+    final current = state.value ?? [];
+    final updatedList = current.map((n) {
+      if (n.id == notifId || n.id.toString() == notifId.toString()) {
+        return n.copyWith(read: true);
+      }
+      return n;
+    }).toList();
     updatedList.sort(_sortNotifications);
     state = AsyncData(updatedList);
+
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.markNotificationRead(notifId);
+    } catch (_) {}
   }
 
   Future<void> markAllRead() async {
-    final api = ref.read(apiServiceProvider);
     final current = state.value ?? [];
-    for (final n in current.where((item) => !item.read)) {
-      api.markNotificationRead(n.id);
-    }
     final updatedList = current.map((n) => n.copyWith(read: true)).toList();
     updatedList.sort(_sortNotifications);
     state = AsyncData(updatedList);
+
+    try {
+      final api = ref.read(apiServiceProvider);
+      for (final n in current.where((item) => !item.read)) {
+        api.markNotificationRead(n.id);
+      }
+    } catch (_) {}
   }
 
   int get unreadCount =>
@@ -245,7 +255,12 @@ final courseInfoProvider =
 final courseChannelsProvider =
     FutureProvider.family<List<CourseChannel>, String>((ref, courseCode) async {
   final api = ref.read(apiServiceProvider);
-  return api.getCourseChannels(courseCode);
+  final channels = await api.getCourseChannels(courseCode);
+  return channels.where((c) =>
+    c.type != 'private_message' &&
+    c.type != 'private_group' &&
+    !c.id.startsWith('private_')
+  ).toList();
 });
 
 final courseNotificationsProvider =
@@ -256,7 +271,11 @@ final courseNotificationsProvider =
   
   if (notifs.isNotEmpty) {
     return notifs.where((n) {
-      if (n.courseCode == null || n.courseCode!.isEmpty) return true;
+      if (n.courseCode == null || n.courseCode!.trim().isEmpty) {
+        final title = n.title.toLowerCase();
+        final body = n.body.toLowerCase();
+        return title.contains(moduleCode) || body.contains(moduleCode);
+      }
       final c = n.courseCode!.trim().toLowerCase();
       final nModule = c.split(' ').first;
       return c == cleanCode || nModule == moduleCode || c.startsWith(moduleCode) || cleanCode.startsWith(c);
@@ -311,6 +330,152 @@ final channelThreadMessagesProvider =
     );
   },
 );
+
+// ── Channel Read State Tracking & Unread Counts ────────────────────────────────
+class ChannelReadStateNotifier extends StateNotifier<Map<String, DateTime>> {
+  ChannelReadStateNotifier() : super({}) {
+    _loadFromPrefs();
+  }
+
+  static const _prefPrefix = 'channel_last_read_';
+
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(_prefPrefix));
+      final map = <String, DateTime>{};
+      for (final key in keys) {
+        final channelId = key.substring(_prefPrefix.length);
+        final val = prefs.getString(key);
+        if (val != null) {
+          final dt = DateTime.tryParse(val);
+          if (dt != null) {
+            map[channelId] = dt;
+          }
+        }
+      }
+      state = {...state, ...map};
+    } catch (_) {}
+  }
+
+  Future<void> markChannelRead(String channelId, {DateTime? readAt}) async {
+    final now = readAt ?? DateTime.now();
+    state = {...state, channelId: now};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('$_prefPrefix$channelId', now.toIso8601String());
+    } catch (_) {}
+  }
+
+  Future<void> markChannelsRead(Iterable<String> channelIds, {DateTime? readAt}) async {
+    final now = readAt ?? DateTime.now();
+    final updates = <String, DateTime>{};
+    for (final id in channelIds) {
+      updates[id] = now;
+    }
+    state = {...state, ...updates};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final id in channelIds) {
+        await prefs.setString('$_prefPrefix$id', now.toIso8601String());
+      }
+    } catch (_) {}
+  }
+}
+
+final channelReadStateProvider =
+    StateNotifierProvider<ChannelReadStateNotifier, Map<String, DateTime>>(
+  (ref) => ChannelReadStateNotifier(),
+);
+
+/// Private direct channel between student and instructor
+final studentPrivateChannelProvider = FutureProvider<CourseChannel>((ref) async {
+  final api = ref.read(apiServiceProvider);
+  final studentId = ref.watch(activeStudentIdProvider);
+  return api.getPrivateChannel(studentId);
+});
+
+/// Count unread announcements/notifications for a specific course
+final courseUnreadAnnouncementsCountProvider =
+    Provider.family<int, String>((ref, courseCode) {
+  final notifs = ref.watch(courseNotificationsProvider(courseCode)).value ?? [];
+  return notifs.where((n) => !n.read).length;
+});
+
+/// Count unread messages inside a specific channel
+final channelUnreadCountProvider =
+    Provider.family<int, String>((ref, channelId) {
+  final messages = ref.watch(
+    channelThreadMessagesProvider(ChannelMessagesArgs(channelId: channelId)),
+  ).value ?? [];
+  if (messages.isEmpty) return 0;
+  final activeStudentId = ref.watch(activeStudentIdProvider).toString();
+  final lastRead = ref.watch(channelReadStateProvider)[channelId];
+  return messages.where((m) {
+    if (m.senderId.toString() == activeStudentId) return false;
+    if (lastRead == null) return true;
+    return m.createdAt.isAfter(lastRead);
+  }).length;
+});
+
+/// Count unread discussion messages strictly in discussion channels for a course
+final courseUnreadDiscussionsCountProvider =
+    Provider.family<int, String>((ref, courseCode) {
+  final channels = ref.watch(courseChannelsProvider(courseCode)).value ?? [];
+  int total = 0;
+  for (final ch in channels) {
+    // STRICT DOMAIN SEPARATION: Only count pure discussion channels
+    final isAnnouncement = ch.type == 'announcement' ||
+        ch.id.toLowerCase().contains('announcement') ||
+        ch.name.toLowerCase().contains('thông báo') ||
+        ch.name.toLowerCase().contains('announcement');
+    final isPrivate = ch.type == 'private_message' ||
+        ch.type == 'private_group' ||
+        ch.id.startsWith('private_');
+
+    if (!isAnnouncement && !isPrivate && (ch.type == 'discussion' || ch.id.endsWith('_discussion') || ch.type == 'class_group')) {
+      total += ref.watch(channelUnreadCountProvider(ch.id));
+    }
+  }
+  return total;
+});
+
+/// Count unread private messages from teacher to current student
+final teacherDirectMessagesUnreadCountProvider = Provider<int>((ref) {
+  final studentId = ref.watch(activeStudentIdProvider).toString();
+  final privateChan = ref.watch(studentPrivateChannelProvider).value;
+  final chanId = privateChan?.id ?? 'private_$studentId';
+
+  final messages1 = ref.watch(
+    channelThreadMessagesProvider(ChannelMessagesArgs(channelId: chanId)),
+  ).value ?? [];
+
+  final messages2 = (chanId != 'private_$studentId' && messages1.isEmpty)
+      ? (ref.watch(channelThreadMessagesProvider(ChannelMessagesArgs(channelId: 'private_$studentId'))).value ?? [])
+      : <CourseMessage>[];
+
+  final allMessages = messages1.isNotEmpty ? messages1 : messages2;
+  if (allMessages.isEmpty) return 0;
+
+  final lastRead = ref.watch(channelReadStateProvider)[chanId] ??
+      ref.watch(channelReadStateProvider)['private_$studentId'];
+
+  final seenKeys = <String>{};
+  int unread = 0;
+  for (final m in allMessages) {
+    final key = m.id.isNotEmpty ? m.id : '${m.senderId}_${m.content}_${m.createdAt.millisecondsSinceEpoch}';
+    if (seenKeys.contains(key)) continue;
+    seenKeys.add(key);
+
+    if (m.senderId.toString() == studentId) continue;
+    if (lastRead == null) {
+      unread++;
+    } else if (m.createdAt.isAfter(lastRead)) {
+      unread++;
+    }
+  }
+  return unread;
+});
 
 // ── Resources ─────────────────────────────────────────────────────────────────
 final resourcesProvider =

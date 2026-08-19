@@ -2,13 +2,19 @@
 /// so we append 'Z' when absent and convert to local — otherwise DateTime.parse
 /// treats it as local and times are off by the timezone offset.
 DateTime parseServerTime(dynamic raw) {
-  if (raw == null) return DateTime.now();
-  final s = raw.toString();
+  if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0);
+  if (raw is DateTime) return raw.toLocal();
+  final s = raw.toString().trim().replaceFirst(' ', 'T');
+  if (s.isEmpty) return DateTime.fromMillisecondsSinceEpoch(0);
   final hasTz = RegExp(r'[zZ]|[+-]\d\d:?\d\d$').hasMatch(s);
   try {
     return DateTime.parse(hasTz ? s : '${s}Z').toLocal();
   } catch (_) {
-    return DateTime.now();
+    try {
+      return DateTime.parse(s).toLocal();
+    } catch (_) {
+      return DateTime.fromMillisecondsSinceEpoch(0);
+    }
   }
 }
 
@@ -312,15 +318,15 @@ class NotificationModel {
     final createdAtValue = json['created_at'] ?? json['createdAt'];
 
     return NotificationModel(
-      id: json['_id']?.toString() ?? json['id'] ?? '',
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       studentId: json['student_id'] ?? json['receiverId'] ?? json['studentId'] ?? 0,
-      type: json['type'] ?? 'reminder',
+      type: json['type'] ?? payload['type'] ?? 'reminder',
       title: title.toString(),
       body: body.toString(),
-      read: json['read'] ?? json['is_read'] ?? false,
+      read: json['read'] == true || json['is_read'] == true || payload['read'] == true || payload['is_read'] == true,
       createdAt: parseServerTime(createdAtValue),
-      courseCode: json['course_code'] ?? json['courseCode'],
-      senderRole: json['sender_role'] ?? json['senderRole'],
+      courseCode: (json['course_code'] ?? json['courseCode'] ?? payload['course_code'] ?? payload['courseCode'])?.toString(),
+      senderRole: json['sender_role'] ?? json['senderRole'] ?? payload['sender_role'] ?? payload['senderRole'],
       actionOptions: (json['action_options'] as List? ?? [])
           .map((a) => NotificationAction.fromJson(a))
           .toList(),

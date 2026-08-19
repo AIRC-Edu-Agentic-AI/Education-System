@@ -415,7 +415,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _FeatureGrid extends StatelessWidget {
+class _FeatureGrid extends ConsumerWidget {
   final Enrollment enrollment;
   final List<dynamic> channels;
 
@@ -425,14 +425,31 @@ class _FeatureGrid extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final fullCourseCode = '${enrollment.codeModule} ${enrollment.codePresentation}';
+    final unreadAnnouncements = ref.watch(courseUnreadAnnouncementsCountProvider(fullCourseCode));
+    final unreadDiscussions = ref.watch(courseUnreadDiscussionsCountProvider(fullCourseCode));
+
     String? channelId(String type) {
-      for (final channel in channels) {
-        if (channel.type == type && channel.courseCode == fullCourseCode) return channel.id;
-      }
-      for (final channel in channels) {
-        if (channel.type == type && channel.courseCode == enrollment.codeModule) return channel.id;
+      if (type == 'announcement') {
+        for (final channel in channels) {
+          final isAnn = channel.type == 'announcement' ||
+              channel.id.toLowerCase().contains('announcement') ||
+              channel.name.toLowerCase().contains('announcement') ||
+              channel.name.toLowerCase().contains('thông báo');
+          if (isAnn) return channel.id;
+        }
+      } else if (type == 'discussion') {
+        for (final channel in channels) {
+          final isAnn = channel.type == 'announcement' ||
+              channel.id.toLowerCase().contains('announcement') ||
+              channel.name.toLowerCase().contains('announcement') ||
+              channel.name.toLowerCase().contains('thông báo');
+          final isPriv = channel.type == 'private_message' ||
+              channel.type == 'private_group' ||
+              channel.id.startsWith('private_');
+          if (!isAnn && !isPriv) return channel.id;
+        }
       }
       for (final channel in channels) {
         if (channel.type == type) return channel.id;
@@ -451,10 +468,14 @@ class _FeatureGrid extends StatelessWidget {
         _FeatureTile(
           icon: Icons.campaign_outlined,
           title: 'Announcements',
-          subtitle: 'Class updates',
+          subtitle: unreadAnnouncements > 0
+              ? '$unreadAnnouncements unread'
+              : 'Class updates',
           color: AppTheme.warning,
+          badgeCount: unreadAnnouncements,
           onTap: () => _openChannel(
             context,
+            ref,
             enrollment,
             channelId('announcement'),
             'Class Announcements',
@@ -464,10 +485,14 @@ class _FeatureGrid extends StatelessWidget {
         _FeatureTile(
           icon: Icons.forum_outlined,
           title: 'Discussions',
-          subtitle: 'Class chat & messages',
+          subtitle: unreadDiscussions > 0
+              ? '$unreadDiscussions unread'
+              : 'Class chat & messages',
           color: AppTheme.primaryBlue,
+          badgeCount: unreadDiscussions,
           onTap: () => _openChannel(
             context,
+            ref,
             enrollment,
             channelId('discussion'),
             'Discussions',
@@ -508,6 +533,7 @@ class _FeatureGrid extends StatelessWidget {
 
   void _openChannel(
     BuildContext context,
+    WidgetRef ref,
     Enrollment enrollment,
     String? channelId,
     String name,
@@ -516,6 +542,28 @@ class _FeatureGrid extends StatelessWidget {
     final fullCode = enrollment.codePresentation.isNotEmpty
         ? '${enrollment.codeModule} ${enrollment.codePresentation}'
         : enrollment.codeModule;
+    if (channelId != null) {
+      ref.read(channelReadStateProvider.notifier).markChannelRead(channelId);
+    }
+    if (type == 'discussion') {
+      final courseChans = ref.read(courseChannelsProvider(fullCode)).value ?? [];
+      final discChanIds = courseChans
+          .where((c) => c.type != 'announcement' && !c.id.toLowerCase().contains('announcement'))
+          .map((c) => c.id);
+      if (discChanIds.isNotEmpty) {
+        ref.read(channelReadStateProvider.notifier).markChannelsRead(discChanIds);
+      }
+    }
+    if (type == 'announcement') {
+      final notifs = ref.read(notificationProvider).value ?? [];
+      final moduleCode = enrollment.codeModule.toLowerCase();
+      for (final n in notifs.where((item) => !item.read)) {
+        final c = (n.courseCode ?? '').toLowerCase();
+        if (c.contains(moduleCode) || fullCode.toLowerCase().contains(c) || n.title.toLowerCase().contains(moduleCode) || n.body.toLowerCase().contains(moduleCode)) {
+          ref.read(notificationProvider.notifier).markRead(n.id);
+        }
+      }
+    }
     if (channelId == null) {
       context.go('/course/$fullCode/channels');
       return;
@@ -535,6 +583,7 @@ class _FeatureTile extends StatelessWidget {
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _FeatureTile({
     required this.icon,
@@ -542,6 +591,7 @@ class _FeatureTile extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -554,34 +604,85 @@ class _FeatureTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.surfaceCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.cardBorder, width: 1),
+          border: Border.all(
+            color: badgeCount > 0 ? color.withValues(alpha: 0.5) : AppTheme.cardBorder,
+            width: badgeCount > 0 ? 1.5 : 1,
+          ),
+          boxShadow: badgeCount > 0
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 22),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: badgeCount > 0 ? color : AppTheme.textSecondary,
+                    fontSize: 11,
+                    fontWeight: badgeCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 11,
+            if (badgeCount > 0)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.danger,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.danger.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.circle, size: 6, color: Colors.white),
+                      const SizedBox(width: 3),
+                      Text(
+                        badgeCount > 99 ? '99+' : '$badgeCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),

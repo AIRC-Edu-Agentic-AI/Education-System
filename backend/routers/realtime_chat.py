@@ -1,10 +1,12 @@
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
 import json
+import re
+import asyncio
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 from db.mongodb import db_state
 from db.utils import serialize_doc
@@ -133,6 +135,21 @@ async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
             "members_key": members_key
         })
         if existing:
+            update_data = {
+                "updated_at": now,
+                "status": "active",
+                "members": normalized_members,
+                "members_key": members_key
+            }
+            if payload.course_code:
+                update_data["course_code"] = payload.course_code
+            if payload.name and payload.name != existing.get("name"):
+                update_data["name"] = payload.name
+            await db["channels"].update_one(
+                {"_id": existing["_id"]},
+                {"$set": update_data}
+            )
+            existing.update(update_data)
             return serialize_doc(existing)
 
         try:
@@ -143,7 +160,21 @@ async def create_channel(payload: CreateChannelPayload) -> Dict[str, Any]:
                 "type": "private_message",
                 "members_key": members_key
             })
-            return serialize_doc(existing)
+            if existing:
+                update_data = {
+                    "updated_at": now,
+                    "status": "active",
+                    "members": normalized_members,
+                    "members_key": members_key
+                }
+                if payload.course_code:
+                    update_data["course_code"] = payload.course_code
+                await db["channels"].update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": update_data}
+                )
+                existing.update(update_data)
+                return serialize_doc(existing)
     else:
         result = await db["channels"].insert_one(doc)
         doc["_id"] = result.inserted_id
@@ -166,27 +197,36 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
         except Exception as e:
             print(f"Error seeding channels for {course_code}: {e}")
 
+    user_id_int = None
+    try:
+        user_id_int = int(user_id)
+    except (ValueError, TypeError):
+        pass
+
+    user_member_queries = [{"members": str(user_id)}]
+    if user_id_int is not None:
+        user_member_queries.append({"members": user_id_int})
+
     if course_code:
-        import re
         mod = course_code.split(' ')[0]
-        escaped_mod = re.escape(mod)
         query = {
-            "$and": [
-                {"$or": [
-                    {"course_code": course_code},
-                    {"course_code": mod},
-                    {"course_code": {"$regex": f"^{escaped_mod}", "$options": "i"}}
-                ]},
-                {"$or": [
-                    {"members": user_id},
-                    {"type": {"$in": ["announcement", "discussion", "class_group"]}}
-                ]}
+            "$or": [
+                # 1. Course specific channels (announcements, discussions, class_group)
+                {
+                    "course_code": {"$in": [course_code, mod]},
+                    "type": {"$in": ["announcement", "discussion", "class_group"]}
+                },
+                # 2. Private direct messages or group chats involving this user
+                {
+                    "type": {"$in": ["private_message", "private_group"]},
+                    "$or": user_member_queries
+                }
             ]
         }
     else:
-        query = {"members": user_id}
+        query = {"$or": user_member_queries}
         
-    docs = await db["channels"].find(query).sort("created_at", -1).to_list(None)
+    docs = await db["channels"].find(query).sort("created_at", -1).to_list(length=100)
     
     # Deduplicate private_message channels by sorted members key
     unique_docs = []
@@ -195,9 +235,10 @@ async def get_channels(user_id: str, course_code: Optional[str] = None) -> List[
         if doc.get("type") == "private_message":
             mems = sorted(str(m) for m in doc.get("members", []))
             key = "|".join(mems)
-            if key in seen_private_keys:
+            if key and key in seen_private_keys:
                 continue
-            seen_private_keys.add(key)
+            if key:
+                seen_private_keys.add(key)
         unique_docs.append(doc)
 
     # Inject Legacy Broadcasts channel for backward compatibility
