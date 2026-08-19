@@ -256,10 +256,6 @@ class StudyGroup {
 
 
   factory StudyGroup.fromJson(Map<String, dynamic> json) {
-    print('📥 StudyGroup.fromJson: ${json.keys}');
-    print('📥 members: ${json['members']} (${json['members'].runtimeType})');
-    print('📥 member_count: ${json['member_count']} (${json['member_count'].runtimeType})');
-    
     return StudyGroup(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       groupCode: json['group_code']?.toString() ?? '',

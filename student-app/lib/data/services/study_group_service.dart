@@ -64,7 +64,6 @@ class StudyGroupService {
         '/study-groups/my-groups',
         queryParameters: {'student_id': studentId},
       );
-      print('📥 API Response: ${response.data}');  // ⭐ THÊM DÒNG NÀY
       return (response.data as List)
           .map((g) => StudyGroup.fromJson(g))
           .toList();

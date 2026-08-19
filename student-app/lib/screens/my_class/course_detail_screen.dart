@@ -429,6 +429,7 @@ class _FeatureGrid extends ConsumerWidget {
     final fullCourseCode = '${enrollment.codeModule} ${enrollment.codePresentation}';
     final unreadAnnouncements = ref.watch(courseUnreadAnnouncementsCountProvider(fullCourseCode));
     final unreadDiscussions = ref.watch(courseUnreadDiscussionsCountProvider(fullCourseCode));
+    final unreadAssignments = ref.watch(courseUnreadAssignmentsCountProvider(fullCourseCode));
 
     String? channelId(String type) {
       if (type == 'announcement') {
@@ -502,9 +503,15 @@ class _FeatureGrid extends ConsumerWidget {
         _FeatureTile(
           icon: Icons.assignment_outlined,
           title: 'Assignments',
-          subtitle: '${enrollment.assessments.length} assessments',
+          subtitle: unreadAssignments > 0
+              ? '$unreadAssignments new'
+              : '${enrollment.assessments.length} assessments',
           color: AppTheme.accentGreen,
-          onTap: () => context.go('/my-class/${enrollment.codeModule}/assignments'),
+          badgeCount: unreadAssignments,
+          onTap: () {
+            ref.read(notificationProvider.notifier).markCourseAssignmentsRead(fullCourseCode);
+            context.go('/my-class/${enrollment.codeModule}/assignments');
+          },
         ),
         _FeatureTile(
           icon: Icons.grade_outlined,
@@ -690,7 +697,7 @@ class _FeatureTile extends StatelessWidget {
   }
 }
 
-class _AssessmentTile extends StatelessWidget {
+class _AssessmentTile extends ConsumerWidget {
   final Assessment assessment;
   final String courseCode;
 
@@ -699,40 +706,104 @@ class _AssessmentTile extends StatelessWidget {
     required this.courseCode,
   });
 
-  void _openDetail(BuildContext context) {
+  void _openDetail(BuildContext context, WidgetRef ref) {
+    ref.read(notificationProvider.notifier).markAssessmentRead(assessment.idAssessment);
     context.go(
       '/my-class/$courseCode/assignments/${assessment.idAssessment}',
     );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isUnread = ref.watch(isAssessmentUnreadProvider(assessment.idAssessment));
+
     return InkWell(
-      onTap: () => _openDetail(context),
+      onTap: () => _openDetail(context, ref),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceCard,
+          color: isUnread ? const Color(0xFF1E293B) : AppTheme.surfaceCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.cardBorder, width: 1),
+          border: Border.all(
+            color: isUnread ? AppTheme.danger.withValues(alpha: 0.7) : AppTheme.cardBorder,
+            width: isUnread ? 1.5 : 1,
+          ),
+          boxShadow: isUnread
+              ? [
+                  BoxShadow(
+                    color: AppTheme.danger.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
-            const Icon(Icons.assignment_late_outlined, color: AppTheme.warning),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  color: isUnread ? AppTheme.danger : AppTheme.warning,
+                ),
+                if (isUnread)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.danger,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${assessment.type} - ${assessment.weight.round()}%',
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          assessment.title.isNotEmpty
+                              ? assessment.title
+                              : '${assessment.type} - ${assessment.weight.round()}%',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 13,
+                            fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isUnread) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.danger,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'NEW',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   Text(
                     'Due date: Day ${assessment.dueDate}',
@@ -812,7 +883,8 @@ class _AssignmentCard extends ConsumerWidget {
     required this.courseCode,
   });
 
-  void _openDetail(BuildContext context) {
+  void _openDetail(BuildContext context, WidgetRef ref) {
+    ref.read(notificationProvider.notifier).markAssessmentRead(assessment.idAssessment);
     context.go(
       '/my-class/$courseCode/assignments/${assessment.idAssessment}',
     );
@@ -823,22 +895,34 @@ class _AssignmentCard extends ConsumerWidget {
     final studentId = ref.read(activeStudentIdProvider);
     final milestonesAsync =
         ref.watch(assignmentMilestonesProvider(assessment.idAssessment));
+    final isUnread = ref.watch(isAssessmentUnreadProvider(assessment.idAssessment));
 
     return InkWell(
-      onTap: () => _openDetail(context),
+      onTap: () => _openDetail(context, ref),
       borderRadius: BorderRadius.circular(12),
       child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
+        color: isUnread ? const Color(0xFF1E293B) : AppTheme.surfaceCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: assessment.isSubmitted
-              ? AppTheme.accentGreen.withValues(alpha: 0.3)
-              : AppTheme.cardBorder,
-          width: 1,
+          color: isUnread
+              ? AppTheme.danger.withValues(alpha: 0.8)
+              : assessment.isSubmitted
+                  ? AppTheme.accentGreen.withValues(alpha: 0.3)
+                  : AppTheme.cardBorder,
+          width: isUnread ? 1.5 : 1,
         ),
+        boxShadow: isUnread
+            ? [
+                BoxShadow(
+                  color: AppTheme.danger.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,20 +935,46 @@ class _AssignmentCard extends ConsumerWidget {
                     : Icons.assignment_outlined,
                 color: assessment.isSubmitted
                     ? AppTheme.accentGreen
-                    : AppTheme.warning,
+                    : (isUnread ? AppTheme.danger : AppTheme.warning),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${assessment.type} - ${assessment.weight.round()}%',
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            assessment.title.isNotEmpty
+                                ? assessment.title
+                                : '${assessment.type} - ${assessment.weight.round()}%',
+                            style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (isUnread) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.danger,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'NEW',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     Text(
                       assessment.isSubmitted
@@ -894,7 +1004,7 @@ class _AssignmentCard extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _openDetail(context),
+                onPressed: () => _openDetail(context, ref),
                 icon: const Icon(Icons.upload_rounded, size: 16),
                 label: const Text('Submit'),
               ),

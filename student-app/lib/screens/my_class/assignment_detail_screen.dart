@@ -361,20 +361,6 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
     );
   }
 
-  Widget _buildInfoChip(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundDark,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.cardBorder),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-      ),
-    );
-  }
 
   Widget _buildInfoLine(String label, String value) {
     return Padding(

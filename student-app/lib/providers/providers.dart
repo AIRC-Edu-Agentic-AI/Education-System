@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:student_agent/core/config/env_config.dart';
@@ -155,28 +156,28 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
               ref.invalidate(notificationProvider);
             } else if (eventType == 'schedule_updated') {
               // Teacher created/updated/deleted a schedule → refresh timetable
-              print('[WS] schedule_updated received – refreshing timetable');
+              debugPrint('[WS] schedule_updated received – refreshing timetable');
               ref.invalidate(weeklyScheduleProvider);
             }
           } catch (e) {
-            print('[WS Data Parse Error] $e');
+            debugPrint('[WS Data Parse Error] $e');
           }
         },
         onError: (e) {
-          print('[WS Connection Error] $e');
+          debugPrint('[WS Connection Error] $e');
           if (!_isDisposed) {
             Future.delayed(const Duration(seconds: 3), _connectWebSocket);
           }
         },
         onDone: () {
-          print('[WS Connection Closed] Auto reconnecting...');
+          debugPrint('[WS Connection Closed] Auto reconnecting...');
           if (!_isDisposed) {
             Future.delayed(const Duration(seconds: 3), _connectWebSocket);
           }
         },
       );
     } catch (e) {
-      print('[WS Connect Catch] $e');
+      debugPrint('[WS Connect Catch] $e');
       if (!_isDisposed) {
         Future.delayed(const Duration(seconds: 3), _connectWebSocket);
       }
@@ -212,6 +213,49 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
         api.markNotificationRead(n.id);
       }
     } catch (_) {}
+  }
+
+  Future<void> markAssessmentRead(int idAssessment) async {
+    final current = state.value ?? [];
+    final matching = current.where((n) {
+      if (n.read) return false;
+      if (n.type == 'assignment') {
+        if (n.idAssessment == idAssessment) return true;
+        final pId = n.payload['id_assessment'] ?? n.payload['assessment_id'];
+        if (pId != null && pId.toString() == idAssessment.toString()) return true;
+      }
+      return false;
+    }).toList();
+
+    for (final n in matching) {
+      await markRead(n.id);
+    }
+  }
+
+  Future<void> markCourseAssignmentsRead(String courseCode) async {
+    final current = state.value ?? [];
+    final cleanCode = courseCode.trim().toLowerCase();
+    final moduleCode = cleanCode.split(' ').first;
+
+    final matching = current.where((n) {
+      if (n.read) return false;
+      final isAssignment = n.type == 'assignment' ||
+          n.title.toLowerCase().contains('assignment') ||
+          n.title.toLowerCase().contains('bài tập');
+      if (!isAssignment) return false;
+
+      final c = (n.courseCode ?? '').trim().toLowerCase();
+      if (c.isNotEmpty) {
+        return c == cleanCode || c.startsWith(moduleCode) || cleanCode.startsWith(c);
+      }
+      final title = n.title.toLowerCase();
+      final body = n.body.toLowerCase();
+      return title.contains(moduleCode) || body.contains(moduleCode);
+    }).toList();
+
+    for (final n in matching) {
+      await markRead(n.id);
+    }
   }
 
   int get unreadCount =>
@@ -395,11 +439,34 @@ final studentPrivateChannelProvider = FutureProvider<CourseChannel>((ref) async 
   return api.getPrivateChannel(studentId);
 });
 
-/// Count unread announcements/notifications for a specific course
+/// Count unread announcements for a specific course (excluding assignment notifications)
 final courseUnreadAnnouncementsCountProvider =
     Provider.family<int, String>((ref, courseCode) {
   final notifs = ref.watch(courseNotificationsProvider(courseCode)).value ?? [];
-  return notifs.where((n) => !n.read).length;
+  return notifs.where((n) => !n.read && n.type != 'assignment').length;
+});
+
+/// Count unread assignment notifications for a specific course
+final courseUnreadAssignmentsCountProvider =
+    Provider.family<int, String>((ref, courseCode) {
+  final notifs = ref.watch(courseNotificationsProvider(courseCode)).value ?? [];
+  return notifs.where((n) => !n.read && (n.type == 'assignment' || n.title.toLowerCase().contains('assignment') || n.title.toLowerCase().contains('bài tập'))).length;
+});
+
+/// Check if a specific assessment has an unread notification
+final isAssessmentUnreadProvider =
+    Provider.family<bool, int>((ref, idAssessment) {
+  final notifs = ref.watch(notificationProvider).value ?? [];
+  return notifs.any((n) {
+    if (n.read) return false;
+    if (n.type == 'assignment') {
+      if (n.idAssessment == idAssessment) return true;
+      final pId = n.payload['id_assessment'] ?? n.payload['assessment_id'];
+      if (pId != null && pId.toString() == idAssessment.toString()) return true;
+      if (n.title.contains('$idAssessment') || n.body.contains('$idAssessment')) return true;
+    }
+    return false;
+  });
 });
 
 /// Count unread messages inside a specific channel

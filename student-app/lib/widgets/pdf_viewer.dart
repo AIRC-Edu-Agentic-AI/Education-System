@@ -43,7 +43,7 @@ class _PdfViewerState extends State<PdfViewer> {
         });
       }
     } catch (e) {
-      print('PDF Error: $e');
+      debugPrint('PDF Error: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;

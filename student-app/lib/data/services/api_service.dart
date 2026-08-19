@@ -126,11 +126,11 @@ class ApiService {
             moduleLength: 30,
             finalResult: null,
             assessments: const [],
-            vleSummary: VleSummary(
+            vleSummary: const VleSummary(
               totalClicks: 3842,
               lastActiveDay: 42,
-              byActivityType: const {},
-              weeklyClicks: const [],
+              byActivityType: {},
+              weeklyClicks: [],
             ),
           ),
         ],

@@ -107,6 +107,13 @@ async def _notify_assignment_recipients(
             "assignment",
             title,
             body,
+            course_code=course_code,
+            payload_extra={
+                "id_assessment": assignment.get("id_assessment"),
+                "course_code": course_code,
+                "due_date": assignment.get("due_date"),
+            },
+            sender_role="instructor",
         )
 
     try:
@@ -117,11 +124,17 @@ async def _notify_assignment_recipients(
             "read": False,
             "sender_role": "instructor",
             "course_code": course_code,
-            "payload": {"title": title, "body": body},
+            "payload": {
+                "title": title,
+                "body": body,
+                "id_assessment": assignment.get("id_assessment"),
+                "course_code": course_code,
+                "due_date": assignment.get("due_date"),
+            },
             "title": title,
             "content": body,
             "created_at": datetime.now().isoformat(),
-            "id_assessment": assignment["id_assessment"],
+            "id_assessment": assignment.get("id_assessment"),
         }
         for student_id in recipient_ids:
             await manager.send_to_user(
@@ -187,8 +200,6 @@ async def _create_assignment(module: str, presentation: str, payload: CreateAssi
         },
         source="assignments",
     )
-    # Send targeted notification to enrolled students
-    await _notify_assignment_created(db, module, presentation, id_assessment, payload)
     return doc
 
 
@@ -470,26 +481,6 @@ async def create_classroom_assignment(classroom_id: str, payload: CreateClassroo
             "notified_student_count": notified_count,
         },
         source="assignments",
-    )
-
-    # Send targeted notification to classroom students
-    pres = classroom.get("code_presentation") or classroom.get("presentation") or ""
-    await _notify_assignment_created(
-        db,
-        payload.code_module,
-        pres,
-        id_assessment,
-        CreateAssignmentRequest(
-            title=payload.title,
-            description=payload.description,
-            type=payload.type,
-            weight=payload.weight,
-            due_date=payload.due_date,
-            allowed_formats=payload.allowed_formats,
-            max_file_size_mb=payload.max_file_size_mb,
-            teacher_id=payload.teacher_id,
-        ),
-        student_ids=student_ids,
     )
 
     return doc

@@ -34,6 +34,9 @@ async def push_notification(
     body: str,
     action_options: list | None = None,
     dedup_hours: int | None = None,
+    course_code: str | None = None,
+    payload_extra: dict | None = None,
+    sender_role: str | None = None,
 ) -> bool:
     """Insert one notification with a consistent shape + scheduling.
 
@@ -46,14 +49,27 @@ async def push_notification(
     if dedup_hours and await recently_fired(db, student_id, notif_type, dedup_hours):
         return False
 
+    payload = {"title": title, "body": body}
+    if payload_extra:
+        payload.update(payload_extra)
+
     notif = {
         "student_id": student_id,
         "type": notif_type,
-        "payload": {"title": title, "body": body},
+        "title": title,
+        "content": body,
+        "payload": payload,
         "action_options": action_options or [],
         "read": False,
         "created_at": now_iso(),
     }
+    if course_code:
+        notif["course_code"] = course_code
+    if sender_role:
+        notif["sender_role"] = sender_role
+    if payload_extra and "id_assessment" in payload_extra:
+        notif["id_assessment"] = payload_extra["id_assessment"]
+
     send_at = compute_send_at(notif_type)
     if send_at:
         notif["send_at"] = send_at
@@ -63,3 +79,4 @@ async def push_notification(
         return True
     await db["notifications"].insert_one(notif)
     return True
+
