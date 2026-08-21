@@ -1,0 +1,15 @@
+[
+  {
+    "_id": {
+      "$oid": "6a66dfb79d037a9a62b3e81a"
+    },
+    "classroom_id": "CLASS_DATA201_01",
+    "name": "Lớp Phân tích Dữ liệu 01",
+    "course_code": "SSH1207",
+    "instructor_id": "instructor_1",
+    "student_ids": [
+      28400
+    ],
+    "status": "active"
+  }
+]

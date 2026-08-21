@@ -98,8 +98,17 @@ async def get_student_context(student_id: int) -> dict:
     if db is not None:
         doc = await db.students.find_one({"student_id": student_id})
         if doc:
-            return _extract_context(doc)
-    return _extract_context(MOCK_STUDENT)
+            context = _extract_context(doc)
+            submissions = await db.submissions.find(
+                {"student_id": student_id},
+                {"_id": 0, "id_assessment": 1, "file_name": 1, "file_url": 1,
+                 "file_type": 1, "submitted_at": 1, "status": 1},
+            ).to_list(length=100)
+            context["submitted_files"] = submissions
+            return context
+    context = _extract_context(MOCK_STUDENT)
+    context["submitted_files"] = []
+    return context
 
 
 async def get_knowledge_state_stub(student_id: int) -> dict:
@@ -218,13 +227,26 @@ def make_tools(student_id: int) -> list:
             profile = doc or MOCK_STUDENT
         else:
             profile = MOCK_STUDENT
+        submissions_by_assessment = {}
+        if db is not None:
+            submissions = await db.submissions.find(
+                {"student_id": student_id},
+                {"_id": 0, "id_assessment": 1, "file_name": 1, "file_url": 1,
+                 "file_type": 1, "submitted_at": 1, "status": 1},
+            ).to_list(length=100)
+            submissions_by_assessment = {
+                submission.get("id_assessment"): submission
+                for submission in submissions
+            }
         assessments = []
         for enrollment in profile.get("enrollments", []):
             module = enrollment.get("code_module", "")
             module_title = enrollment.get("title", "")
             for a in enrollment.get("assessments", []):
+                submission = submissions_by_assessment.get(a.get("id_assessment"))
                 assessments.append(
-                    {**a, "module": module, "module_title": module_title})
+                    {**a, "module": module, "module_title": module_title,
+                     "submitted_file": submission})
         return json.dumps(assessments, ensure_ascii=False, default=str)
 
     @tool

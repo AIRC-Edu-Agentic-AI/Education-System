@@ -29,6 +29,7 @@ import {
 } from '@mui/material'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined'
 import { useAuthStore } from '../../../shared/stores/authStore'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api'
@@ -58,6 +59,9 @@ interface SubmissionRecord {
   _id: string
   student_id: number
   id_assessment: number
+  file_name?: string
+  file_url?: string
+  file_type?: string
   content: string
   submitted_at: string
   submitted_day: number
@@ -91,6 +95,12 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
 
   const teacherId = authUser?.email || authUser?.name || 'teacher_admin'
   const courseCode = `${module} ${presentation}`
+
+  const getSubmissionFileUrl = (fileUrl: string) => {
+    if (/^https?:\/\//i.test(fileUrl)) return fileUrl
+    const apiOrigin = API_BASE.replace(/\/api\/?$/, '')
+    return `${apiOrigin}${fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`}`
+  }
 
   const resetAssignmentForm = () => {
     setEditingAssignment(null)
@@ -486,6 +496,7 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                   <TableCell>Status</TableCell>
                   <TableCell>Score</TableCell>
                   <TableCell>Feedback</TableCell>
+                  <TableCell>File</TableCell>
                   <TableCell>Content</TableCell>
                   <TableCell align="right">Grade</TableCell>
                 </TableRow>
@@ -498,6 +509,21 @@ export default function AssignmentManager({ module, presentation }: AssignmentMa
                     <TableCell>{submission.status}</TableCell>
                     <TableCell>{submission.score != null ? `${submission.score}%` : '—'}</TableCell>
                     <TableCell>{submission.feedback || '—'}</TableCell>
+                    <TableCell>
+                      {submission.file_url ? (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<OpenInNewOutlinedIcon />}
+                          component="a"
+                          href={getSubmissionFileUrl(submission.file_url)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {submission.file_name || 'Open file'}
+                        </Button>
+                      ) : '—'}
+                    </TableCell>
                     <TableCell sx={{ maxWidth: 280, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}>
                       {submission.content}
                     </TableCell>

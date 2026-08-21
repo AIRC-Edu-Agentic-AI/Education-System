@@ -1,0 +1,91 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5db663786941d1b2a6690d"
+    },
+    "student_id": 57506,
+    "title": "Tài liệu lý thuyết Nhân văn",
+    "module": "AAA",
+    "type": "document",
+    "subject": "Lý thuyết Nhân văn",
+    "url": "https://example.com/aaa-theory.pdf",
+    "bookmarked": true,
+    "created_at": "2026-07-20T05:47:13.919227+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5db663786941d1b2a6690e"
+    },
+    "student_id": 57506,
+    "title": "Hướng dẫn viết luận AAA",
+    "module": "AAA",
+    "type": "document",
+    "subject": "Kỹ năng viết luận",
+    "url": "https://example.com/essay-guide.pdf",
+    "bookmarked": false,
+    "created_at": "2026-07-20T05:47:13.919229+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d5"
+    },
+    "student_id": 28400,
+    "title": "Slide Tuần 7 — Kiểm định giả thuyết",
+    "module": "DATA201",
+    "type": "slide",
+    "subject": "Kiểm định giả thuyết",
+    "url": "https://example.com/bbb-w7-slides.pdf",
+    "bookmarked": true,
+    "created_at": "2026-07-27T03:16:45.083582+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d6"
+    },
+    "student_id": 28400,
+    "title": "Hướng dẫn hồi quy tuyến tính với Python",
+    "module": "DATA201",
+    "type": "document",
+    "subject": "Hồi quy tuyến tính",
+    "url": "https://example.com/linear-regression.pdf",
+    "bookmarked": false,
+    "created_at": "2026-07-27T03:16:45.083582+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d7"
+    },
+    "student_id": 28400,
+    "title": "Video: Thống kê cơ bản từ đầu",
+    "module": "DATA201",
+    "type": "video",
+    "subject": "Thống kê cơ bản",
+    "url": "https://example.com/stats-basics",
+    "bookmarked": true,
+    "created_at": "2026-07-27T03:16:45.083582+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d8"
+    },
+    "student_id": 28400,
+    "title": "Quiz tự luyện — Đại số tuyến tính",
+    "module": "DATA201",
+    "type": "quiz",
+    "subject": "Đại số tuyến tính",
+    "url": "https://example.com/linear-algebra-quiz",
+    "bookmarked": false,
+    "created_at": "2026-07-27T03:16:45.083582+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a72e37e970e046f6d44704f"
+    },
+    "student_id": 28400,
+    "subject": "Phân tích hiệu suất",
+    "title": "Đánh giá tổng hợp Nguyễn Văn An - 2024A",
+    "content": "RỦI RO: tier 3 (score 0.82) | Flags: low_vle_engagement, assessment_due_soon, assessment_shock\n\nKHÁI NIỆM YẾU NHẤT (mastery < 0.6):\n1. Đại số tuyến tính: 28% ⚠️ (yếu nhất - nền tảng cho các môn khác)\n2. Thống kê cơ bản: 35%\n3. Kiểm định giả thuyết: 42%\n4. Hồi quy tuyến tính: 55%\n\nVLE ENGAGEMENT: Đang suy giảm nghiêm trọng\n- DATA201: từ 320→0 clicks/tuần (inactive)\n- MATH102: từ 180→0 clicks/tuần (inactive)\n- COMP101 & STAT110: vẫn hoạt động nhưng cũng đang giảm\n\nĐÁNH GIÁ ĐIỂM THẤP NHẤT:\n- DATA201 TMA: 42/100 (rất thấp - cần cải thiện ngay)\n- MATH102 CMA: 58/100 (thấp)\n- MATH102 TMA: 65/100 (khá thấp)\n\nKẾT LUẬN: Học sinh đang gặp khó khăn nghiêm trọng với nền tảng toán học, dẫn đến điểm số thấp và thiếu tương tác VLE. Cần can thiệp khẩn cấp vào Đại số tuyến tính trước khi tiếp cận các khái niệm phức tạp hơn.",
+    "type": "note",
+    "created_at": "2026-08-05T07:17:18.912573+00:00"
+  }
+]

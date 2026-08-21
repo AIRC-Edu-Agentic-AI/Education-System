@@ -1,0 +1,1573 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7e8c1fdc5c8113e75ec4f7"
+    },
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1216 2013J)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "course_code": "MI1216 2013J",
+    "status": "active",
+    "created_at": "2026-08-14T03:31:43.738142+00:00",
+    "updated_at": "2026-08-14T03:31:43.738142+00:00",
+    "description": "Official announcements from the instructor for Probability & Statistics (MI1216 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c1fdc5c8113e75ec4f8"
+    },
+    "type": "discussion",
+    "name": "Class Discussion (MI1216 2013J)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "course_code": "MI1216 2013J",
+    "status": "active",
+    "created_at": "2026-08-14T03:31:43.738142+00:00",
+    "updated_at": "2026-08-14T03:31:43.738142+00:00",
+    "description": "Open academic Q&A forum for Probability & Statistics (MI1216 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c1fe3b7a54eb16ddc27"
+    },
+    "course_code": "IT1208 2026E",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (IT1208 2026E)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:43.739135+00:00",
+    "description": "Official announcements from the instructor for Introduction to Computer Science (IT1208 2026E)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20dc5c8113e75ec4f9"
+    },
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (IT1208 2026E)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "course_code": "IT1208 2026E",
+    "status": "active",
+    "created_at": "2026-08-14T03:31:44.733836+00:00",
+    "updated_at": "2026-08-14T03:31:44.733836+00:00",
+    "description": "Official announcements from the instructor for Introduction to Computer Science (IT1208 2026E)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20dc5c8113e75ec4fa"
+    },
+    "type": "discussion",
+    "name": "Class Discussion (IT1208 2026E)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "course_code": "IT1208 2026E",
+    "status": "active",
+    "created_at": "2026-08-14T03:31:44.733836+00:00",
+    "updated_at": "2026-08-14T03:31:44.733836+00:00",
+    "description": "Open academic Q&A forum for Introduction to Computer Science (IT1208 2026E)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc28"
+    },
+    "course_code": "IT1208 2026E",
+    "type": "discussion",
+    "name": "Class Discussion (IT1208 2026E)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:44.739085+00:00",
+    "description": "Open academic Q&A forum for Introduction to Computer Science (IT1208 2026E)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc29"
+    },
+    "course_code": "IT1208 2026E",
+    "type": "private_message",
+    "name": "Trần Hoài Hùng (#71361)",
+    "members": [
+      "teacher_admin",
+      "71361"
+    ],
+    "members_key": "teacher_admin|71361",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:44.806597+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc2a"
+    },
+    "course_code": "IT1208 2026E",
+    "type": "private_message",
+    "name": "Nguyễn Gia Nam (#294570)",
+    "members": [
+      "teacher_admin",
+      "294570"
+    ],
+    "members_key": "teacher_admin|294570",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:44.884973+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc2b"
+    },
+    "course_code": "IT1208 2026E",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — IT1208 (2026E)",
+    "members": [
+      "teacher_admin",
+      "181316",
+      "294570",
+      "71361",
+      "71361"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:44.928999+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc3f"
+    },
+    "course_code": "MIL1225 2024A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MIL1225 2024A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:45.055582+00:00",
+    "description": "Official announcements from the instructor for National Defense & Security Education (MIL1225 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc40"
+    },
+    "course_code": "MIL1225 2024A",
+    "type": "discussion",
+    "name": "Class Discussion (MIL1225 2024A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:45.091097+00:00",
+    "description": "Open academic Q&A forum for National Defense & Security Education (MIL1225 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc41"
+    },
+    "course_code": "MIL1225 2024A",
+    "type": "private_message",
+    "name": "Hoàng Văn Anh (#32885)",
+    "members": [
+      "teacher_admin",
+      "32885"
+    ],
+    "members_key": "teacher_admin|32885",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:45.184484+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc42"
+    },
+    "course_code": "MIL1225 2024A",
+    "type": "private_message",
+    "name": "Phan Thị Hùng (#62155)",
+    "members": [
+      "teacher_admin",
+      "62155"
+    ],
+    "members_key": "teacher_admin|62155",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:45.785231+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc43"
+    },
+    "course_code": "MIL1225 2024A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MIL1225 (2024A)",
+    "members": [
+      "teacher_admin",
+      "38053",
+      "62155",
+      "32885",
+      "38053"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:45.823948+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc57"
+    },
+    "course_code": "MI1209 2013J",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1209 2013J)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.002656+00:00",
+    "description": "Official announcements from the instructor for Calculus (MI1209 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc58"
+    },
+    "course_code": "MI1209 2013J",
+    "type": "discussion",
+    "name": "Class Discussion (MI1209 2013J)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.038984+00:00",
+    "description": "Open academic Q&A forum for Calculus (MI1209 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc59"
+    },
+    "course_code": "MI1209 2013J",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1209 (2013J)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:46.166410+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc6d"
+    },
+    "course_code": "SSH1202 2026A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (SSH1202 2026A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.313337+00:00",
+    "description": "Official announcements from the instructor for Marxist-Leninist Political Economy (SSH1202 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc6e"
+    },
+    "course_code": "SSH1202 2026A",
+    "type": "discussion",
+    "name": "Class Discussion (SSH1202 2026A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.353692+00:00",
+    "description": "Open academic Q&A forum for Marxist-Leninist Political Economy (SSH1202 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc6f"
+    },
+    "course_code": "SSH1202 2026A",
+    "type": "private_message",
+    "name": "Lê Hoài Khánh (#240884)",
+    "members": [
+      "teacher_admin",
+      "240884"
+    ],
+    "members_key": "teacher_admin|240884",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:46.450560+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc70"
+    },
+    "course_code": "SSH1202 2026A",
+    "type": "private_message",
+    "name": "Lê Văn Hương (#106577)",
+    "members": [
+      "teacher_admin",
+      "106577"
+    ],
+    "members_key": "teacher_admin|106577",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:46.641704+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc71"
+    },
+    "course_code": "SSH1202 2026A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — SSH1202 (2026A)",
+    "members": [
+      "teacher_admin",
+      "144801",
+      "106577",
+      "240884",
+      "101781"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:46.697624+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc85"
+    },
+    "course_code": "SSH1206 2024A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (SSH1206 2024A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.901873+00:00",
+    "description": "Official announcements from the instructor for General Law (SSH1206 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc86"
+    },
+    "course_code": "SSH1206 2024A",
+    "type": "discussion",
+    "name": "Class Discussion (SSH1206 2024A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:46.986337+00:00",
+    "description": "Open academic Q&A forum for General Law (SSH1206 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc87"
+    },
+    "course_code": "SSH1206 2024A",
+    "type": "private_message",
+    "name": "Võ Ngọc Hùng (#53025)",
+    "members": [
+      "teacher_admin",
+      "53025"
+    ],
+    "members_key": "teacher_admin|53025",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:47.051323+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc88"
+    },
+    "course_code": "SSH1206 2024A",
+    "type": "private_message",
+    "name": "Võ Đức Nam (#167906)",
+    "members": [
+      "teacher_admin",
+      "167906"
+    ],
+    "members_key": "teacher_admin|167906",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:47.124561+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc89"
+    },
+    "course_code": "SSH1206 2024A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — SSH1206 (2024A)",
+    "members": [
+      "teacher_admin",
+      "77367",
+      "167906",
+      "53025",
+      "53025"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:47.161875+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc9d"
+    },
+    "course_code": "MI1209 2013B",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1209 2013B)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:47.336625+00:00",
+    "description": "Official announcements from the instructor for Calculus (MI1209 2013B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc9e"
+    },
+    "course_code": "MI1209 2013B",
+    "type": "discussion",
+    "name": "Class Discussion (MI1209 2013B)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:47.372973+00:00",
+    "description": "Open academic Q&A forum for Calculus (MI1209 2013B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc9f"
+    },
+    "course_code": "MI1209 2013B",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1209 (2013B)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:47.483077+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb3"
+    },
+    "course_code": "MI1216 2014J",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1216 2014J)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:47.666115+00:00",
+    "description": "Official announcements from the instructor for Probability & Statistics (MI1216 2014J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb4"
+    },
+    "course_code": "MI1216 2014J",
+    "type": "discussion",
+    "name": "Class Discussion (MI1216 2014J)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:47.717171+00:00",
+    "description": "Open academic Q&A forum for Probability & Statistics (MI1216 2014J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb5"
+    },
+    "course_code": "MI1216 2014J",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1216 (2014J)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:47.861104+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcc9"
+    },
+    "course_code": "MI1209 2014J",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1209 2014J)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.071968+00:00",
+    "description": "Official announcements from the instructor for Calculus (MI1209 2014J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcca"
+    },
+    "course_code": "MI1209 2014J",
+    "type": "discussion",
+    "name": "Class Discussion (MI1209 2014J)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.122342+00:00",
+    "description": "Open academic Q&A forum for Calculus (MI1209 2014J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddccb"
+    },
+    "course_code": "MI1209 2014J",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1209 (2014J)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:48.287925+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcdf"
+    },
+    "course_code": "FL1219 2024A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (FL1219 2024A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.449432+00:00",
+    "description": "Official announcements from the instructor for English 1 (FL1219 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce0"
+    },
+    "course_code": "FL1219 2024A",
+    "type": "discussion",
+    "name": "Class Discussion (FL1219 2024A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.502439+00:00",
+    "description": "Open academic Q&A forum for English 1 (FL1219 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce1"
+    },
+    "course_code": "FL1219 2024A",
+    "type": "private_message",
+    "name": "Nguyễn Minh Tuấn (#70464)",
+    "members": [
+      "teacher_admin",
+      "70464"
+    ],
+    "members_key": "teacher_admin|70464",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:48.578179+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce2"
+    },
+    "course_code": "FL1219 2024A",
+    "type": "private_message",
+    "name": "Huỳnh Quang Tuấn (#192183)",
+    "members": [
+      "teacher_admin",
+      "192183"
+    ],
+    "members_key": "teacher_admin|192183",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:48.667503+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce3"
+    },
+    "course_code": "FL1219 2024A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — FL1219 (2024A)",
+    "members": [
+      "teacher_admin",
+      "155854",
+      "192183",
+      "70464",
+      "70464"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:48.709864+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcf7"
+    },
+    "course_code": "SSH1201 2026B",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (SSH1201 2026B)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.868085+00:00",
+    "description": "Official announcements from the instructor for Marxist-Leninist Philosophy (SSH1201 2026B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcf8"
+    },
+    "course_code": "SSH1201 2026B",
+    "type": "discussion",
+    "name": "Class Discussion (SSH1201 2026B)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:48.917499+00:00",
+    "description": "Open academic Q&A forum for Marxist-Leninist Philosophy (SSH1201 2026B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddcf9"
+    },
+    "course_code": "SSH1201 2026B",
+    "type": "private_message",
+    "name": "Nguyễn Thị Hùng (#94961)",
+    "members": [
+      "teacher_admin",
+      "94961"
+    ],
+    "members_key": "teacher_admin|94961",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:49.000293+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddcfa"
+    },
+    "course_code": "SSH1201 2026B",
+    "type": "private_message",
+    "name": "Phan Thanh Hùng (#110175)",
+    "members": [
+      "teacher_admin",
+      "110175"
+    ],
+    "members_key": "teacher_admin|110175",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:49.097974+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddcfb"
+    },
+    "course_code": "SSH1201 2026B",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — SSH1201 (2026B)",
+    "members": [
+      "teacher_admin",
+      "116541",
+      "110175",
+      "94961",
+      "94961"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:49.199011+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd0f"
+    },
+    "course_code": "MI1216 2013J",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1216 2013J)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:49.344472+00:00",
+    "description": "Official announcements from the instructor for Probability & Statistics (MI1216 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd10"
+    },
+    "course_code": "MI1216 2013J",
+    "type": "discussion",
+    "name": "Class Discussion (MI1216 2013J)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:49.401087+00:00",
+    "description": "Open academic Q&A forum for Probability & Statistics (MI1216 2013J)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd11"
+    },
+    "course_code": "MI1216 2013J",
+    "type": "private_message",
+    "name": "Huỳnh Đức Hương (#111717)",
+    "members": [
+      "teacher_admin",
+      "111717"
+    ],
+    "members_key": "teacher_admin|111717",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:49.514652+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd12"
+    },
+    "course_code": "MI1216 2013J",
+    "type": "private_message",
+    "name": "Trần Gia Anh (#155984)",
+    "members": [
+      "teacher_admin",
+      "155984"
+    ],
+    "members_key": "teacher_admin|155984",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:49.614411+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd13"
+    },
+    "course_code": "MI1216 2013J",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1216 (2013J)",
+    "members": [
+      "teacher_admin",
+      "114017",
+      "155984",
+      "111717",
+      "155984"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:49.664917+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd27"
+    },
+    "course_code": "MI1212 2026A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1212 2026A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:49.829131+00:00",
+    "description": "Official announcements from the instructor for Linear Algebra (MI1212 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd28"
+    },
+    "course_code": "MI1212 2026A",
+    "type": "discussion",
+    "name": "Class Discussion (MI1212 2026A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:49.918149+00:00",
+    "description": "Open academic Q&A forum for Linear Algebra (MI1212 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd29"
+    },
+    "course_code": "MI1212 2026A",
+    "type": "private_message",
+    "name": "Phan Hoài Tuấn (#63400)",
+    "members": [
+      "teacher_admin",
+      "63400"
+    ],
+    "members_key": "teacher_admin|63400",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:50.090176+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd2a"
+    },
+    "course_code": "MI1212 2026A",
+    "type": "private_message",
+    "name": "Phan Thanh Hùng (#256815)",
+    "members": [
+      "teacher_admin",
+      "256815"
+    ],
+    "members_key": "teacher_admin|256815",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:50.199162+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd2b"
+    },
+    "course_code": "MI1212 2026A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1212 (2026A)",
+    "members": [
+      "teacher_admin",
+      "142326",
+      "256815",
+      "63400",
+      "98094"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:50.234858+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd3f"
+    },
+    "course_code": "SSH1201 2026A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (SSH1201 2026A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:50.489033+00:00",
+    "description": "Official announcements from the instructor for Marxist-Leninist Philosophy (SSH1201 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd40"
+    },
+    "course_code": "SSH1201 2026A",
+    "type": "discussion",
+    "name": "Class Discussion (SSH1201 2026A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:50.523455+00:00",
+    "description": "Open academic Q&A forum for Marxist-Leninist Philosophy (SSH1201 2026A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd41"
+    },
+    "course_code": "SSH1201 2026A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — SSH1201 (2026A)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:50.680649+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd55"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (SSH1207 2024A)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:50.808535+00:00",
+    "description": "Official announcements from the instructor for Soft Skills (SSH1207 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd56"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "discussion",
+    "name": "Class Discussion (SSH1207 2024A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:50.847933+00:00",
+    "description": "Open academic Q&A forum for Soft Skills (SSH1207 2024A)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd57"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "private_message",
+    "name": "Phan Văn Linh (#129955)",
+    "members": [
+      "teacher_admin",
+      "129955"
+    ],
+    "members_key": "teacher_admin|129955",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:50.953099+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd58"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "private_message",
+    "name": "Lê Văn Khánh (#45462)",
+    "members": [
+      "teacher_admin",
+      "45462"
+    ],
+    "members_key": "45462|teacher_admin",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:51.027976+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd59"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — SSH1207 (2024A)",
+    "members": [
+      "teacher_admin",
+      "65002",
+      "45462",
+      "129955",
+      "45642"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:51.073215+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd6d"
+    },
+    "course_code": "IT1208 2026D",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (IT1208 2026D)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:51.262217+00:00",
+    "description": "Official announcements from the instructor for Introduction to Computer Science (IT1208 2026D)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd6e"
+    },
+    "course_code": "IT1208 2026D",
+    "type": "discussion",
+    "name": "Class Discussion (IT1208 2026D)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:51.308300+00:00",
+    "description": "Open academic Q&A forum for Introduction to Computer Science (IT1208 2026D)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd6f"
+    },
+    "course_code": "IT1208 2026D",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — IT1208 (2026D)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:51.516746+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd83"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "announcement",
+    "name": "Announcements & Broadcasts (MI1209 2014B)",
+    "is_read_only": true,
+    "allowed_post_roles": [
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:51.678979+00:00",
+    "description": "Official announcements from the instructor for Calculus (MI1209 2014B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd84"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "discussion",
+    "name": "Class Discussion (MI1209 2014B)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "student",
+      "instructor",
+      "class_rep"
+    ],
+    "status": "active",
+    "created_at": "2026-07-15T03:31:51.730168+00:00",
+    "description": "Open academic Q&A forum for Calculus (MI1209 2014B)"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd85"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "private_message",
+    "name": "Lê Hải Huy (#442442)",
+    "members": [
+      "teacher_admin",
+      "442442"
+    ],
+    "members_key": "teacher_admin|442442",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:51.856252+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd86"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "private_message",
+    "name": "Phạm Gia Linh (#116692)",
+    "members": [
+      "teacher_admin",
+      "116692"
+    ],
+    "members_key": "teacher_admin|116692",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-08T03:31:51.944911+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd87"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "private_group",
+    "name": "Academic Support & Review Group — MI1209 (2014B)",
+    "members": [
+      "teacher_admin",
+      "57506",
+      "116692",
+      "442442",
+      "172112"
+    ],
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student"
+    ],
+    "status": "active",
+    "created_at": "2026-08-04T03:31:52.020559+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a7e957197b51d8af281c152"
+    },
+    "name": "Đặng Văn Khánh",
+    "course_code": "AAA 2013J",
+    "members": [
+      "teacher_admin",
+      "57506"
+    ],
+    "members_key": "57506|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-14T04:11:29.018350+00:00",
+    "updated_at": "2026-08-14T04:11:29.018350+00:00",
+    "description": ""
+  },
+  {
+    "_id": {
+      "$oid": "6a82bef23ba9e4917c6f35ad"
+    },
+    "name": "Trần Gia Anh (#2291034)",
+    "course_code": "SSH1207 2024A",
+    "members": [
+      "teacher_admin",
+      "2291034"
+    ],
+    "members_key": "2291034|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-17T07:57:38.087991+00:00",
+    "updated_at": "2026-08-19T02:45:51.957896+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a82bfda3ba9e4917c6f3625"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "private_group",
+    "name": "Academic Support Group — Tier 3 (SSH1207 2024A)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student",
+      "class_rep"
+    ],
+    "status": "active",
+    "members": [
+      "teacher_admin",
+      "129955",
+      "2291034"
+    ],
+    "created_at": "2026-08-17T08:01:30.472893+00:00",
+    "updated_at": "2026-08-17T08:01:30.472893+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a8518f7224a959ff45e014f"
+    },
+    "course_code": "SSH1207 2024A",
+    "type": "private_message",
+    "name": "Lê Hải Anh (#65002)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student",
+      "class_rep"
+    ],
+    "status": "active",
+    "members": [
+      "teacher_admin",
+      "65002"
+    ],
+    "created_at": "2026-08-19T02:46:15.107435+00:00",
+    "updated_at": "2026-08-19T02:46:15.129361+00:00",
+    "members_key": "65002|teacher_admin"
+  },
+  {
+    "_id": {
+      "$oid": "6a853167b4b32a655af48bd3"
+    },
+    "name": "Nguyễn Văn An",
+    "course_code": "AAA 2013J",
+    "members": [
+      "teacher_admin",
+      "28400"
+    ],
+    "members_key": "28400|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-19T04:30:31.828819+00:00",
+    "updated_at": "2026-08-19T04:30:31.828819+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a853187b4b32a655af48bd4"
+    },
+    "name": "Huỳnh Văn Tuấn",
+    "course_code": "AAA 2013J",
+    "members": [
+      "teacher_admin",
+      "532928"
+    ],
+    "members_key": "532928|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-19T04:31:03.863698+00:00",
+    "updated_at": "2026-08-19T04:31:03.863698+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a8540145ad731268961b0a4"
+    },
+    "name": "Võ Thị Nam",
+    "course_code": "AAA 2013J",
+    "members": [
+      "teacher_admin",
+      "546195"
+    ],
+    "members_key": "546195|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-19T05:33:08.038540+00:00",
+    "updated_at": "2026-08-19T05:33:08.038540+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a86e10c90adc75fa50022aa"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "private_message",
+    "name": "Huỳnh Hải Khánh (#530941)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student",
+      "class_rep"
+    ],
+    "status": "active",
+    "members": [
+      "teacher_admin",
+      "530941"
+    ],
+    "created_at": "2026-08-20T11:12:12.965796+00:00",
+    "updated_at": "2026-08-20T11:12:12.965796+00:00",
+    "members_key": "530941|teacher_admin"
+  },
+  {
+    "_id": {
+      "$oid": "6a86e15390adc75fa50022ab"
+    },
+    "course_code": "MI1209 2014B",
+    "type": "private_message",
+    "name": "Trần Hải Hương (#2542724)",
+    "is_read_only": false,
+    "allowed_post_roles": [
+      "instructor",
+      "student",
+      "class_rep"
+    ],
+    "status": "active",
+    "members": [
+      "teacher_admin",
+      "2542724"
+    ],
+    "created_at": "2026-08-20T11:13:23.923339+00:00",
+    "updated_at": "2026-08-20T11:13:23.923339+00:00",
+    "members_key": "2542724|teacher_admin"
+  },
+  {
+    "_id": {
+      "$oid": "6a8702c8b526ebf34d2c4e84"
+    },
+    "name": "Võ Ngọc Hùng",
+    "course_code": "AAA 2013J",
+    "members": [
+      "teacher_admin",
+      "114017"
+    ],
+    "members_key": "114017|teacher_admin",
+    "type": "private_message",
+    "status": "active",
+    "created_at": "2026-08-20T13:36:08.174001+00:00",
+    "updated_at": "2026-08-20T13:36:08.174001+00:00"
+  }
+]

@@ -1,0 +1,95 @@
+{
+  "database": "education-system",
+  "collections": [
+    {
+      "name": "agent_logs",
+      "documents": 0,
+      "file": "agent_logs.json"
+    },
+    {
+      "name": "assignment_milestones",
+      "documents": 2,
+      "file": "assignment_milestones.json"
+    },
+    {
+      "name": "assignments",
+      "documents": 7,
+      "file": "assignments.json"
+    },
+    {
+      "name": "audit_logs",
+      "documents": 35,
+      "file": "audit_logs.json"
+    },
+    {
+      "name": "channels",
+      "documents": 82,
+      "file": "channels.json"
+    },
+    {
+      "name": "classrooms",
+      "documents": 1,
+      "file": "classrooms.json"
+    },
+    {
+      "name": "courses",
+      "documents": 20,
+      "file": "courses.json"
+    },
+    {
+      "name": "knowledge_states",
+      "documents": 2,
+      "file": "knowledge_states.json"
+    },
+    {
+      "name": "messages",
+      "documents": 135,
+      "file": "messages.json"
+    },
+    {
+      "name": "notifications",
+      "documents": 38874,
+      "file": "notifications.json"
+    },
+    {
+      "name": "resources",
+      "documents": 7,
+      "file": "resources.json"
+    },
+    {
+      "name": "risk_history",
+      "documents": 2,
+      "file": "risk_history.json"
+    },
+    {
+      "name": "schedules",
+      "documents": 1,
+      "file": "schedules.json"
+    },
+    {
+      "name": "students",
+      "documents": 8448,
+      "file": "students.json"
+    },
+    {
+      "name": "study_groups",
+      "documents": 32,
+      "file": "study_groups.json"
+    },
+    {
+      "name": "study_plans",
+      "documents": 2,
+      "file": "study_plans.json"
+    },
+    {
+      "name": "submissions",
+      "documents": 9,
+      "file": "submissions.json"
+    },
+    {
+      "name": "timetable_blocks",
+      "documents": 1,
+      "file": "timetable_blocks.json"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7554ae5b3321a9603a25ab"
+    },
+    "schedules": [
+      {
+        "id": "schedule_1786074286458",
+        "week": 1,
+        "activity": "AAA",
+        "subject": "AAA",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "MI1209",
+        "presentation": "2014J",
+        "className": "AAA",
+        "room": "A",
+        "date": "2026-08-07",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "A",
+        "locationUrl": "A",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-07T03:44:46.457Z",
+        "updatedAt": "2026-08-07T03:44:46.457Z",
+        "changeLog": [
+          {
+            "id": "log_1786074286458_1f7yxh",
+            "scheduleId": "schedule_1786074286458",
+            "changedAt": "2026-08-07T03:44:46.458Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      }
+    ]
+  }
+]

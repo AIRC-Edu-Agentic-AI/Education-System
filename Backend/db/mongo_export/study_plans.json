@@ -1,0 +1,101 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5db663786941d1b2a66909"
+    },
+    "student_id": 57506,
+    "sessions": [
+      {
+        "subject": "Đọc tài liệu chương 2 môn AAA",
+        "type": "review",
+        "duration": 60,
+        "day": "Thứ 2",
+        "time": "20:00",
+        "sm2_interval": 4
+      },
+      {
+        "subject": "Viết nháp bài luận TMA-01",
+        "type": "practice",
+        "duration": 90,
+        "day": "Thứ 4",
+        "time": "19:00",
+        "sm2_interval": null
+      },
+      {
+        "subject": "Hoàn thiện bài luận TMA-01",
+        "type": "assignment",
+        "duration": 120,
+        "day": "Thứ 5",
+        "time": "20:00",
+        "sm2_interval": null
+      },
+      {
+        "subject": "Đọc tài liệu môn lập trình C",
+        "type": "manual",
+        "duration": 60,
+        "day": "Thứ 3",
+        "time": "13:30",
+        "sm2_interval": 1
+      },
+      {
+        "subject": "Learning Python",
+        "type": "manual",
+        "duration": 60,
+        "day": "Fri",
+        "time": "09:30",
+        "sm2_interval": 1
+      },
+      {
+        "subject": "Calculus Review",
+        "type": "manual",
+        "duration": 60,
+        "day": "Mon",
+        "time": "09:00",
+        "sm2_interval": 1
+      }
+    ],
+    "updated_at": "2026-08-20T11:44:57.851936+00:00",
+    "student_approved": true
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d1"
+    },
+    "student_id": 28400,
+    "sessions": [
+      {
+        "subject": "Ôn tập Tuần 6 — Phân tích Dữ liệu",
+        "type": "review",
+        "duration": 45,
+        "day": "Thứ 2",
+        "time": "19:00",
+        "sm2_interval": 3
+      },
+      {
+        "subject": "Luyện tập TMA-02",
+        "type": "practice",
+        "duration": 90,
+        "day": "Thứ 4",
+        "time": "19:30",
+        "sm2_interval": null
+      },
+      {
+        "subject": "Flashcard Thống kê cơ bản",
+        "type": "spaced_rep",
+        "duration": 20,
+        "day": "Thứ 5",
+        "time": "08:00",
+        "sm2_interval": 7
+      },
+      {
+        "subject": "Hoàn thiện TMA-02",
+        "type": "assignment",
+        "duration": 120,
+        "day": "Thứ 6",
+        "time": "19:00",
+        "sm2_interval": null
+      }
+    ],
+    "updated_at": "2026-07-27T03:16:45.083582+00:00"
+  }
+]

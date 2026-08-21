@@ -1,0 +1,156 @@
+[
+  {
+    "_id": {
+      "$oid": "6a740c2a5013851372b281a3"
+    },
+    "id_assessment": 1785990186387,
+    "code_module": "AAA",
+    "code_presentation": "2013J",
+    "title": "Exam 1",
+    "description": "Write a reflection paper on today's lesson.",
+    "type": "Exam",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-06T11:23:06.387192",
+    "updated_at": "2026-08-06T11:23:06.387192",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a742db36f2e55f7e3cf970d"
+    },
+    "id_assessment": 1785998771783,
+    "code_module": "AAA",
+    "code_presentation": "2013J",
+    "title": "TMA 1",
+    "description": "test",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-06T13:46:11.783075",
+    "updated_at": "2026-08-06T13:46:11.783075",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a7540e9408d16da821c3418"
+    },
+    "id_assessment": 1786069225120,
+    "code_module": "MIL1225",
+    "code_presentation": "2024A",
+    "title": "TMA 1",
+    "description": "TMA 1",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-07T09:20:25.120334",
+    "updated_at": "2026-08-07T09:20:25.120334",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a755b75787c08557eac7b03"
+    },
+    "id_assessment": 1786076021489,
+    "code_module": "MI1209",
+    "code_presentation": "2014B",
+    "title": "TMA 01",
+    "description": "Write a summary report on today's lesson.",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-07T11:13:41.489478",
+    "updated_at": "2026-08-07T11:13:41.489478",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a852e7d9c4ecd557785b9fb"
+    },
+    "id_assessment": 1787113085981,
+    "code_module": "MI1209",
+    "code_presentation": "2014B",
+    "title": "TMA 02",
+    "description": "Given the function f(x) = 2x³ - 4x² + 5x - 3, calculate the derivative f'(x) of the function.",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-19T11:18:05.981547",
+    "updated_at": "2026-08-19T11:18:05.981547",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a853673a382e06be5ebcb8c"
+    },
+    "id_assessment": 1787115123303,
+    "code_module": "MI1209",
+    "code_presentation": "2014B",
+    "title": "TMA 03",
+    "description": "Calculate the limit of the following expression as x approaches 0: \\(L=\\lim _{x\\rightarrow 0}\\frac{e^{x}-\\sin x-1-\\frac{1}{2}x^{2}}{x^{3}}\\)",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 3,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-19T11:52:03.303899",
+    "updated_at": "2026-08-19T11:52:03.303899",
+    "status": "active"
+  },
+  {
+    "_id": {
+      "$oid": "6a86dc1e21f52802faae3229"
+    },
+    "id_assessment": 1787223070856,
+    "code_module": "MI1209",
+    "code_presentation": "2014B",
+    "title": "TMA 04",
+    "description": "Calculate the integral of the function (4x³ - 3x² + 2) dx.",
+    "type": "TMA",
+    "weight": 10.0,
+    "due_date": 1,
+    "allowed_formats": [
+      "pdf",
+      "docx"
+    ],
+    "max_file_size_mb": 25,
+    "teacher_id": "john.doe@vnu.edu.vn",
+    "created_at": "2026-08-20T17:51:10.856949",
+    "updated_at": "2026-08-20T17:51:10.856949",
+    "status": "active"
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5db663786941d1b2a6690c"
+    },
+    "student_id": 57506,
+    "id_assessment": 1752,
+    "module": "AAA",
+    "title": "TMA-01 — Bài luận AAA",
+    "milestones": [
+      {
+        "id": "m1",
+        "title": "Đọc đề bài & lập dàn ý",
+        "status": "done",
+        "due_offset_days": -10
+      },
+      {
+        "id": "m2",
+        "title": "Viết bản thảo đầu tiên",
+        "status": "in_progress",
+        "due_offset_days": -5
+      },
+      {
+        "id": "m3",
+        "title": "Chỉnh sửa & nộp bài",
+        "status": "pending",
+        "due_offset_days": 0
+      }
+    ],
+    "created_at": "2026-07-20T05:47:13.919223+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d4"
+    },
+    "student_id": 28400,
+    "id_assessment": 1753,
+    "module": "DATA201",
+    "title": "TMA-02 — Phân tích hồi quy",
+    "milestones": [
+      {
+        "id": "m1",
+        "title": "Đọc đề bài & tài liệu tham khảo",
+        "status": "done",
+        "due_offset_days": -14
+      },
+      {
+        "id": "m2",
+        "title": "Phân tích dữ liệu ban đầu",
+        "status": "in_progress",
+        "due_offset_days": -7
+      },
+      {
+        "id": "m3",
+        "title": "Viết báo cáo nháp",
+        "status": "pending",
+        "due_offset_days": -4
+      },
+      {
+        "id": "m4",
+        "title": "Nộp bài chính thức",
+        "status": "pending",
+        "due_offset_days": 0
+      }
+    ],
+    "created_at": "2026-07-27T03:16:45.083582+00:00"
+  }
+]

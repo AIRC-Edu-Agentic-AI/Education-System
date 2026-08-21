@@ -1,0 +1,398 @@
+[
+  {
+    "_id": {
+      "$oid": "6a66dfb79d037a9a62b3e818"
+    },
+    "code_module": "SSH1207",
+    "code_presentation": "2024A",
+    "title": "Soft Skills",
+    "module_length": 30,
+    "status": "active",
+    "module": "SSH1207",
+    "name": "Soft Skills",
+    "presentation": "2024A",
+    "updated_at": "2026-08-14T03:31:03.874217+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66dfb79d037a9a62b3e819"
+    },
+    "code_module": "MIL1225",
+    "code_presentation": "2024A",
+    "title": "National Defense & Security Education",
+    "module_length": 30,
+    "status": "active",
+    "module": "MIL1225",
+    "name": "National Defense & Security Education",
+    "presentation": "2024A",
+    "updated_at": "2026-08-14T03:31:03.874217+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea86a9431e5fd355d158"
+    },
+    "code_module": "MI1209",
+    "presentation": "2014B",
+    "code_presentation": "2014B",
+    "title": "Calculus",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:06.673Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1209",
+    "name": "Calculus"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea86a9431e5fd355d159"
+    },
+    "code_module": "SSH1206",
+    "presentation": "2024A",
+    "code_presentation": "2024A",
+    "title": "General Law",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:06.784Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "SSH1206",
+    "name": "General Law"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea86a9431e5fd355d15a"
+    },
+    "code_module": "MI1209",
+    "presentation": "2014J",
+    "code_presentation": "2014J",
+    "title": "Calculus",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:06.886Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1209",
+    "name": "Calculus"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea86a9431e5fd355d15b"
+    },
+    "code_module": "MI1216",
+    "presentation": "2013J",
+    "code_presentation": "2013J",
+    "title": "Probability & Statistics",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:06.988Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "instructors": [
+      "teacher_01"
+    ],
+    "module": "MI1216",
+    "name": "Probability & Statistics"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d15c"
+    },
+    "code_module": "MI1209",
+    "presentation": "2013B",
+    "code_presentation": "2013B",
+    "title": "Calculus",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.089Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1209",
+    "name": "Calculus"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d15d"
+    },
+    "code_module": "MI1216",
+    "presentation": "2014J",
+    "code_presentation": "2014J",
+    "title": "Probability & Statistics",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.193Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1216",
+    "name": "Probability & Statistics"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d15e"
+    },
+    "code_module": "FL1219",
+    "presentation": "2024A",
+    "code_presentation": "2024A",
+    "title": "English 1",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.293Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "FL1219",
+    "name": "English 1"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d15f"
+    },
+    "code_module": "IT1208",
+    "presentation": "2026E",
+    "code_presentation": "2026E",
+    "title": "Introduction to Computer Science",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.394Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "IT1208",
+    "name": "Introduction to Computer Science"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d160"
+    },
+    "code_module": "SSH1201",
+    "presentation": "2026B",
+    "code_presentation": "2026B",
+    "title": "Marxist-Leninist Philosophy",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.500Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "SSH1201",
+    "name": "Marxist-Leninist Philosophy"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d161"
+    },
+    "code_module": "IT1208",
+    "presentation": "2026D",
+    "code_presentation": "2026D",
+    "title": "Introduction to Computer Science",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.602Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "IT1208",
+    "name": "Introduction to Computer Science"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d162"
+    },
+    "code_module": "MI1212",
+    "presentation": "2026A",
+    "code_presentation": "2026A",
+    "title": "Linear Algebra",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.704Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1212",
+    "name": "Linear Algebra"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d163"
+    },
+    "code_module": "SSH1202",
+    "presentation": "2026A",
+    "code_presentation": "2026A",
+    "title": "Marxist-Leninist Political Economy",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.810Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "SSH1202",
+    "name": "Marxist-Leninist Political Economy"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea87a9431e5fd355d164"
+    },
+    "code_module": "MI1209",
+    "presentation": "2013J",
+    "code_presentation": "2013J",
+    "title": "Calculus",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:07.913Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "MI1209",
+    "name": "Calculus"
+  },
+  {
+    "_id": {
+      "$oid": "6a66ea88a9431e5fd355d165"
+    },
+    "code_module": "SSH1201",
+    "presentation": "2026A",
+    "code_presentation": "2026A",
+    "title": "Marxist-Leninist Philosophy",
+    "term": "Spring",
+    "module_length": 30,
+    "created_at": {
+      "$date": "2026-07-27T12:20:08.084Z"
+    },
+    "updated_at": "2026-08-14T03:31:03.874217+00:00",
+    "module": "SSH1201",
+    "name": "Marxist-Leninist Philosophy"
+  },
+  {
+    "_id": {
+      "$oid": "6a744312108c5cba0be9ec65"
+    },
+    "course_code": "SSH1201",
+    "title": "SSH1201",
+    "presentation": "2026A",
+    "term": "2026A",
+    "instructors": [],
+    "class_reps": [],
+    "members": [
+      57506
+    ],
+    "status": "active",
+    "settings": {
+      "notification_window": {
+        "start": "08:00",
+        "end": "18:00"
+      },
+      "mentions_only": false,
+      "mute_discussion": false
+    },
+    "created_at": "2026-08-06T08:17:22.229733+00:00",
+    "updated_at": "2026-08-06T08:17:22.229733+00:00",
+    "archived_at": null,
+    "retention_expires_at": null,
+    "code_module": "",
+    "code_presentation": "2026A",
+    "module": "",
+    "name": "SSH1201"
+  },
+  {
+    "_id": {
+      "$oid": "6a753a1f6f7cb98d83fd19c8"
+    },
+    "course_code": "IT1208 2026E",
+    "title": "Môn học IT1208 2026E",
+    "presentation": "2026E",
+    "term": "2024A",
+    "instructors": [],
+    "class_reps": [],
+    "members": [
+      181316
+    ],
+    "status": "active",
+    "settings": {
+      "notification_window": {
+        "start": "08:00",
+        "end": "18:00"
+      },
+      "mentions_only": false,
+      "mute_discussion": false
+    },
+    "created_at": "2026-08-07T01:51:27.139775+00:00",
+    "updated_at": "2026-08-07T01:51:27.139775+00:00",
+    "archived_at": null,
+    "retention_expires_at": null,
+    "code_module": "",
+    "code_presentation": "2026E",
+    "module": "",
+    "name": "Môn học IT1208 2026E"
+  },
+  {
+    "_id": {
+      "$oid": "6a7547e2ffe831494f0638e6"
+    },
+    "course_code": "MI1216 2013J",
+    "title": "Môn học MI1216 2013J",
+    "presentation": "2013J",
+    "term": "2024A",
+    "instructors": [],
+    "class_reps": [],
+    "members": [
+      114017
+    ],
+    "status": "active",
+    "settings": {
+      "notification_window": {
+        "start": "08:00",
+        "end": "18:00"
+      },
+      "mentions_only": false,
+      "mute_discussion": false
+    },
+    "created_at": "2026-08-07T02:50:10.854023+00:00",
+    "updated_at": "2026-08-07T02:50:10.854023+00:00",
+    "archived_at": null,
+    "retention_expires_at": null,
+    "code_module": "",
+    "code_presentation": "2013J",
+    "module": "",
+    "name": "Môn học MI1216 2013J"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e966f97b51d8af281c158"
+    },
+    "course_code": "SSH1207 2024A",
+    "title": "Môn học SSH1207 2024A",
+    "presentation": "2024A",
+    "term": "2024A",
+    "instructors": [],
+    "class_reps": [],
+    "members": [
+      45462,
+      2291034,
+      532928,
+      546195
+    ],
+    "status": "active",
+    "settings": {
+      "notification_window": {
+        "start": "08:00",
+        "end": "18:00"
+      },
+      "mentions_only": false,
+      "mute_discussion": false
+    },
+    "created_at": "2026-08-14T04:15:43.472422+00:00",
+    "updated_at": "2026-08-14T04:15:43.472422+00:00",
+    "archived_at": null,
+    "retention_expires_at": null,
+    "code_module": "",
+    "code_presentation": "2024A",
+    "module": "",
+    "name": "Môn học SSH1207 2024A"
+  }
+]

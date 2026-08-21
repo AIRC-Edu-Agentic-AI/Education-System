@@ -1,0 +1,55 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5db663786941d1b2a6690a"
+    },
+    "student_id": 57506,
+    "states": {
+      "Kỹ năng viết luận": {
+        "mastery": 0.45,
+        "last_updated": "2025-01-10",
+        "evidence_count": 2
+      },
+      "Phân tích tác phẩm": {
+        "mastery": 0.38,
+        "last_updated": "2025-01-12",
+        "evidence_count": 1
+      },
+      "Lý thuyết Nhân văn": {
+        "mastery": 0.58,
+        "last_updated": "2025-01-18",
+        "evidence_count": 3
+      }
+    },
+    "updated_at": "2026-07-20T05:47:13.919221+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a66cda03aa3ea0ebaeb89d2"
+    },
+    "student_id": 28400,
+    "states": {
+      "Thống kê cơ bản": {
+        "mastery": 0.35,
+        "last_updated": "2025-01-10",
+        "evidence_count": 2
+      },
+      "Đại số tuyến tính": {
+        "mastery": 0.28,
+        "last_updated": "2025-01-12",
+        "evidence_count": 1
+      },
+      "Hồi quy tuyến tính": {
+        "mastery": 0.55,
+        "last_updated": "2025-01-18",
+        "evidence_count": 3
+      },
+      "Kiểm định giả thuyết": {
+        "mastery": 0.42,
+        "last_updated": "2025-01-20",
+        "evidence_count": 2
+      }
+    },
+    "updated_at": "2026-07-27T03:16:45.083582+00:00"
+  }
+]

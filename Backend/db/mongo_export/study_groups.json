@@ -1,0 +1,1570 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9b"
+    },
+    "group_code": "GRP-IT1208-01",
+    "name": "Team 1 — Introduction to Computer Science Core Review",
+    "description": "Active collaborative learning and review group for Introduction to Computer Science.",
+    "created_by": "181316",
+    "leader_id": "181316",
+    "leader_name": "Trần Hải Khánh",
+    "course_code": "IT1208 2026E",
+    "module": "IT1208",
+    "presentation": "2026E",
+    "members": [
+      "181316",
+      "294570",
+      "71361"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "181316",
+        "sender_name": "Trần Hải Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:45.014141+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "294570",
+        "sender_name": "Nguyễn Gia Nam",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:45.014141+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "71361",
+        "sender_name": "Trần Hoài Hùng",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:45.014141+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - IT1208.pdf",
+        "url": "https://example.com/slides-IT1208.pdf",
+        "shared_by": "Trần Hải Khánh",
+        "created_at": "2026-08-09T03:31:45.014141+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:45.014141+00:00",
+    "last_active_at": "2026-08-14T03:31:45.014141+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9c"
+    },
+    "group_code": "GRP-IT1208-02",
+    "name": "Team 2 — Presentation & Practical Lab (IT1208)",
+    "description": "Active collaborative learning and review group for Introduction to Computer Science.",
+    "created_by": "294570",
+    "leader_id": "294570",
+    "leader_name": "Nguyễn Gia Nam",
+    "course_code": "IT1208 2026E",
+    "module": "IT1208",
+    "presentation": "2026E",
+    "members": [
+      "294570",
+      "71361",
+      "71361"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "294570",
+        "sender_name": "Nguyễn Gia Nam",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:45.014141+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "71361",
+        "sender_name": "Trần Hoài Hùng",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:45.014141+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:45.014141+00:00",
+    "last_active_at": "2026-08-14T03:31:45.014141+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9d"
+    },
+    "group_code": "GRP-MIL1225-01",
+    "name": "Team 1 — National Defense & Security Education Core Review",
+    "description": "Active collaborative learning and review group for National Defense & Security Education.",
+    "created_by": "38053",
+    "leader_id": "38053",
+    "leader_name": "Phạm Thị Hương",
+    "course_code": "MIL1225 2024A",
+    "module": "MIL1225",
+    "presentation": "2024A",
+    "members": [
+      "38053",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "38053",
+        "sender_name": "Phạm Thị Hương",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:45.915946+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:45.915946+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:45.915946+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MIL1225.pdf",
+        "url": "https://example.com/slides-MIL1225.pdf",
+        "shared_by": "Phạm Thị Hương",
+        "created_at": "2026-08-09T03:31:45.915946+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:45.915946+00:00",
+    "last_active_at": "2026-08-14T03:31:45.915946+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9e"
+    },
+    "group_code": "GRP-MIL1225-02",
+    "name": "Team 2 — Presentation & Practical Lab (MIL1225)",
+    "description": "Active collaborative learning and review group for National Defense & Security Education.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "MIL1225 2024A",
+    "module": "MIL1225",
+    "presentation": "2024A",
+    "members": [
+      "62155",
+      "32885",
+      "38053"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:45.915946+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "38053",
+        "sender_name": "Phạm Thị Hương",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:45.915946+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:45.915946+00:00",
+    "last_active_at": "2026-08-14T03:31:45.915946+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9f"
+    },
+    "group_code": "GRP-MI1209-01",
+    "name": "Team 1 — Calculus Core Review",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "MI1209 2013J",
+    "module": "MI1209",
+    "presentation": "2013J",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:46.275808+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:46.276799+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:46.276799+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1209.pdf",
+        "url": "https://example.com/slides-MI1209.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:46.276799+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:46.276799+00:00",
+    "last_active_at": "2026-08-14T03:31:46.276799+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda0"
+    },
+    "group_code": "GRP-MI1209-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1209)",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "MI1209 2013J",
+    "module": "MI1209",
+    "presentation": "2013J",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:46.276799+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:46.276799+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:46.276799+00:00",
+    "last_active_at": "2026-08-14T03:31:46.276799+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda1"
+    },
+    "group_code": "GRP-SSH1202-01",
+    "name": "Team 1 — Marxist-Leninist Political Economy Core Review",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Political Economy.",
+    "created_by": "144801",
+    "leader_id": "144801",
+    "leader_name": "Phan Minh Trang",
+    "course_code": "SSH1202 2026A",
+    "module": "SSH1202",
+    "presentation": "2026A",
+    "members": [
+      "144801",
+      "106577",
+      "240884"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "144801",
+        "sender_name": "Phan Minh Trang",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:46.804027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "106577",
+        "sender_name": "Lê Văn Hương",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:46.804027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "240884",
+        "sender_name": "Lê Hoài Khánh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:46.804027+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - SSH1202.pdf",
+        "url": "https://example.com/slides-SSH1202.pdf",
+        "shared_by": "Phan Minh Trang",
+        "created_at": "2026-08-09T03:31:46.804027+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:46.804027+00:00",
+    "last_active_at": "2026-08-14T03:31:46.804027+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda2"
+    },
+    "group_code": "GRP-SSH1202-02",
+    "name": "Team 2 — Presentation & Practical Lab (SSH1202)",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Political Economy.",
+    "created_by": "106577",
+    "leader_id": "106577",
+    "leader_name": "Lê Văn Hương",
+    "course_code": "SSH1202 2026A",
+    "module": "SSH1202",
+    "presentation": "2026A",
+    "members": [
+      "106577",
+      "240884",
+      "101781"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "106577",
+        "sender_name": "Lê Văn Hương",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:46.804027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "101781",
+        "sender_name": "Phan Minh Linh",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:46.804027+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:46.804027+00:00",
+    "last_active_at": "2026-08-14T03:31:46.804027+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda3"
+    },
+    "group_code": "GRP-SSH1206-01",
+    "name": "Team 1 — General Law Core Review",
+    "description": "Active collaborative learning and review group for General Law.",
+    "created_by": "77367",
+    "leader_id": "77367",
+    "leader_name": "Phan Thị Trang",
+    "course_code": "SSH1206 2024A",
+    "module": "SSH1206",
+    "presentation": "2024A",
+    "members": [
+      "77367",
+      "167906",
+      "53025"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:47.240614+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "167906",
+        "sender_name": "Võ Đức Nam",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:47.240614+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "53025",
+        "sender_name": "Võ Ngọc Hùng",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:47.240614+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - SSH1206.pdf",
+        "url": "https://example.com/slides-SSH1206.pdf",
+        "shared_by": "Phan Thị Trang",
+        "created_at": "2026-08-09T03:31:47.240614+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:47.240614+00:00",
+    "last_active_at": "2026-08-14T03:31:47.240614+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda4"
+    },
+    "group_code": "GRP-SSH1206-02",
+    "name": "Team 2 — Presentation & Practical Lab (SSH1206)",
+    "description": "Active collaborative learning and review group for General Law.",
+    "created_by": "167906",
+    "leader_id": "167906",
+    "leader_name": "Võ Đức Nam",
+    "course_code": "SSH1206 2024A",
+    "module": "SSH1206",
+    "presentation": "2024A",
+    "members": [
+      "167906",
+      "53025",
+      "53025"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "167906",
+        "sender_name": "Võ Đức Nam",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:47.240614+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "53025",
+        "sender_name": "Võ Ngọc Hùng",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:47.240614+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:47.240614+00:00",
+    "last_active_at": "2026-08-14T03:31:47.240614+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda5"
+    },
+    "group_code": "GRP-MI1209-01",
+    "name": "Team 1 — Calculus Core Review",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "MI1209 2013B",
+    "module": "MI1209",
+    "presentation": "2013B",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:47.582072+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:47.582072+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:47.582072+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1209.pdf",
+        "url": "https://example.com/slides-MI1209.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:47.582072+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:47.582072+00:00",
+    "last_active_at": "2026-08-14T03:31:47.582072+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda6"
+    },
+    "group_code": "GRP-MI1209-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1209)",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "MI1209 2013B",
+    "module": "MI1209",
+    "presentation": "2013B",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:47.582072+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:47.582072+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:47.582072+00:00",
+    "last_active_at": "2026-08-14T03:31:47.582072+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda7"
+    },
+    "group_code": "GRP-MI1216-01",
+    "name": "Team 1 — Probability & Statistics Core Review",
+    "description": "Active collaborative learning and review group for Probability & Statistics.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "MI1216 2014J",
+    "module": "MI1216",
+    "presentation": "2014J",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:47.965027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:47.965027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:47.965027+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1216.pdf",
+        "url": "https://example.com/slides-MI1216.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:47.965027+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:47.965027+00:00",
+    "last_active_at": "2026-08-14T03:31:47.965027+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda8"
+    },
+    "group_code": "GRP-MI1216-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1216)",
+    "description": "Active collaborative learning and review group for Probability & Statistics.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "MI1216 2014J",
+    "module": "MI1216",
+    "presentation": "2014J",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:47.965027+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:47.965027+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:47.965027+00:00",
+    "last_active_at": "2026-08-14T03:31:47.965027+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddda9"
+    },
+    "group_code": "GRP-MI1209-01",
+    "name": "Team 1 — Calculus Core Review",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "MI1209 2014J",
+    "module": "MI1209",
+    "presentation": "2014J",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:48.384858+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:48.384858+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:48.384858+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1209.pdf",
+        "url": "https://example.com/slides-MI1209.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:48.384858+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:48.384858+00:00",
+    "last_active_at": "2026-08-14T03:31:48.384858+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddaa"
+    },
+    "group_code": "GRP-MI1209-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1209)",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "MI1209 2014J",
+    "module": "MI1209",
+    "presentation": "2014J",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:48.384858+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:48.384858+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:48.384858+00:00",
+    "last_active_at": "2026-08-14T03:31:48.384858+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddab"
+    },
+    "group_code": "GRP-FL1219-01",
+    "name": "Team 1 — English 1 Core Review",
+    "description": "Active collaborative learning and review group for English 1.",
+    "created_by": "155854",
+    "leader_id": "155854",
+    "leader_name": "Phan Quang Khánh",
+    "course_code": "FL1219 2024A",
+    "module": "FL1219",
+    "presentation": "2024A",
+    "members": [
+      "155854",
+      "192183",
+      "70464"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "155854",
+        "sender_name": "Phan Quang Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:48.818811+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "192183",
+        "sender_name": "Huỳnh Quang Tuấn",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:48.818811+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "70464",
+        "sender_name": "Nguyễn Minh Tuấn",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:48.818811+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - FL1219.pdf",
+        "url": "https://example.com/slides-FL1219.pdf",
+        "shared_by": "Phan Quang Khánh",
+        "created_at": "2026-08-09T03:31:48.818811+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:48.818811+00:00",
+    "last_active_at": "2026-08-14T03:31:48.818811+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddac"
+    },
+    "group_code": "GRP-FL1219-02",
+    "name": "Team 2 — Presentation & Practical Lab (FL1219)",
+    "description": "Active collaborative learning and review group for English 1.",
+    "created_by": "192183",
+    "leader_id": "192183",
+    "leader_name": "Huỳnh Quang Tuấn",
+    "course_code": "FL1219 2024A",
+    "module": "FL1219",
+    "presentation": "2024A",
+    "members": [
+      "192183",
+      "70464",
+      "70464"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "192183",
+        "sender_name": "Huỳnh Quang Tuấn",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:48.818811+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "70464",
+        "sender_name": "Nguyễn Minh Tuấn",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:48.818811+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:48.818811+00:00",
+    "last_active_at": "2026-08-14T03:31:48.818811+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddad"
+    },
+    "group_code": "GRP-SSH1201-01",
+    "name": "Team 1 — Marxist-Leninist Philosophy Core Review",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Philosophy.",
+    "created_by": "116541",
+    "leader_id": "116541",
+    "leader_name": "Phạm Hải Tuấn",
+    "course_code": "SSH1201 2026B",
+    "module": "SSH1201",
+    "presentation": "2026B",
+    "members": [
+      "116541",
+      "110175",
+      "94961"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "116541",
+        "sender_name": "Phạm Hải Tuấn",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:49.302585+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "110175",
+        "sender_name": "Phan Thanh Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:49.302585+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "94961",
+        "sender_name": "Nguyễn Thị Hùng",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:49.302585+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - SSH1201.pdf",
+        "url": "https://example.com/slides-SSH1201.pdf",
+        "shared_by": "Phạm Hải Tuấn",
+        "created_at": "2026-08-09T03:31:49.302585+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:49.302585+00:00",
+    "last_active_at": "2026-08-14T03:31:49.302585+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddae"
+    },
+    "group_code": "GRP-SSH1201-02",
+    "name": "Team 2 — Presentation & Practical Lab (SSH1201)",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Philosophy.",
+    "created_by": "110175",
+    "leader_id": "110175",
+    "leader_name": "Phan Thanh Hùng",
+    "course_code": "SSH1201 2026B",
+    "module": "SSH1201",
+    "presentation": "2026B",
+    "members": [
+      "110175",
+      "94961",
+      "94961"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "110175",
+        "sender_name": "Phan Thanh Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:49.302585+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "94961",
+        "sender_name": "Nguyễn Thị Hùng",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:49.302585+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:49.302585+00:00",
+    "last_active_at": "2026-08-14T03:31:49.302585+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddaf"
+    },
+    "group_code": "GRP-MI1216-01",
+    "name": "Team 1 — Probability & Statistics Core Review",
+    "description": "Active collaborative learning and review group for Probability & Statistics.",
+    "created_by": "114017",
+    "leader_id": "114017",
+    "leader_name": "Võ Ngọc Hùng",
+    "course_code": "MI1216 2013J",
+    "module": "MI1216",
+    "presentation": "2013J",
+    "members": [
+      "114017",
+      "155984",
+      "111717"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "114017",
+        "sender_name": "Võ Ngọc Hùng",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:49.775650+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "155984",
+        "sender_name": "Trần Gia Anh",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:49.775650+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "111717",
+        "sender_name": "Huỳnh Đức Hương",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:49.775650+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1216.pdf",
+        "url": "https://example.com/slides-MI1216.pdf",
+        "shared_by": "Võ Ngọc Hùng",
+        "created_at": "2026-08-09T03:31:49.775650+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:49.775650+00:00",
+    "last_active_at": "2026-08-14T03:31:49.775650+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb0"
+    },
+    "group_code": "GRP-MI1216-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1216)",
+    "description": "Active collaborative learning and review group for Probability & Statistics.",
+    "created_by": "155984",
+    "leader_id": "155984",
+    "leader_name": "Trần Gia Anh",
+    "course_code": "MI1216 2013J",
+    "module": "MI1216",
+    "presentation": "2013J",
+    "members": [
+      "155984",
+      "111717",
+      "155984"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "155984",
+        "sender_name": "Trần Gia Anh",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:49.775650+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "155984",
+        "sender_name": "Trần Gia Anh",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:49.775650+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:49.775650+00:00",
+    "last_active_at": "2026-08-14T03:31:49.775650+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb1"
+    },
+    "group_code": "GRP-MI1212-01",
+    "name": "Team 1 — Linear Algebra Core Review",
+    "description": "Active collaborative learning and review group for Linear Algebra.",
+    "created_by": "142326",
+    "leader_id": "142326",
+    "leader_name": "Phan Thanh Hương",
+    "course_code": "MI1212 2026A",
+    "module": "MI1212",
+    "presentation": "2026A",
+    "members": [
+      "142326",
+      "256815",
+      "63400"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "142326",
+        "sender_name": "Phan Thanh Hương",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:50.366797+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "256815",
+        "sender_name": "Phan Thanh Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:50.366797+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "63400",
+        "sender_name": "Phan Hoài Tuấn",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:50.366797+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1212.pdf",
+        "url": "https://example.com/slides-MI1212.pdf",
+        "shared_by": "Phan Thanh Hương",
+        "created_at": "2026-08-09T03:31:50.366797+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:50.366797+00:00",
+    "last_active_at": "2026-08-14T03:31:50.366797+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb2"
+    },
+    "group_code": "GRP-MI1212-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1212)",
+    "description": "Active collaborative learning and review group for Linear Algebra.",
+    "created_by": "256815",
+    "leader_id": "256815",
+    "leader_name": "Phan Thanh Hùng",
+    "course_code": "MI1212 2026A",
+    "module": "MI1212",
+    "presentation": "2026A",
+    "members": [
+      "256815",
+      "63400",
+      "98094"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "256815",
+        "sender_name": "Phan Thanh Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:50.366797+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "98094",
+        "sender_name": "Hoàng Thanh Nam",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:50.366797+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:50.366797+00:00",
+    "last_active_at": "2026-08-14T03:31:50.366797+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb3"
+    },
+    "group_code": "GRP-SSH1201-01",
+    "name": "Team 1 — Marxist-Leninist Philosophy Core Review",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Philosophy.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "SSH1201 2026A",
+    "module": "SSH1201",
+    "presentation": "2026A",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:50.758138+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:50.758138+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:50.758138+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - SSH1201.pdf",
+        "url": "https://example.com/slides-SSH1201.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:50.758138+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:50.758138+00:00",
+    "last_active_at": "2026-08-14T03:31:50.758138+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb4"
+    },
+    "group_code": "GRP-SSH1201-02",
+    "name": "Team 2 — Presentation & Practical Lab (SSH1201)",
+    "description": "Active collaborative learning and review group for Marxist-Leninist Philosophy.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "SSH1201 2026A",
+    "module": "SSH1201",
+    "presentation": "2026A",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:50.758138+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:50.758138+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:50.758138+00:00",
+    "last_active_at": "2026-08-14T03:31:50.758138+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb5"
+    },
+    "group_code": "GRP-SSH1207-01",
+    "name": "Team 1 — Soft Skills Core Review",
+    "description": "Active collaborative learning and review group for Soft Skills.",
+    "created_by": "65002",
+    "leader_id": "65002",
+    "leader_name": "Lê Hải Anh",
+    "course_code": "SSH1207 2024A",
+    "module": "SSH1207",
+    "presentation": "2024A",
+    "members": [
+      "65002",
+      "45462",
+      "129955"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "65002",
+        "sender_name": "Lê Hải Anh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:51.160368+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "45462",
+        "sender_name": "Lê Văn Khánh",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:51.160368+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "129955",
+        "sender_name": "Phan Văn Linh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:51.160368+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - SSH1207.pdf",
+        "url": "https://example.com/slides-SSH1207.pdf",
+        "shared_by": "Lê Hải Anh",
+        "created_at": "2026-08-09T03:31:51.160368+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:51.160368+00:00",
+    "last_active_at": "2026-08-14T03:31:51.160368+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb6"
+    },
+    "group_code": "GRP-SSH1207-02",
+    "name": "Team 2 — Presentation & Practical Lab (SSH1207)",
+    "description": "Active collaborative learning and review group for Soft Skills.",
+    "created_by": "45462",
+    "leader_id": "45462",
+    "leader_name": "Lê Văn Khánh",
+    "course_code": "SSH1207 2024A",
+    "module": "SSH1207",
+    "presentation": "2024A",
+    "members": [
+      "45462",
+      "129955",
+      "45642"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "45462",
+        "sender_name": "Lê Văn Khánh",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:51.160368+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "45642",
+        "sender_name": "Lê Thanh Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:51.160368+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:51.160368+00:00",
+    "last_active_at": "2026-08-14T03:31:51.160368+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb7"
+    },
+    "group_code": "GRP-IT1208-01",
+    "name": "Team 1 — Introduction to Computer Science Core Review",
+    "description": "Active collaborative learning and review group for Introduction to Computer Science.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "IT1208 2026D",
+    "module": "IT1208",
+    "presentation": "2026D",
+    "members": [
+      "57506",
+      "62155",
+      "32885"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:51.633570+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:51.633570+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "32885",
+        "sender_name": "Hoàng Văn Anh",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:51.633570+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - IT1208.pdf",
+        "url": "https://example.com/slides-IT1208.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:51.633570+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:51.633570+00:00",
+    "last_active_at": "2026-08-14T03:31:51.633570+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb8"
+    },
+    "group_code": "GRP-IT1208-02",
+    "name": "Team 2 — Presentation & Practical Lab (IT1208)",
+    "description": "Active collaborative learning and review group for Introduction to Computer Science.",
+    "created_by": "62155",
+    "leader_id": "62155",
+    "leader_name": "Phan Thị Hùng",
+    "course_code": "IT1208 2026D",
+    "module": "IT1208",
+    "presentation": "2026D",
+    "members": [
+      "62155",
+      "32885",
+      "77367"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "62155",
+        "sender_name": "Phan Thị Hùng",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:51.633570+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "77367",
+        "sender_name": "Phan Thị Trang",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:51.633570+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:51.633570+00:00",
+    "last_active_at": "2026-08-14T03:31:51.633570+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddb9"
+    },
+    "group_code": "GRP-MI1209-01",
+    "name": "Team 1 — Calculus Core Review",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "57506",
+    "leader_id": "57506",
+    "leader_name": "Đặng Văn Khánh",
+    "course_code": "MI1209 2014B",
+    "module": "MI1209",
+    "presentation": "2014B",
+    "members": [
+      "57506",
+      "116692",
+      "442442"
+    ],
+    "messages": [
+      {
+        "id": "msg_01",
+        "sender_id": "57506",
+        "sender_name": "Đặng Văn Khánh",
+        "content": "Hi everyone! Let's consolidate our regression analysis findings tonight at 20:00.",
+        "created_at": "2026-08-09T03:31:52.123272+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_02",
+        "sender_id": "116692",
+        "sender_name": "Phạm Gia Linh",
+        "content": "I have prepared the Python Jupyter notebook and plotted the correlation matrix.",
+        "created_at": "2026-08-09T03:51:52.123272+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_03",
+        "sender_id": "442442",
+        "sender_name": "Lê Hải Huy",
+        "content": "Awesome! I will take care of interpreting the p-value significance and model summary.",
+        "created_at": "2026-08-10T03:31:52.123272+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [
+      {
+        "id": "res_01",
+        "title": "Summary Slides - MI1209.pdf",
+        "url": "https://example.com/slides-MI1209.pdf",
+        "shared_by": "Đặng Văn Khánh",
+        "created_at": "2026-08-09T03:31:52.123272+00:00"
+      }
+    ],
+    "created_at": "2026-07-30T03:31:52.123272+00:00",
+    "last_active_at": "2026-08-14T03:31:52.123272+00:00",
+    "member_count": 3
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16dddba"
+    },
+    "group_code": "GRP-MI1209-02",
+    "name": "Team 2 — Presentation & Practical Lab (MI1209)",
+    "description": "Active collaborative learning and review group for Calculus.",
+    "created_by": "116692",
+    "leader_id": "116692",
+    "leader_name": "Phạm Gia Linh",
+    "course_code": "MI1209 2014B",
+    "module": "MI1209",
+    "presentation": "2014B",
+    "members": [
+      "116692",
+      "442442",
+      "172112"
+    ],
+    "messages": [
+      {
+        "id": "msg_11",
+        "sender_id": "116692",
+        "sender_name": "Phạm Gia Linh",
+        "content": "Has everyone finalized their presentation topic sections?",
+        "created_at": "2026-08-08T03:31:52.123272+00:00",
+        "type": "text"
+      },
+      {
+        "id": "msg_12",
+        "sender_id": "172112",
+        "sender_name": "Vũ Gia Linh",
+        "content": "Our group confirmed the topic 'Applied Machine Learning Workflow'.",
+        "created_at": "2026-08-08T03:46:52.123272+00:00",
+        "type": "text"
+      }
+    ],
+    "resources": [],
+    "created_at": "2026-08-02T03:31:52.123272+00:00",
+    "last_active_at": "2026-08-14T03:31:52.123272+00:00",
+    "member_count": 3
+  }
+]

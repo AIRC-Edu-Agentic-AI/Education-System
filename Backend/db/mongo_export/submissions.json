@@ -1,0 +1,126 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5eee88f8a8d9e2d9cd7ab5"
+    },
+    "id": 1784606343978,
+    "student_id": 57506,
+    "id_assessment": 1752,
+    "file_name": "Tổng quan Tiến độ Tuần.pdf",
+    "file_url": "/uploads/submissions/8b94d1e4-d166-44f1-a681-cca60b526799_Tổng quan Tiến độ Tuần.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-07-21T10:59:03.978272",
+    "submitted_day": 21,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a72df68970e046f6d447049"
+    },
+    "id": 1785913192385,
+    "student_id": 62155,
+    "id_assessment": 1752,
+    "file_name": "Tổng quan Tiến độ Tuần.pdf",
+    "file_url": "/uploads/submissions/ab21d5b8-7619-455a-8019-964e581eb5a0_Tổng quan Tiến độ Tuần.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-05T13:59:52.385404",
+    "submitted_day": 5,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a754a25ffe831494f0638e7"
+    },
+    "id": 1786071589363,
+    "student_id": 114017,
+    "id_assessment": 1001,
+    "file_name": "Tổng quan Tiến độ Tuần.pdf",
+    "file_url": "/uploads/submissions/188674a9-add5-4bd5-a82e-38c76f31bb7e_Tổng quan Tiến độ Tuần.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-07T09:59:49.363995",
+    "submitted_day": 7,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a755046ddc1f320a52a86c5"
+    },
+    "id": 1786073158080,
+    "student_id": 28400,
+    "id_assessment": 1753,
+    "file_name": "temp.pdf",
+    "file_url": "/uploads/submissions/27d758db-ceca-4545-9a1a-0154633dc8f1_temp.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-07T10:25:58.080760",
+    "submitted_day": 7,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a7557895c5c404fb9532e80"
+    },
+    "student_id": 57506,
+    "id_assessment": 1786069252812,
+    "file_name": "Mã đề thi 36_Nhóm 4_Bài thi.pdf",
+    "file_url": "/uploads/submissions/44a10e12-4b39-4918-9d48-d5021357094c_Mã đề thi 36_Nhóm 4_Bài thi.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-07T03:56:56.837913+00:00",
+    "submitted_day": 7,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a7558c55c5c404fb9532e82"
+    },
+    "student_id": 57506,
+    "id_assessment": 1786075255290,
+    "file_name": "Mã đề thi 36_Nhóm 4_Phiếu đánh giá.pdf",
+    "file_url": "/uploads/submissions/f1c58474-0f8f-4605-b054-d4fefebc45f4_Mã đề thi 36_Nhóm 4_Phiếu đánh giá.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-07T04:02:13.730115+00:00",
+    "submitted_day": 7,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a853d36ce66fe0ec7bdf561"
+    },
+    "student_id": 57506,
+    "id_assessment": 1786076021489,
+    "file_name": "TMA 01.pdf",
+    "file_url": "/uploads/submissions/ba23f325-5295-4d4c-8a54-2029d74646fb_TMA 01.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-19T05:20:53.876504+00:00",
+    "submitted_day": 19,
+    "status": "submitted"
+  },
+  {
+    "_id": {
+      "$oid": "6a86dd5d21f52802faae3577"
+    },
+    "student_id": 57506,
+    "id_assessment": 1787223070856,
+    "file_name": "TMA 01.pdf",
+    "file_url": "/uploads/submissions/7e805360-cfa1-417b-bc34-bf48a581a5da_TMA 01.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-20T10:56:29.225756+00:00",
+    "submitted_day": 20,
+    "status": "graded",
+    "feedback": "Good!",
+    "score": 100.0,
+    "updated_at": "2026-08-20T18:03:25.883871"
+  },
+  {
+    "_id": {
+      "$oid": "6a870341b526ebf34d2c4e88"
+    },
+    "student_id": 114017,
+    "id_assessment": 1140231,
+    "file_name": "BÁO CÁO TIẾN ĐỘ TỔNG HỢP TUẦN.pdf",
+    "file_url": "/uploads/submissions/0cb43188-8941-4377-a258-e8e25fe5bf34_BÁO CÁO TIẾN ĐỘ TỔNG HỢP TUẦN.pdf",
+    "file_type": "pdf",
+    "submitted_at": "2026-08-20T13:38:09.525133+00:00",
+    "submitted_day": 20,
+    "status": "submitted"
+  }
+]

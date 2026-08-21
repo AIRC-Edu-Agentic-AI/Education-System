@@ -1,0 +1,219 @@
+[
+  {
+    "_id": {
+      "$oid": "6a8734308e4dc9461e036f2c"
+    },
+    "schedules": [
+      {
+        "id": "schedule_1787245498370",
+        "week": 1,
+        "activity": "Math 1-3",
+        "subject": "Math 1-3",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "SSH1207",
+        "presentation": "2024A",
+        "className": "",
+        "room": "A1",
+        "date": "2026-08-17",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "WW.com",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:04:58.370Z",
+        "updatedAt": "2026-08-20T17:04:58.370Z",
+        "changeLog": [
+          {
+            "id": "log_1787245498370_6z8jb1",
+            "scheduleId": "schedule_1787245498370",
+            "changedAt": "2026-08-20T17:04:58.370Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      },
+      {
+        "id": "schedule_1787245529042",
+        "week": 1,
+        "activity": "Python",
+        "subject": "Python",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "SSH1207",
+        "presentation": "2024A",
+        "className": "",
+        "room": "D1",
+        "date": "2026-08-18",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:05:29.042Z",
+        "updatedAt": "2026-08-20T17:05:29.042Z",
+        "changeLog": [
+          {
+            "id": "log_1787245529042_c8qrvy",
+            "scheduleId": "schedule_1787245529042",
+            "changedAt": "2026-08-20T17:05:29.042Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      },
+      {
+        "id": "schedule_1787245555385",
+        "week": 1,
+        "activity": "Java OOP",
+        "subject": "Java OOP",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "MI1209",
+        "presentation": "2014B",
+        "className": "",
+        "room": "D1",
+        "date": "2026-08-19",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:05:55.385Z",
+        "updatedAt": "2026-08-20T17:05:55.385Z",
+        "changeLog": [
+          {
+            "id": "log_1787245555385_wcss9s",
+            "scheduleId": "schedule_1787245555385",
+            "changedAt": "2026-08-20T17:05:55.385Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      },
+      {
+        "id": "schedule_1787245578106",
+        "week": 1,
+        "activity": "Math 1-4",
+        "subject": "Math 1-4",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "SSH1207",
+        "presentation": "2024A",
+        "className": "",
+        "room": "E3",
+        "date": "2026-08-20",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:06:18.106Z",
+        "updatedAt": "2026-08-20T17:06:18.106Z",
+        "changeLog": [
+          {
+            "id": "log_1787245578106_5g6n77",
+            "scheduleId": "schedule_1787245578106",
+            "changedAt": "2026-08-20T17:06:18.106Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      },
+      {
+        "id": "schedule_1787245596166",
+        "week": 1,
+        "activity": "Python 2",
+        "subject": "Python 2",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "SSH1207",
+        "presentation": "2024A",
+        "className": "",
+        "room": "T1",
+        "date": "2026-08-21",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:06:36.166Z",
+        "updatedAt": "2026-08-20T17:06:36.166Z",
+        "changeLog": [
+          {
+            "id": "log_1787245596166_5f7vqi",
+            "scheduleId": "schedule_1787245596166",
+            "changedAt": "2026-08-20T17:06:36.166Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      },
+      {
+        "id": "schedule_1787245615675",
+        "week": 1,
+        "activity": "English",
+        "subject": "English",
+        "teacher": "john.doe@vnu.edu.vn",
+        "teacherId": "john.doe@vnu.edu.vn",
+        "module": "SSH1207",
+        "presentation": "2024A",
+        "className": "",
+        "room": "A2",
+        "date": "2026-08-22",
+        "startTime": "09:00",
+        "endTime": "10:30",
+        "time": "09:00-10:30",
+        "status": "scheduled",
+        "deliveryMode": "offline",
+        "is_makeup": false,
+        "note": "",
+        "locationUrl": "",
+        "createdBy": "john.doe@vnu.edu.vn",
+        "updatedBy": "john.doe@vnu.edu.vn",
+        "createdAt": "2026-08-20T17:06:55.675Z",
+        "updatedAt": "2026-08-20T17:06:55.675Z",
+        "changeLog": [
+          {
+            "id": "log_1787245615675_rvyko8",
+            "scheduleId": "schedule_1787245615675",
+            "changedAt": "2026-08-20T17:06:55.675Z",
+            "changedBy": "john.doe@vnu.edu.vn",
+            "action": "created",
+            "reason": "Created schedule"
+          }
+        ]
+      }
+    ]
+  }
+]

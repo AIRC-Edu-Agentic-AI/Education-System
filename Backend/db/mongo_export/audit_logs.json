@@ -1,0 +1,490 @@
+[
+  {
+    "_id": {
+      "$oid": "6a5db0c49826a368216b0f29"
+    },
+    "action": "message_posted",
+    "course_code": "DATA201",
+    "user_id": 28400,
+    "metadata": {
+      "channel_id": "6a5da860c5afbf915a3f3e46",
+      "message_id": "6a5db0c49826a368216b0f28",
+      "parent_id": null
+    },
+    "created_at": "2026-07-20T05:23:16.827525+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5db22768f70648a4e040aa"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db1ce0b4893ea7a7a2fa9",
+      "message_id": "6a5db22768f70648a4e040a9",
+      "parent_id": null
+    },
+    "created_at": "2026-07-20T05:29:11.481101+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5db8e4d90c9e63058644de"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5db8e4d90c9e63058644dd",
+      "parent_id": null
+    },
+    "created_at": "2026-07-20T05:57:56.659949+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5dd5789ba8cc396fe9b2f2"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5dd5779ba8cc396fe9b2f1",
+      "parent_id": null
+    },
+    "created_at": "2026-07-20T07:59:52.186762+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5dde492fe0f188353778a4"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5dde492fe0f188353778a3",
+      "parent_id": null
+    },
+    "created_at": "2026-07-20T08:37:29.173511+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5de5412a5bd8e2385f996a"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5de5402a5bd8e2385f9969",
+      "parent_id": "6a5db664786941d1b2a6692b"
+    },
+    "created_at": "2026-07-20T09:07:13.026285+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5ed5f2257b5cdeabcc5380"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5ed5f2257b5cdeabcc537f",
+      "parent_id": null
+    },
+    "created_at": "2026-07-21T02:14:10.956276+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a5f0ee53df66ed6599e7ed2"
+    },
+    "action": "message_posted",
+    "course_code": "AAA",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5db664786941d1b2a66929",
+      "message_id": "6a5f0ee53df66ed6599e7ed1",
+      "parent_id": "6a5ed5f2257b5cdeabcc537f"
+    },
+    "created_at": "2026-07-21T06:17:09.560556+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7402d97cd29753201c0dbe"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a5eef3a9e30fad6ef9b902f",
+      "message_id": "6a7402d97cd29753201c0dbd",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T03:43:21.858117+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a74037e7cd29753201c0dc6"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a74031c7cd29753201c0dc2",
+      "message_id": "6a74037d7cd29753201c0dc5",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T03:46:06.019704+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7413968f6dcd27d8326343"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a5ee5e1b39c92fa812987f6",
+      "message_id": "6a7413968f6dcd27d8326342",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T04:54:46.199495+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7413af8f6dcd27d8326345"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a7403127cd29753201c0dbf",
+      "message_id": "6a7413af8f6dcd27d8326344",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T04:55:11.153373+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7416be8f6dcd27d8326348"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a7403127cd29753201c0dbf",
+      "message_id": "6a7416be8f6dcd27d8326347",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T05:08:14.261225+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7416ee8f6dcd27d832634c"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a5ee5e1b39c92fa812987f6",
+      "message_id": "6a7416ee8f6dcd27d832634b",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T05:09:02.781981+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7418fa8f6dcd27d832634f"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a5ee5e1b39c92fa812987f6",
+      "message_id": "6a7418fa8f6dcd27d832634e",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T05:17:46.728443+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7419128f6dcd27d8326352"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a7403127cd29753201c0dbf",
+      "message_id": "6a7419128f6dcd27d8326351",
+      "parent_id": null
+    },
+    "created_at": "2026-08-06T05:18:10.225028+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a744312108c5cba0be9ec68"
+    },
+    "action": "enroll",
+    "course_code": "SSH1201",
+    "user_id": 57506,
+    "metadata": {
+      "action": "student_enrolled"
+    },
+    "created_at": "2026-08-06T08:17:22.626365+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a753e4e4dd73023b9aec6ba"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 130547,
+    "metadata": {
+      "channel_id": "6a753e1c4dd73023b9aec6b6",
+      "message_id": "6a753e4e4dd73023b9aec6b9",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:09:18.632603+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a75458d7428e25ad9f50766"
+    },
+    "action": "message_posted",
+    "course_code": "MI1209 2014B",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a7545557428e25ad9f50763",
+      "message_id": "6a75458d7428e25ad9f50765",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:40:13.334966+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7545a47428e25ad9f50768"
+    },
+    "action": "message_posted",
+    "course_code": "MI1209 2014B",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a7545557428e25ad9f50763",
+      "message_id": "6a7545a47428e25ad9f50767",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:40:36.546733+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7545a97428e25ad9f5076a"
+    },
+    "action": "message_posted",
+    "course_code": "MI1209 2014B",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a7545557428e25ad9f50763",
+      "message_id": "6a7545a97428e25ad9f50769",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:40:41.597069+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7545d07428e25ad9f5076d"
+    },
+    "action": "message_posted",
+    "course_code": "MI1209 2014B",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a753bc4cfe7ddd6fffaced2",
+      "message_id": "6a7545d07428e25ad9f5076c",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:41:20.966300+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7545f67428e25ad9f50771"
+    },
+    "action": "message_posted",
+    "course_code": "MI1209 2014B",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a753bc4cfe7ddd6fffaced2",
+      "message_id": "6a7545f67428e25ad9f50770",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:41:58.949364+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7549367428e25ad9f50773"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a7545ee7428e25ad9f5076e",
+      "message_id": "6a7549367428e25ad9f50772",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:55:50.431516+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7549497428e25ad9f50775"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a7545ee7428e25ad9f5076e",
+      "message_id": "6a7549497428e25ad9f50774",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:56:09.250154+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a75498a7428e25ad9f50778"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a7545ee7428e25ad9f5076e",
+      "message_id": "6a75498a7428e25ad9f50777",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:57:14.175793+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7549cf7428e25ad9f5077a"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a7545ee7428e25ad9f5076e",
+      "message_id": "6a7549cf7428e25ad9f50779",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T02:58:23.688257+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a754b77340048546e6059b5"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 148993,
+    "metadata": {
+      "channel_id": "6a7548e4340048546e60530f",
+      "message_id": "6a754b77340048546e6059b4",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T03:05:27.560389+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7551b30e8344bd00f3a892"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 168936,
+    "metadata": {
+      "channel_id": "6a7545ee7428e25ad9f5076e",
+      "message_id": "6a7551b30e8344bd00f3a891",
+      "parent_id": null
+    },
+    "created_at": "2026-08-07T03:32:03.088087+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e959297b51d8af281c154"
+    },
+    "action": "message_posted",
+    "course_code": "AAA 2013J",
+    "user_id": 57506,
+    "metadata": {
+      "channel_id": "6a7e957197b51d8af281c152",
+      "message_id": "6a7e959297b51d8af281c153",
+      "parent_id": null
+    },
+    "created_at": "2026-08-14T04:12:02.990475+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7e95f997b51d8af281c156"
+    },
+    "action": "message_posted",
+    "course_code": "SSH1207 2024A",
+    "user_id": 45462,
+    "metadata": {
+      "channel_id": "6a7e8c27e3b7a54eb16ddd58",
+      "message_id": "6a7e95f997b51d8af281c155",
+      "parent_id": null
+    },
+    "created_at": "2026-08-14T04:13:45.208767+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a7eb772fc468a5e5fe7ceae"
+    },
+    "action": "message_posted",
+    "course_code": "SSH1207 2024A",
+    "user_id": 45462,
+    "metadata": {
+      "channel_id": "6a7e8c27e3b7a54eb16ddd58",
+      "message_id": "6a7eb772fc468a5e5fe7cead",
+      "parent_id": null
+    },
+    "created_at": "2026-08-14T06:36:34.798601+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a8513e23e4f2ef30d855be7"
+    },
+    "action": "message_posted",
+    "course_code": "SSH1207 2024A",
+    "user_id": 2291034,
+    "metadata": {
+      "channel_id": "6a7e8c26e3b7a54eb16ddd56",
+      "message_id": "6a8513e23e4f2ef30d855be6",
+      "parent_id": "6a7e8c27e3b7a54eb16ddd5f"
+    },
+    "created_at": "2026-08-19T02:24:34.913553+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a85141f3e4f2ef30d855be9"
+    },
+    "action": "message_posted",
+    "course_code": "SSH1207 2024A",
+    "user_id": 2291034,
+    "metadata": {
+      "channel_id": "6a7e8c26e3b7a54eb16ddd56",
+      "message_id": "6a85141f3e4f2ef30d855be8",
+      "parent_id": null
+    },
+    "created_at": "2026-08-19T02:25:35.976668+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a8702e5b526ebf34d2c4e87"
+    },
+    "action": "message_posted",
+    "course_code": "MI1216 2013J",
+    "user_id": 114017,
+    "metadata": {
+      "channel_id": "6a7e8c1fdc5c8113e75ec4f8",
+      "message_id": "6a8702e5b526ebf34d2c4e86",
+      "parent_id": null
+    },
+    "created_at": "2026-08-20T13:36:37.074100+00:00"
+  }
+]

@@ -88,6 +88,7 @@ async def chat_stream(req: ChatRequest):
         f"Module: {ctx['module']} | Risk: tier {ctx['risk_tier']}, "
         f"score {ctx['risk_score']:.2f} | Flags: {ctx['risk_flags']}\n"
         f"Unsubmitted: {ctx['unsubmitted_count']} | Next due: day {ctx['next_due']}\n"
+        f"Submitted files: {ctx.get('submitted_files', [])}\n"
     )
 
     gaps = ctx.get("prerequisite_gaps", [])

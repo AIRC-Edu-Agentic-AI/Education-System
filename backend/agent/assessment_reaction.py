@@ -22,6 +22,7 @@ async def react_to_assessment_change(
         f"Module: {ctx['module']} | Risk: tier {ctx['risk_tier']}, "
         f"score {ctx['risk_score']:.2f}\n"
         f"Unsubmitted: {ctx['unsubmitted_count']} | Next due: day {ctx['next_due']}\n"
+        f"Submitted files: {ctx.get('submitted_files', [])}\n"
     )
 
     tools = make_tools(student_id)

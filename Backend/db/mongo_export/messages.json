@@ -1,0 +1,2223 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc2c"
+    },
+    "channel_id": "6a7e8c1fe3b7a54eb16ddc27",
+    "course_code": "IT1208 2026E",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Tin học đại cương (IT1208 2026E)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:44.773978+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc2f"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc28",
+    "course_code": "IT1208 2026E",
+    "sender_id": "181316",
+    "sender_name": "Trần Hải Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for IT1208, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:44.773978+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc31"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc28",
+    "course_code": "IT1208 2026E",
+    "sender_id": "294570",
+    "sender_name": "Nguyễn Gia Nam",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:44.773978+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc32"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc28",
+    "course_code": "IT1208 2026E",
+    "sender_id": "71361",
+    "sender_name": "Trần Hoài Hùng",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:44.773978+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc37"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc29",
+    "course_code": "IT1208 2026E",
+    "sender_id": "71361",
+    "sender_name": "Trần Hoài Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:44.842580+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc3b"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc2a",
+    "course_code": "IT1208 2026E",
+    "sender_id": "294570",
+    "sender_name": "Nguyễn Gia Nam",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:44.928999+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc3c"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc2b",
+    "course_code": "IT1208 2026E",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for IT1208. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:44.970976+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c20e3b7a54eb16ddc3e"
+    },
+    "channel_id": "6a7e8c20e3b7a54eb16ddc2b",
+    "course_code": "IT1208 2026E",
+    "sender_id": "71361",
+    "sender_name": "Trần Hoài Hùng",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:44.970976+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc44"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc3f",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Giáo dục Quốc phòng - an ninh (MIL1225 2024A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:45.139002+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc47"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc40",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "38053",
+    "sender_name": "Phạm Thị Hương",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MIL1225, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:45.139002+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc49"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc40",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:45.139002+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc4a"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc40",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:45.139002+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc4f"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:45.751889+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc53"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:45.823948+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc54"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc43",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MIL1225. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:45.859532+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c21e3b7a54eb16ddc56"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc43",
+    "course_code": "MIL1225 2024A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:45.859532+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc5a"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc57",
+    "course_code": "MI1209 2013J",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Giải tích (MI1209 2013J)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:46.088993+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc5d"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc58",
+    "course_code": "MI1209 2013J",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1209, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:46.088993+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc5f"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc58",
+    "course_code": "MI1209 2013J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:46.088993+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc60"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc58",
+    "course_code": "MI1209 2013J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:46.088993+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc65"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "MI1209 2013J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:46.131759+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc69"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "MI1209 2013J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:46.166410+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc6a"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc59",
+    "course_code": "MI1209 2013J",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1209. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:46.207805+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc6c"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc59",
+    "course_code": "MI1209 2013J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:46.207805+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc72"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc6d",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Kinh tế chính trị Mác - Lênin (SSH1202 2026A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:46.398187+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc75"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc6e",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "144801",
+    "sender_name": "Phan Minh Trang",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for SSH1202, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:46.399192+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc77"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc6e",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "106577",
+    "sender_name": "Lê Văn Hương",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:46.399192+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc78"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc6e",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "240884",
+    "sender_name": "Lê Hoài Khánh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:46.399192+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc7d"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc6f",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "240884",
+    "sender_name": "Lê Hoài Khánh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:46.501413+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc81"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc70",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "106577",
+    "sender_name": "Lê Văn Hương",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:46.697624+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc82"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc71",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for SSH1202. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:46.756812+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c22e3b7a54eb16ddc84"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc71",
+    "course_code": "SSH1202 2026A",
+    "sender_id": "240884",
+    "sender_name": "Lê Hoài Khánh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:46.756812+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc8a"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc85",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Pháp luật đại cương (SSH1206 2024A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:47.020567+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc8d"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc86",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "77367",
+    "sender_name": "Phan Thị Trang",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for SSH1206, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:47.020567+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc8f"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc86",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "167906",
+    "sender_name": "Võ Đức Nam",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:47.020567+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc90"
+    },
+    "channel_id": "6a7e8c22e3b7a54eb16ddc86",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "53025",
+    "sender_name": "Võ Ngọc Hùng",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:47.020567+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc95"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc87",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "53025",
+    "sender_name": "Võ Ngọc Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.091359+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc99"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc88",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "167906",
+    "sender_name": "Võ Đức Nam",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.161875+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc9a"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc89",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for SSH1206. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:47.200427+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddc9c"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc89",
+    "course_code": "SSH1206 2024A",
+    "sender_id": "53025",
+    "sender_name": "Võ Ngọc Hùng",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:47.200427+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddca0"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9d",
+    "course_code": "MI1209 2013B",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Giải tích (MI1209 2013B)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:47.408984+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddca3"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9e",
+    "course_code": "MI1209 2013B",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1209, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:47.408984+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddca5"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9e",
+    "course_code": "MI1209 2013B",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:47.408984+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddca6"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9e",
+    "course_code": "MI1209 2013B",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:47.408984+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcab"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "MI1209 2013B",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.444572+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcaf"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "MI1209 2013B",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.483077+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb0"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9f",
+    "course_code": "MI1209 2013B",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1209. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:47.527573+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb2"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddc9f",
+    "course_code": "MI1209 2013B",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:47.527573+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb6"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb3",
+    "course_code": "MI1216 2014J",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Xác suất thống kê (MI1216 2014J)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:47.775077+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcb9"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb4",
+    "course_code": "MI1216 2014J",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1216, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:47.775077+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcbb"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb4",
+    "course_code": "MI1216 2014J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:47.775077+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcbc"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb4",
+    "course_code": "MI1216 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:47.775077+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcc1"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "MI1216 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.809968+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcc5"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "MI1216 2014J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:47.861104+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcc6"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb5",
+    "course_code": "MI1216 2014J",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1216. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:47.914719+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c23e3b7a54eb16ddcc8"
+    },
+    "channel_id": "6a7e8c23e3b7a54eb16ddcb5",
+    "course_code": "MI1216 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:47.914719+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddccc"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcc9",
+    "course_code": "MI1209 2014J",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Giải tích (MI1209 2014J)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:48.165768+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddccf"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcca",
+    "course_code": "MI1209 2014J",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1209, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:48.165768+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcd1"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcca",
+    "course_code": "MI1209 2014J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:48.165768+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcd2"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcca",
+    "course_code": "MI1209 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:48.165768+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcd7"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "MI1209 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:48.224057+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcdb"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "MI1209 2014J",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:48.287925+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcdc"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddccb",
+    "course_code": "MI1209 2014J",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1209. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:48.339884+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcde"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddccb",
+    "course_code": "MI1209 2014J",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:48.339884+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce4"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcdf",
+    "course_code": "FL1219 2024A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Tiếng Anh 1 (FL1219 2024A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:48.540208+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce7"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce0",
+    "course_code": "FL1219 2024A",
+    "sender_id": "155854",
+    "sender_name": "Phan Quang Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for FL1219, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:48.540208+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddce9"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce0",
+    "course_code": "FL1219 2024A",
+    "sender_id": "192183",
+    "sender_name": "Huỳnh Quang Tuấn",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:48.540208+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcea"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce0",
+    "course_code": "FL1219 2024A",
+    "sender_id": "70464",
+    "sender_name": "Nguyễn Minh Tuấn",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:48.540208+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcef"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce1",
+    "course_code": "FL1219 2024A",
+    "sender_id": "70464",
+    "sender_name": "Nguyễn Minh Tuấn",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:48.621627+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcf3"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce2",
+    "course_code": "FL1219 2024A",
+    "sender_id": "192183",
+    "sender_name": "Huỳnh Quang Tuấn",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:48.708863+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcf4"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce3",
+    "course_code": "FL1219 2024A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for FL1219. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:48.749132+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c24e3b7a54eb16ddcf6"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddce3",
+    "course_code": "FL1219 2024A",
+    "sender_id": "70464",
+    "sender_name": "Nguyễn Minh Tuấn",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:48.749132+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddcfc"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcf7",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Triết học Mác - Lênin (SSH1201 2026B)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:48.962868+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddcff"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcf8",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "116541",
+    "sender_name": "Phạm Hải Tuấn",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for SSH1201, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:48.962868+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd01"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcf8",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "110175",
+    "sender_name": "Phan Thanh Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:48.963866+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd02"
+    },
+    "channel_id": "6a7e8c24e3b7a54eb16ddcf8",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "94961",
+    "sender_name": "Nguyễn Thị Hùng",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:48.963866+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd07"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddcf9",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "94961",
+    "sender_name": "Nguyễn Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:49.043142+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd0b"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddcfa",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "110175",
+    "sender_name": "Phan Thanh Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:49.199011+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd0c"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddcfb",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for SSH1201. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:49.247759+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd0e"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddcfb",
+    "course_code": "SSH1201 2026B",
+    "sender_id": "94961",
+    "sender_name": "Nguyễn Thị Hùng",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:49.247759+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd14"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd0f",
+    "course_code": "MI1216 2013J",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Xác suất thống kê (MI1216 2013J)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:49.465777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd17"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd10",
+    "course_code": "MI1216 2013J",
+    "sender_id": "114017",
+    "sender_name": "Võ Ngọc Hùng",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1216, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:49.465777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd19"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd10",
+    "course_code": "MI1216 2013J",
+    "sender_id": "155984",
+    "sender_name": "Trần Gia Anh",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:49.465777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd1a"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd10",
+    "course_code": "MI1216 2013J",
+    "sender_id": "111717",
+    "sender_name": "Huỳnh Đức Hương",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:49.465777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd1f"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd11",
+    "course_code": "MI1216 2013J",
+    "sender_id": "111717",
+    "sender_name": "Huỳnh Đức Hương",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:49.561821+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd23"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd12",
+    "course_code": "MI1216 2013J",
+    "sender_id": "155984",
+    "sender_name": "Trần Gia Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:49.664917+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd24"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd13",
+    "course_code": "MI1216 2013J",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1216. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:49.716825+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c25e3b7a54eb16ddd26"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd13",
+    "course_code": "MI1216 2013J",
+    "sender_id": "111717",
+    "sender_name": "Huỳnh Đức Hương",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:49.716825+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd2c"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd27",
+    "course_code": "MI1212 2026A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Đại số (MI1212 2026A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:50.042305+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd2f"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd28",
+    "course_code": "MI1212 2026A",
+    "sender_id": "142326",
+    "sender_name": "Phan Thanh Hương",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1212, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:50.042305+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd31"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd28",
+    "course_code": "MI1212 2026A",
+    "sender_id": "256815",
+    "sender_name": "Phan Thanh Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:50.042305+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd32"
+    },
+    "channel_id": "6a7e8c25e3b7a54eb16ddd28",
+    "course_code": "MI1212 2026A",
+    "sender_id": "63400",
+    "sender_name": "Phan Hoài Tuấn",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:50.042305+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd37"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd29",
+    "course_code": "MI1212 2026A",
+    "sender_id": "63400",
+    "sender_name": "Phan Hoài Tuấn",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:50.149781+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd3b"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd2a",
+    "course_code": "MI1212 2026A",
+    "sender_id": "256815",
+    "sender_name": "Phan Thanh Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:50.234858+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd3c"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd2b",
+    "course_code": "MI1212 2026A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1212. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:50.301914+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd3e"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd2b",
+    "course_code": "MI1212 2026A",
+    "sender_id": "63400",
+    "sender_name": "Phan Hoài Tuấn",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:50.301914+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd42"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd3f",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Triết học Mác - Lênin (SSH1201 2026A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:50.576594+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd45"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd40",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for SSH1201, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:50.576594+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd47"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd40",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:50.576594+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd48"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd40",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:50.576594+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd4d"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:50.643812+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd51"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:50.680649+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd52"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd41",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for SSH1201. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:50.719055+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd54"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd41",
+    "course_code": "SSH1201 2026A",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:50.719055+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd5a"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd55",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Kỹ năng mềm (SSH1207 2024A)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:50.904777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd5d"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd56",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "65002",
+    "sender_name": "Lê Hải Anh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for SSH1207, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:50.904777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd5f"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd56",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "45462",
+    "sender_name": "Lê Văn Khánh",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:50.904777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd60"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd56",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "129955",
+    "sender_name": "Phan Văn Linh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:50.904777+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd65"
+    },
+    "channel_id": "6a7e8c26e3b7a54eb16ddd57",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "129955",
+    "sender_name": "Phan Văn Linh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:50.990936+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd69"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd58",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "45462",
+    "sender_name": "Lê Văn Khánh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:51.073215+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd6a"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd59",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for SSH1207. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:51.113864+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd6c"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd59",
+    "course_code": "SSH1207 2024A",
+    "sender_id": "129955",
+    "sender_name": "Phan Văn Linh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:51.114861+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd70"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6d",
+    "course_code": "IT1208 2026D",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Tin học đại cương (IT1208 2026D)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:51.384771+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd73"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6e",
+    "course_code": "IT1208 2026D",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for IT1208, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:51.384771+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd75"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6e",
+    "course_code": "IT1208 2026D",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:51.384771+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd76"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6e",
+    "course_code": "IT1208 2026D",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:51.384771+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd7b"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc41",
+    "course_code": "IT1208 2026D",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:51.451834+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd7f"
+    },
+    "channel_id": "6a7e8c21e3b7a54eb16ddc42",
+    "course_code": "IT1208 2026D",
+    "sender_id": "62155",
+    "sender_name": "Phan Thị Hùng",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:51.516746+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd80"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6f",
+    "course_code": "IT1208 2026D",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for IT1208. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:51.563403+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c27e3b7a54eb16ddd82"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd6f",
+    "course_code": "IT1208 2026D",
+    "sender_id": "32885",
+    "sender_name": "Hoàng Văn Anh",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:51.563403+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd88"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd83",
+    "course_code": "MI1209 2014B",
+    "sender_id": "instructor_1",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "📢 **Welcome all students to Giải tích (MI1209 2014B)!**\n\nThe course syllabus, lecture slides, and assessment schedules have been uploaded to the portal. Please monitor upcoming TMA milestones and scheduled quizzes closely.",
+    "created_at": "2026-07-20T03:31:51.772629+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 18
+      },
+      {
+        "emoji": "❤️",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd8b"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd84",
+    "course_code": "MI1209 2014B",
+    "sender_id": "57506",
+    "sender_name": "Đặng Văn Khánh",
+    "sender_role": "student",
+    "content": "Dear Instructor and classmates, for Question 3 in TMA-01 for MI1209, should we plot a distribution chart or is numeric justification sufficient?",
+    "created_at": "2026-08-05T23:31:51.772629+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd8d"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd84",
+    "course_code": "MI1209 2014B",
+    "sender_id": "116692",
+    "sender_name": "Phạm Gia Linh",
+    "sender_role": "student",
+    "content": "I implemented the variance calculation in Python and verified the expected results. Thank you for the guidance, Professor!",
+    "created_at": "2026-08-07T03:31:51.772629+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd8e"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd84",
+    "course_code": "MI1209 2014B",
+    "sender_id": "442442",
+    "sender_name": "Lê Hải Huy",
+    "sender_role": "student",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-10T03:31:51.772629+00:00",
+    "parent_id": null,
+    "reactions": [
+      {
+        "emoji": "👌",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd93"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd85",
+    "course_code": "MI1209 2014B",
+    "sender_id": "442442",
+    "sender_name": "Lê Hải Huy",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:51.905847+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd97"
+    },
+    "channel_id": "6a7e8c27e3b7a54eb16ddd86",
+    "course_code": "MI1209 2014B",
+    "sender_id": "116692",
+    "sender_name": "Phạm Gia Linh",
+    "sender_role": "student",
+    "content": "Thank you so much Professor! I will register for the slot and prepare my questions.",
+    "created_at": "2026-08-09T09:31:52.020559+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd98"
+    },
+    "channel_id": "6a7e8c28e3b7a54eb16ddd87",
+    "course_code": "MI1209 2014B",
+    "sender_id": "teacher_admin",
+    "sender_name": "Dr. Nguyen Minh Tuan (Instructor)",
+    "sender_role": "instructor",
+    "content": "Welcome to the Academic Support Group for MI1209. You can collaborate on weekly assignments and share practice materials here.",
+    "created_at": "2026-08-05T03:31:52.072621+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a7e8c28e3b7a54eb16ddd9a"
+    },
+    "channel_id": "6a7e8c28e3b7a54eb16ddd87",
+    "course_code": "MI1209 2014B",
+    "sender_id": "442442",
+    "sender_name": "Lê Hải Huy",
+    "sender_role": "student",
+    "content": "Great, I will add my solutions for questions 1 and 2 by tonight.",
+    "created_at": "2026-08-08T03:31:52.072621+00:00",
+    "parent_id": null
+  },
+  {
+    "_id": {
+      "$oid": "6a8540225ad731268961b0a8"
+    },
+    "channel_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd55"
+    },
+    "course_code": "SSH1207 2024A",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "**[PROGRESS REMINDER] Review Schedule & Assessment Submissions**\n\nDear Tier 2 students,\n\nPlease check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!\n\nBest of luck!",
+    "created_at": "2026-08-19T05:33:22.137693+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a85471945d9b8f9fce6fbd3"
+    },
+    "channel_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd55"
+    },
+    "course_code": "SSH1207 2024A",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "**[PROGRESS REMINDER] Review Schedule & Assessment Submissions**\n\nDear Tier 2 students,\n\nPlease check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!\n\nBest of luck!",
+    "created_at": "2026-08-19T06:03:05.839287+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a85472945d9b8f9fce6fc8f"
+    },
+    "channel_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd56"
+    },
+    "course_code": "SSH1207 2024A",
+    "channel_type": "discussion",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "Team members: let's meet on Google Meet tonight at 20:00 to review our assignment draft together!",
+    "created_at": "2026-08-19T06:03:21.123224+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a85473745d9b8f9fce6fc90"
+    },
+    "channel_id": {
+      "$oid": "6a8540145ad731268961b0a4"
+    },
+    "course_code": "AAA 2013J",
+    "channel_type": "private_message",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "Please check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!",
+    "created_at": "2026-08-19T06:03:35.557324+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a855205bd401aa5b7e44da3"
+    },
+    "channel_id": {
+      "$oid": "6a7e8c26e3b7a54eb16ddd55"
+    },
+    "course_code": "SSH1207 2024A",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "**[PROGRESS REMINDER] Review Schedule & Assessment Submissions**\n\nDear Tier 2 students,\n\nPlease check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!\n\nBest of luck!",
+    "created_at": "2026-08-19T06:49:41.853281+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a855215bd401aa5b7e44e5f"
+    },
+    "channel_id": {
+      "$oid": "6a8540145ad731268961b0a4"
+    },
+    "course_code": "AAA 2013J",
+    "channel_type": "private_message",
+    "sender_id": "teacher_admin",
+    "sender_role": "instructor",
+    "content": "Please check upcoming assessment deadlines and dedicate time to review key lecture topics. If you encounter any difficulties, feel free to ask in the Discussion forum!",
+    "created_at": "2026-08-19T06:49:57.834454+00:00",
+    "parent_id": null,
+    "reactions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a8702e5b526ebf34d2c4e86"
+    },
+    "channel_id": {
+      "$oid": "6a7e8c1fdc5c8113e75ec4f8"
+    },
+    "course_code": "MI1216 2013J",
+    "channel_type": "discussion",
+    "sender_id": 114017,
+    "sender_role": "student",
+    "content": "ád",
+    "created_at": "2026-08-20T13:36:37.017094+00:00",
+    "parent_id": null,
+    "reactions": []
+  }
+]
