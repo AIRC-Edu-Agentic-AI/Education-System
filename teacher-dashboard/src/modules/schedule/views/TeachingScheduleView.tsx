@@ -153,6 +153,44 @@ function validateSchedules(items: ScheduleItem[], numWeeks: number) {
   return [...new Set(errors)]
 }
 
+/**
+ * Compute conflicts for a draft item that is being created or edited.
+ * `editingId` is excluded from comparisons so an item doesn't conflict with itself.
+ */
+function getDraftConflicts(
+  draft: Partial<ScheduleItem>,
+  existing: ScheduleItem[],
+  editingId: string | null
+): string[] {
+  if (!draft.date || !draft.startTime || !draft.endTime) return []
+  const startMin = minutes(draft.startTime)
+  const endMin = minutes(draft.endTime)
+  if (isNaN(startMin) || isNaN(endMin) || startMin >= endMin) return []
+
+  const active = existing.filter(
+    (item) => item.status !== 'cancelled' && item.id !== editingId
+  )
+  const conflicts: string[] = []
+  const timeDesc = `${draft.startTime}\u2013${draft.endTime} on ${draft.date}`
+
+  for (const item of active) {
+    if (!item.date || item.date !== draft.date) continue
+    if (!overlaps(draft as ScheduleItem, item)) continue
+
+    if (draft.teacher && draft.teacher.trim() && draft.teacher === item.teacher)
+      conflicts.push(`Teacher '${draft.teacher}' already has a session at ${timeDesc}.`)
+    if (draft.className && draft.className === item.className)
+      conflicts.push(`Class '${draft.className}' already has a session at ${timeDesc}.`)
+    if (
+      draft.room &&
+      !draft.room.toLowerCase().startsWith('online') &&
+      draft.room === item.room
+    )
+      conflicts.push(`Room '${draft.room}' is already booked at ${timeDesc}.`)
+  }
+  return [...new Set(conflicts)]
+}
+
 function addDays(dateIso: string, amount: number) {
   const date = new Date(dateIso)
   date.setDate(date.getDate() + amount)
@@ -236,6 +274,12 @@ export function TeachingScheduleView() {
 
   const validationErrors = useMemo(() => validateSchedules(schedules, 39), [schedules])
 
+  /** Real-time conflicts for the draft currently open in the dialog. */
+  const draftConflicts = useMemo(
+    () => getDraftConflicts(draftSchedule ?? {}, schedules, editingId),
+    [draftSchedule, schedules, editingId]
+  )
+
   const visibleSchedules = useMemo(() => {
     return schedules
       .filter((item) => teacherFilter === 'all' || item.teacher === teacherFilter)
@@ -312,10 +356,18 @@ export function TeachingScheduleView() {
         deletedSchedule,
       )
       setMessage('Schedule saved.')
-    } catch {
-      setMessage('Could not save schedule.')
+    } catch (err: unknown) {
+      // Surface 409 conflict messages when thrown as an error object
+      const anyErr = err as { status?: number; detail?: { conflicts?: string[]; message?: string } }
+      if (anyErr?.status === 409) {
+        const first = anyErr.detail?.conflicts?.[0] ?? anyErr.detail?.message ?? 'Schedule conflict detected.'
+        setMessage(`Conflict: ${first}`)
+      } else {
+        setMessage('Could not save schedule.')
+      }
     }
   }
+
 
   const addScheduleForDate = async () => {
     if (!draftSchedule || !draftSchedule.date) return
@@ -348,11 +400,16 @@ export function TeachingScheduleView() {
       changeLog: [makeLog(id, 'created', actor, changeReason || 'Created schedule')],
     }
     const updated = [...schedules, item]
-    setSchedules(updated)
-    await autoSaveSchedule(updated, item)
 
+    // Close dialog and clear draft BEFORE the async save so that
+    // React batches all state updates in one render.
+    // This prevents getDraftConflicts from firing a false-positive
+    // while the save is in-flight (schedules updated but dialog still open).
+    setSchedules(updated)
     setDialogOpen(false)
     setDraftSchedule(null)
+
+    await autoSaveSchedule(updated, item)
   }
 
   const updateScheduleForDate = () => {
@@ -478,6 +535,15 @@ export function TeachingScheduleView() {
         <DialogContent>
           <Typography sx={{ fontWeight: 700, mb: 2 }}>{editingId ? 'Edit teaching session' : 'Add teaching session'}</Typography>
           <Stack spacing={2}>
+            {/* ── Real-time conflict alert in dialog ── */}
+            {draftConflicts.length > 0 && (
+              <Alert severity="warning" sx={{ py: 0.5, fontSize: 12 }}>
+                <strong>Conflict detected — please adjust time, teacher, class, or room:</strong>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}>
+                  {draftConflicts.map((msg, i) => <li key={i}>{msg}</li>)}
+                </ul>
+              </Alert>
+            )}
             {index && (
               <Stack direction="row" spacing={2}>
                 <FormControl size="small" fullWidth disabled={!canEdit}>
@@ -585,7 +651,11 @@ export function TeachingScheduleView() {
               disabled={!canEdit}
             />
             <Stack direction="row" spacing={1}>
-              <Button variant="contained" onClick={handleSaveDialog} disabled={!canEdit || !draftSchedule?.date}>
+              <Button
+                variant="contained"
+                onClick={handleSaveDialog}
+                disabled={!canEdit || !draftSchedule?.date || draftConflicts.length > 0}
+              >
                 {editingId ? 'Update' : 'Create'}
               </Button>
               {editingId && (
