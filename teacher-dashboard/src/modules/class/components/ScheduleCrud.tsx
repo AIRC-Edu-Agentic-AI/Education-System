@@ -167,6 +167,25 @@ function validateSchedules(items: Schedule[]) {
   return [...new Set(errors)]
 }
 
+/** Return conflict messages that directly involve a specific schedule item. */
+function getConflictsForItem(item: Schedule, allItems: Schedule[]): string[] {
+  if (item.status === 'cancelled') return []
+  const conflicts: string[] = []
+  const activeOthers = allItems.filter(
+    (other) => other._id !== item._id && other.status !== 'cancelled'
+  )
+  for (const other of activeOthers) {
+    if (!item.date || item.date !== other.date || !overlaps(item, other)) continue
+    if (item.teacher && item.teacher === other.teacher)
+      conflicts.push(`Teacher '${item.teacher}' is already booked at ${item.startTime}–${item.endTime} on ${item.date}.`)
+    if (item.className && item.className === other.className)
+      conflicts.push(`Class '${item.className}' already has a session at ${item.startTime}–${item.endTime} on ${item.date}.`)
+    if (item.room && !item.room.toLowerCase().startsWith('online') && item.room === other.room)
+      conflicts.push(`Room '${item.room}' is already booked at ${item.startTime}–${item.endTime} on ${item.date}.`)
+  }
+  return [...new Set(conflicts)]
+}
+
 export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps) {
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [classOptions, setClassOptions] = useState<string[]>([])
@@ -309,16 +328,34 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
             delete payload._id;
             payload.changeLog = [makeLog('', 'created', changeReason || 'Created schedule')];
             return fetch(API_BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+              .then(async (res) => {
+                if (res.status === 409) {
+                  const body = await res.json().catch(() => ({}))
+                  const msgs: string[] = body?.detail?.conflicts ?? [body?.detail?.message ?? 'Conflict detected.']
+                  setMessage(`Conflict: ${msgs[0]}`)
+                  throw new Error('conflict')
+                }
+              })
         } else if (item._id) {
             return fetch(`${API_BASE}/${item._id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+              .then(async (res) => {
+                if (res.status === 409) {
+                  const body = await res.json().catch(() => ({}))
+                  const msgs: string[] = body?.detail?.conflicts ?? [body?.detail?.message ?? 'Conflict detected.']
+                  setMessage(`Conflict: ${msgs[0]}`)
+                  throw new Error('conflict')
+                }
+              })
         }
         return Promise.resolve();
       }))
       setChangeReason('')
       setMessage('Saved successfully.')
       fetchSchedules() // Load lại DB để lấy Real ID
-    } catch {
-      setMessage('Could not save schedules.')
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message !== 'conflict') {
+        setMessage('Could not save schedules.')
+      }
     } finally {
       setLoading(false)
     }
@@ -328,6 +365,32 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
     total: schedules.length, active: schedules.filter(i => i.status !== 'cancelled').length,
     conflicts: validationErrors.length, makeups: schedules.filter(i => i.isMakeup).length,
   }
+
+  // Conflict IDs for quick lookup (highlight rows)
+  const conflictingIds = useMemo(() => {
+    const ids = new Set<string>()
+    const activeItems = schedules.filter(i => i.status !== 'cancelled')
+    activeItems.forEach((item, idx) => {
+      activeItems.slice(idx + 1).forEach((other) => {
+        if (!item.date || item.date !== other.date || !overlaps(item, other)) return
+        const hasConflict =
+          (item.teacher && item.teacher === other.teacher) ||
+          (item.className && item.className === other.className) ||
+          (item.room && !item.room.toLowerCase().startsWith('online') && item.room === other.room)
+        if (hasConflict) {
+          if (item._id) ids.add(item._id)
+          if (other._id) ids.add(other._id)
+        }
+      })
+    })
+    return ids
+  }, [schedules])
+
+  // Conflicts specific to the currently-selected item (shown in detail panel)
+  const selectedItemConflicts = useMemo(
+    () => (selected ? getConflictsForItem(selected, schedules) : []),
+    [selected, schedules]
+  )
 
   if (!module || !presentation) return <Box sx={{ p: 3 }}><Alert severity="info">Select a module to view schedules.</Alert></Box>
 
@@ -342,9 +405,13 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
         </Stack>
         <Stack direction="row" spacing={1}>
           <TextField size="small" placeholder="Reason for changes..." value={changeReason} onChange={e => setChangeReason(e.target.value)} sx={{ width: 200 }} />
-          <Button startIcon={<SaveIcon />} variant="contained" onClick={saveSchedules} disabled={loading} disableElevation>
-            Save All
-          </Button>
+          <Tooltip title={validationErrors.length > 0 ? 'Fix all conflicts before saving' : ''} arrow>
+            <span>
+              <Button startIcon={<SaveIcon />} variant="contained" onClick={saveSchedules} disabled={loading || validationErrors.length > 0} disableElevation>
+                Save All
+              </Button>
+            </span>
+          </Tooltip>
         </Stack>
       </Box>
 
@@ -392,8 +459,10 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
                         onClick={() => setSelectedId(item._id ?? '')} 
                         sx={{ 
                             cursor: 'pointer',
+                            // Highlight conflict rows (red tint takes priority over unsaved draft yellow)
+                            ...(conflictingIds.has(item._id ?? '') && { bgcolor: 'error.50' }),
                             // Highlight màu nền nhẹ nếu đang là nháp chưa lưu
-                            ...(item._id?.startsWith('temp_') && { bgcolor: 'warning.50' }) 
+                            ...(!conflictingIds.has(item._id ?? '') && item._id?.startsWith('temp_') && { bgcolor: 'warning.50' }) 
                         }}
                       >
                         <TableCell>{item.week}</TableCell>
@@ -440,6 +509,15 @@ export default function ScheduleCrud({ module, presentation }: ScheduleCrudProps
               <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
                 {selected ? (
                   <Stack spacing={2}>
+                    {/* ── Inline conflict alert for selected item ── */}
+                    {selectedItemConflicts.length > 0 && (
+                      <Alert severity="error" sx={{ py: 0.5, fontSize: 12 }}>
+                        <strong>Conflict detected:</strong>
+                        <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}>
+                          {selectedItemConflicts.map((msg, i) => <li key={i}>{msg}</li>)}
+                        </ul>
+                      </Alert>
+                    )}
                     <Autocomplete
                       fullWidth
                       freeSolo

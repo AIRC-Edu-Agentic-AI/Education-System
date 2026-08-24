@@ -1,6 +1,6 @@
 # ── schedule/teacher.py ───────────────────────────────────────────────────────
 # Lên lịch dạy, lịch bù, danh sách phòng và lớp học
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException
@@ -8,6 +8,95 @@ from fastapi import APIRouter, HTTPException
 from db.mongodb import db_state
 
 router = APIRouter()
+
+
+# ── Conflict Detection ────────────────────────────────────────────────────────
+
+def _to_minutes(time_str: Optional[str]) -> Optional[int]:
+    """Convert 'HH:MM' string to total minutes. Returns None if invalid."""
+    if not time_str or ':' not in time_str:
+        return None
+    try:
+        h, m = time_str.split(':', 1)
+        return int(h) * 60 + int(m)
+    except ValueError:
+        return None
+
+
+def _overlaps(start_a: Optional[int], end_a: Optional[int],
+              start_b: Optional[int], end_b: Optional[int]) -> bool:
+    """Return True if time interval [start_a, end_a) overlaps [start_b, end_b)."""
+    if any(v is None for v in (start_a, end_a, start_b, end_b)):
+        return False
+    return start_a < end_b and start_b < end_a  # type: ignore[operator]
+
+
+async def detect_conflicts(
+    db,
+    payload: Dict[str, Any],
+    exclude_id: Optional[str] = None,
+) -> List[str]:
+    """
+    Query all active (non-cancelled) schedules on the same date and detect
+    teacher / class / room overlaps with *payload*.
+
+    :param db: Motor AsyncIOMotorDatabase instance.
+    :param payload: The schedule being created or updated.
+    :param exclude_id: _id (string) of the document being updated — excluded
+                       from the conflict search so a record doesn't conflict
+                       with itself.
+    :returns: List of human-readable conflict messages (empty = no conflicts).
+    """
+    date = payload.get("date")
+    start = _to_minutes(payload.get("startTime"))
+    end = _to_minutes(payload.get("endTime"))
+    teacher = (payload.get("teacher") or "").strip()
+    class_name = (payload.get("className") or "").strip()
+    room = (payload.get("room") or "").strip()
+
+    # Need at least date + times to check overlap
+    if not date or start is None or end is None:
+        return []
+
+    query: Dict[str, Any] = {
+        "date": date,
+        "status": {"$ne": "cancelled"},
+    }
+    if exclude_id:
+        try:
+            query["_id"] = {"$ne": ObjectId(exclude_id)}
+        except Exception:
+            pass  # ignore invalid ObjectId format
+
+    existing = await db["schedules"].find(query).to_list(None)
+
+    errors: List[str] = []
+    for other in existing:
+        other_start = _to_minutes(other.get("startTime"))
+        other_end = _to_minutes(other.get("endTime"))
+        if not _overlaps(start, end, other_start, other_end):
+            continue
+
+        other_teacher = (other.get("teacher") or "").strip()
+        other_class = (other.get("className") or "").strip()
+        other_room = (other.get("room") or "").strip()
+        time_desc = f"{payload.get('startTime')}-{payload.get('endTime')} on {date}"
+
+        if teacher and teacher == other_teacher:
+            errors.append(
+                f"Teacher conflict: '{teacher}' already has a session at {time_desc}."
+            )
+        if class_name and class_name == other_class:
+            errors.append(
+                f"Class conflict: '{class_name}' already has a session at {time_desc}."
+            )
+        # Only flag room conflicts for physical rooms (skip online)
+        if room and not room.lower().startswith("online") and room == other_room:
+            errors.append(
+                f"Room conflict: '{room}' is already booked at {time_desc}."
+            )
+
+    return list(dict.fromkeys(errors))  # deduplicate while preserving order
 
 
 def get_db():
@@ -44,6 +133,16 @@ async def list_schedules(
 async def create_schedule(payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         db = get_db()
+
+        # ── Conflict detection ────────────────────────────────────────────────
+        conflicts = await detect_conflicts(db, payload)
+        if conflicts:
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "Schedule conflicts detected.", "conflicts": conflicts},
+            )
+        # ─────────────────────────────────────────────────────────────────────
+
         result = await db["schedules"].insert_one(payload)
         payload["_id"] = str(result.inserted_id)
         await notify_students(payload, None, "schedule:create")
@@ -59,6 +158,16 @@ async def update_schedule(schedule_id: str, payload: Dict[str, Any]) -> Dict[str
     try:
         db = get_db()
         payload.pop("_id", None)
+
+        # ── Conflict detection (exclude current document from check) ──────────
+        conflicts = await detect_conflicts(db, payload, exclude_id=schedule_id)
+        if conflicts:
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "Schedule conflicts detected.", "conflicts": conflicts},
+            )
+        # ─────────────────────────────────────────────────────────────────────
+
         original = await db["schedules"].find_one({"_id": ObjectId(schedule_id)})
         result = await db["schedules"].update_one(
             {"_id": ObjectId(schedule_id)}, {"$set": payload}
